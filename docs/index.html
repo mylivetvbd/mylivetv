@@ -44,7 +44,11 @@ h2{font-size:1.15rem;color:#19c37d;margin:34px 0 4px}
   <h1>My <span>Live</span> TV</h1>
   <p class="tag">৮,০০০+ ফ্রি টিভি চ্যানেল — আপনার মোবাইলেই 📺</p>
 
-  <a class="btn" id="dlbtn" href="https://github.com/mylivetvbd/mylivetv/releases/latest">⬇&nbsp; ডাউনলোড করুন (ফ্রি)</a>
+  <div id="iabTip" style="display:none;background:#2b2410;border:1px solid #6b5a1e;color:#ffd75e;
+    border-radius:14px;padding:10px 14px;font-size:.88rem;margin-bottom:14px">
+    ⚠️ ডাউনলোড শুরু না হলে: উপরে ডান কোণে <b>⋯</b> চেপে <b>"Open in Chrome"</b> দিন
+  </div>
+  <a class="btn" id="dlbtn" href="MyLiveTV.apk" download="MyLiveTV.apk">⬇&nbsp; ডাউনলোড করুন (ফ্রি)</a>
   <p class="ver" id="ver">Android APK • সর্বশেষ ভার্সন</p>
 
   <div class="feats">
@@ -69,13 +73,31 @@ h2{font-size:1.15rem;color:#19c37d;margin:34px 0 4px}
   <footer>© My Live TV • সম্পূর্ণ ফ্রি • কোনো সাবস্ক্রিপশন নেই</footer>
 </div>
 <script>
+// ভার্সন তথ্য দেখাই (ডাউনলোড কিন্তু সাইটের নিজের ফাইল থেকেই হয়)
 fetch('https://api.github.com/repos/mylivetvbd/mylivetv/releases/latest')
  .then(r=>r.json())
  .then(d=>{
    var a=(d.assets||[]).find(x=>x.name.endsWith('.apk'));
-   if(a){document.getElementById('dlbtn').href=a.browser_download_url;
-     document.getElementById('ver').textContent='Android APK • ভার্সন '+(d.tag_name||'')+' • '+Math.round(a.size/1048576)+' MB';}
+   if(a){document.getElementById('ver').textContent=
+     'Android APK • ভার্সন '+(d.tag_name||'')+' • '+Math.round(a.size/1048576)+' MB';}
  }).catch(e=>{});
+
+// ফেসবুক/মেসেঞ্জার/ইনস্টাগ্রামের ভিতরের ব্রাউজার শনাক্ত
+var ua = navigator.userAgent || '';
+var inApp = /FBAN|FBAV|FB_IAB|FBIOS|Messenger|Instagram|Line\/|MicroMessenger/i.test(ua);
+var android = /Android/i.test(ua);
+if (inApp) {
+  document.getElementById('iabTip').style.display = 'block';
+  if (android) {
+    // বাটনে ক্লিক করলে সরাসরি Chrome-এ APK খুলে দাও (নিজে নিজে ডাউনলোড শুরু হবে)
+    document.getElementById('dlbtn').addEventListener('click', function(ev){
+      ev.preventDefault();
+      var apk = 'https://mylivetvbd.github.io/mylivetv/MyLiveTV.apk';
+      location.href = 'intent://mylivetvbd.github.io/mylivetv/MyLiveTV.apk#Intent;scheme=https;' +
+        'package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(apk) + ';end';
+    });
+  }
+}
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a51877d02e5fb60e',t:'MTc5MzE3NTA2OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
