@@ -1,6 +1,6 @@
 {
-  "versionCode": 17,
-  "versionName": "2.7",
-  "apk": "https://github.com/mylivetvbd/mylivetv/releases/download/v2.7/MyLiveTV-v2.7.apk",
-  "notes": "নতুন আপডেট v2.7: অ্যাপ আরও দ্রুত ও উন্নত! 🚀"
+  "versionCode": 18,
+  "versionName": "2.8",
+  "apkUrl": "https://github.com/mylivetvbd/mylivetv/releases/download/v2.8/MyLiveTV-v2.8.apk",
+  "changelog": "নতুন বিজ্ঞাপন সিস্টেম + পারফরম্যান্স উন্নতি"
 }
