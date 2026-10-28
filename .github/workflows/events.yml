@@ -1,0 +1,241 @@
+name: Update Live Events
+
+on:
+  schedule:
+    - cron: '20 */3 * * *'   # প্রতি ৩ ঘণ্টায় ম্যাচ তালিকা টাটকা হবে
+  workflow_dispatch:          # হাতে চালানোর বাটন
+
+permissions:
+  contents: write
+
+jobs:
+  events:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build events.json
+        run: |
+          python3 - <<'EOF'
+          import json, time, datetime, urllib.request, urllib.parse, re, os, ssl, concurrent.futures
+          UA = 'Mozilla/5.0'
+          ctx = ssl.create_default_context(); ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
+          def get(u):
+              req = urllib.request.Request(u, headers={'User-Agent': UA})
+              return json.loads(urllib.request.urlopen(req, timeout=20, context=ctx).read())
+          def ts(s):
+              for f in ('%Y-%m-%dT%H:%M:%SZ', '%Y-%m-%dT%H:%MZ'):
+                  try:
+                      return int(datetime.datetime.strptime(s, f).replace(tzinfo=datetime.timezone.utc).timestamp())
+                  except Exception: pass
+              return 0
+
+          evs = []
+          # ---------- ক্রিকেট ----------
+          try:
+              d = get('https://site.web.api.espn.com/apis/v2/scoreboard/header?sport=cricket')
+              for sp in d.get('sports', []):
+                  for lg in sp.get('leagues', []):
+                      lname = lg.get('name', '')
+                      for e in lg.get('events', []):
+                          st = e.get('status', 'pre')
+                          if st == 'post': continue
+                          nm = e.get('name', '')
+                          h, a = (nm.split(' v ', 1) + [''])[:2] if ' v ' in nm else (nm, '')
+                          evs.append({'sp': 'c', 'lg': lname, 'h': h.strip(), 'a': a.strip(),
+                                      't': ts(e.get('date', '')), 'st': st, 'note': e.get('summary', '')})
+          except Exception as ex:
+              print('cricket fail:', ex)
+          # ---------- ফুটবল ----------
+          BIG = ['premier league','la liga','laliga','serie a','bundesliga','ligue 1','champions league',
+                 'europa','conference','fifa','world cup','uefa','copa','afc','saff','caf ','mls',
+                 'eredivisie','primeira','super lig','süper','friendly','nations league','fa cup',
+                 'efl','carabao','king','saudi','indian super']
+          STAR = ['bangladesh','argentina','brazil','real madrid','barcelona','manchester','liverpool',
+                  'arsenal','chelsea','tottenham','psg','paris','bayern','juventus','inter','milan',
+                  'atletico','napoli','dortmund','al nassr','inter miami','portugal','france','spain',
+                  'germany','england','netherlands']
+          now_utc = datetime.datetime.now(datetime.timezone.utc)
+          for dd in (0, 1):
+              ds = (now_utc + datetime.timedelta(days=dd)).strftime('%Y%m%d')
+              try:
+                  d = get('https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=' + ds)
+                  for e in d.get('events', []):
+                      st = e['status']['type']['state']
+                      if st == 'post': continue
+                      lgd = e.get('league')
+                      lg = lgd.get('name', '') if isinstance(lgd, dict) else ''
+                      nm = e.get('name', '')
+                      low = (lg + ' ' + nm).lower()
+                      if not (st == 'in' or any(b in low for b in BIG) or any(s_ in low for s_ in STAR)):
+                          continue
+                      comp = (e.get('competitions') or [{}])[0].get('competitors', [])
+                      home = next((c['team']['displayName'] for c in comp if c.get('homeAway') == 'home'), '')
+                      away = next((c['team']['displayName'] for c in comp if c.get('homeAway') == 'away'), '')
+                      if not home or not away:
+                          parts = nm.split(' at ')
+                          if len(parts) == 2: away, home = parts[0].strip(), parts[1].strip()
+                          else: home, away = nm, ''
+                      evs.append({'sp': 'f', 'lg': lg, 'h': home, 'a': away,
+                                  't': ts(e.get('date', '')), 'st': st, 'note': ''})
+              except Exception as ex:
+                  print('soccer', ds, 'fail:', ex)
+
+          # ================= একুরেট রাইটস টেবিল =================
+          # নিয়ম: (regex-শব্দ, [হুবহু চ্যানেল-নাম], "অফিশিয়াল ব্রডকাস্টার লেবেল")
+          CRICKET_RIGHTS = [
+              (r'\bbangladesh\b', ['t sports', 'gtv', 'gazi tv', 'willow', 'willow sports'], 'T Sports / GTV'),
+              (r'\bpakistan\b', ['ptv sports', 'a sports', 'ten sports', 'willow', 'sony sports ten 1'], 'PTV Sports / A Sports'),
+              (r'\bindia\b', ['dd sports', 'star sports 1', 'star sports 1 hindi'], 'Star Sports / DD Sports'),
+              (r'\bsri lanka\b', ['channel eye', 'siyatha tv', 'sony sports ten 5', 'willow'], 'Channel Eye / Sony Ten'),
+              (r'\bafghanistan\b', ['rta sport'], 'RTA Sport'),
+              (r'\bzimbabwe\b', ['zbc tv'], 'ZBC'),
+              (r'\bwest indies\b', ['sportsmax', 'sportsmax 2', 'sony sports ten 1', 'sony sports ten 5', 'willow'], 'SportsMax / Sony Ten'),
+              (r'\bsouth africa\b', ['supersport cricket', 'sabc sport'], 'SuperSport'),
+              (r'\bnew zealand\b|\bford trophy\b', [], 'Sky Sport NZ (পেইড)'),
+              (r'\baustralia\b|\bsheffield shield\b', [], 'Fox Cricket (পেইড)'),
+              (r'\bengland\b', ['sony sports ten 5'], 'Sky / Sony Ten 5'),
+              (r'\bicc\b|\bworld cup\b|\bchampions trophy\b|\bt20 world\b',
+               ['t sports', 'gtv', 'gazi tv', 'ptv sports', 'a sports', 'star sports 1', 'willow', 'willow sports'], 'ICC সম্প্রচারকারী'),
+              (r'\bipl\b|\bindian premier\b', ['star sports 1', 'willow'], 'Star Sports / Willow'),
+              (r'\bpsl\b|\bpakistan super\b', ['ptv sports', 'a sports'], 'PTV / A Sports'),
+              (r'\bnepal\b', ['action sports'], 'Action Sports'),
+              (r'\branji\b|\bduleep\b|\birani\b', [], 'JioCinema/Star (পেইড)'),
+          ]
+          FOOT_RIGHTS = [
+              (r'\bbangladesh\b', ['t sports', 'btv'], 'T Sports / BTV'),
+              (r'\bsaff\b', ['t sports'], 'T Sports'),
+              (r'\bfifa\b|\bworld cup\b', ['t sports', 'gtv', 'btv', 'ptv sports'], 'T Sports / GTV / BTV'),
+              (r'\bindian super\b|\bisl\b', ['dd sports'], 'DD Sports / JioCinema'),
+              (r'\bsaudi\b|\bking\b', ['ssc sport', 'ssc 1'], 'SSC Sport'),
+              (r'\bqatar\b|\bqsl\b', ['alkass one', 'alkass 1'], 'Alkass'),
+              (r'\bsüper lig\b|\bsuper lig\b|\bturk', ['trt 1', 'trt spor'], 'TRT / beIN'),
+              (r'\bpremier league\b', [], 'Sky/Peacock (পেইড)'),
+              (r'\bla liga\b|\blaliga\b', [], 'ESPN+/DAZN (পেইড)'),
+              (r'\bchampions league\b|\beuropa\b', [], 'SonyLIV/Paramount+ (পেইড)'),
+              (r'\bserie a\b', [], 'DAZN (পেইড)'),
+              (r'\bbundesliga\b', [], 'Sky/ESPN+ (পেইড)'),
+              (r'\bligue 1\b', [], 'beIN/Amazon (পেইড)'),
+          ]
+
+          # ---------- মাস্টার লিস্ট পড়া + কঠোর নাম-ইনডেক্স ----------
+          chans = []
+          try:
+              src = open('my-channels-master.m3u', encoding='utf-8').read().splitlines() if os.path.exists('my-channels-master.m3u') \
+                  else urllib.request.urlopen(urllib.request.Request(
+                      'https://raw.githubusercontent.com/mylivetvbd/mylivetv/main/my-channels-master.m3u',
+                      headers={'User-Agent': UA}), timeout=30, context=ctx).read().decode('utf-8', 'ignore').splitlines()
+              i = 0
+              while i < len(src):
+                  if src[i].startswith('#EXTINF'):
+                      ext = src[i]; j = i + 1
+                      while j < len(src) and src[j].startswith('#'): j += 1
+                      if j < len(src) and src[j].strip():
+                          nm = ext.rsplit(',', 1)[-1].strip()
+                          lg = (re.search(r'tvg-logo="([^"]*)"', ext) or [None, ''])[1]
+                          chans.append((nm, lg, src[j].strip()))
+                      i = j + 1
+                  else: i += 1
+          except Exception as ex:
+              print('master load fail:', ex)
+          print('master channels:', len(chans))
+
+          def base_name(nm):
+              # কোয়ালিটি/ট্যাগ ফেলে আসল নাম বের করি — দেশ-ট্যাগ থাকলে সেটা থেকেই যায় (= বাদ পড়বে)
+              s = nm.lower()
+              s = re.sub(r'\s*\[[^\]]*\]', '', s)                                  # [Not 24/7] ইত্যাদি
+              s = re.sub(r'\s*\((?:\d{3,4}p|hd|sd|fhd|uhd|4k)\)', '', s, flags=re.I)  # (1080p) ইত্যাদি
+              return s.strip()
+
+          index = {}
+          for nm, lg, u in chans:
+              index.setdefault(base_name(nm), []).append((nm, lg, u))
+
+          def exact_find(alias):
+              out = []
+              for key in (alias, alias + ' hd', alias + ' tv'):
+                  for nm, lg, u in index.get(key, []):
+                      out.append({'n': nm, 'l': lg, 'u': u})
+              return out
+
+          for e in evs:
+              rules = CRICKET_RIGHTS if e['sp'] == 'c' else FOOT_RIGHTS
+              txt = (e['h'] + ' ' + e['a'] + ' ' + e['lg']).lower()
+              aliases, bc = [], []
+              for pat, al, label in rules:
+                  if re.search(pat, txt):
+                      for x in al:
+                          if x not in aliases: aliases.append(x)
+                      if label not in bc: bc.append(label)
+              cand, seen_u = [], set()
+              for a in aliases:
+                  for c in exact_find(a):
+                      if c['u'] not in seen_u:
+                          seen_u.add(c['u']); cand.append(c)
+              e['cand'] = cand[:12]
+              e['bc'] = ' / '.join(bc)[:60]
+
+          # ---------- প্রার্থী চ্যানেলগুলো ডিপ-স্ক্যান (শুধু চালুগুলো থাকবে) ----------
+          def get_bytes(url, nbytes, timeout=6):
+              req = urllib.request.Request(url, headers={'User-Agent': 'VLC/3.0.20 LibVLC/3.0.20'})
+              r = urllib.request.urlopen(req, timeout=timeout, context=ctx)
+              try:
+                  if r.status >= 400: return None
+                  return r.read(nbytes)
+              finally:
+                  try: r.close()
+                  except Exception: pass
+          def deep(url, depth=0):
+              if depth > 3: return False
+              try: data = get_bytes(url.split('|')[0], 65536)
+              except Exception: return False
+              if not data: return False
+              head = data[:1024]
+              if head.lstrip()[:7] == b'#EXTM3U' or b'#EXT-X' in head:
+                  text = data.decode('utf-8', 'ignore')
+                  uris = [l.strip() for l in text.splitlines() if l.strip() and not l.strip().startswith('#')]
+                  if not uris: return False
+                  return deep(urllib.parse.urljoin(url.split('|')[0], uris[0]), depth + 1)
+              if len(data) < 2048: return False
+              low = head[:512].lstrip().lower()
+              if low.startswith(b'<!doctype') or low.startswith(b'<html') or b'<html' in low: return False
+              if data[0:1] == b'\x47': return True
+              if b'ftyp' in data[:64] or b'styp' in data[:64] or b'moof' in data[:64]: return True
+              nontext = sum(1 for b in data[:1024] if b < 9 or (13 < b < 32) or b > 126)
+              return nontext > 100
+
+          uniq_urls = {c['u'] for e in evs for c in e.get('cand', [])}
+          alive = {}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=30) as ex:
+              futs = {ex.submit(deep, u): u for u in uniq_urls}
+              for f in concurrent.futures.as_completed(futs):
+                  alive[futs[f]] = f.result()
+          print('candidate urls:', len(uniq_urls), '| alive:', sum(1 for v in alive.values() if v))
+
+          for e in evs:
+              cand = e.pop('cand', [])
+              cand.sort(key=lambda c: 0 if alive.get(c['u']) else 1)  # রোবটের চোখে চালুগুলো আগে
+              e['ch'] = cand[:6]
+
+          # ---------- ডুপ্লিকেট বাদ + সাজানো + সীমা ----------
+          seen, uniq = set(), []
+          for e in evs:
+              k = (e['h'], e['a'], e['t'])
+              if k in seen: continue
+              seen.add(k); uniq.append(e)
+          uniq.sort(key=lambda e: (0 if 'bangladesh' in (e['h'] + e['a'] + e['lg']).lower() else 1,
+                                   0 if e['st'] == 'in' else 1, e['t']))
+          uniq = uniq[:90]
+          json.dump({'updated': int(time.time()), 'events': uniq}, open('events.json', 'w'), ensure_ascii=False)
+          print('TOTAL:', len(uniq), '| with channels:', sum(1 for e in uniq if e['ch']),
+                '| honest-none:', sum(1 for e in uniq if not e['ch']))
+          EOF
+
+      - name: Commit & push
+        run: |
+          git config user.name "events-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add events.json
+          git diff --cached --quiet || git commit -m "🏏 Live events update"
+          git pull --rebase origin main || true
+          git push
