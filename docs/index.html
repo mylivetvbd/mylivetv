@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MP1LHB6N0R"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MP1LHB6N0R');
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Live TV — ৮০০০+ ফ্রি লাইভ টিভি চ্যানেল</title>
@@ -82,6 +90,10 @@ fetch('https://api.github.com/repos/mylivetvbd/mylivetv/releases/latest')
      'Android APK • ভার্সন '+(d.tag_name||'')+' • '+Math.round(a.size/1048576)+' MB';}
  }).catch(e=>{});
 
+// ডাউনলোড ক্লিক গণনা (Analytics)
+document.getElementById('dlbtn').addEventListener('click', function(){
+  try { gtag('event', 'apk_download', {'event_category':'download','event_label':'MyLiveTV.apk'}); } catch(e){}
+});
 // ফেসবুক/মেসেঞ্জার/ইনস্টাগ্রামের ভিতরের ব্রাউজার শনাক্ত
 var ua = navigator.userAgent || '';
 var inApp = /FBAN|FBAV|FB_IAB|FBIOS|Messenger|Instagram|Line\/|MicroMessenger/i.test(ua);
@@ -99,5 +111,5 @@ if (inApp) {
   }
 }
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a51877d02e5fb60e',t:'MTc5MzE3NTA2OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
