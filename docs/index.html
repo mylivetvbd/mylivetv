@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Live TV — ৮০০০+ ফ্রি লাইভ টিভি চ্যানেল</title>
+<meta name="description" content="৮,০০০+ ফ্রি টিভি চ্যানেল — খেলা, সিনেমা, খবর, কার্টুন। লাইভ ম্যাচ, এক ক্লিকে খেলার চ্যানেল। সম্পূর্ণ ফ্রি Android অ্যাপ।">
+<meta property="og:title" content="My Live TV — ৮০০০+ ফ্রি লাইভ টিভি চ্যানেল 📺">
+<meta property="og:description" content="খেলা • সিনেমা • খবর • কার্টুন — সব এক অ্যাপে, সম্পূর্ণ ফ্রি! লাইভ ম্যাচে এক ক্লিকেই খেলার চ্যানেল।">
+<meta property="og:image" content="https://mylivetvbd.github.io/mylivetv/logo.png">
+<meta property="og:type" content="website">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Noto Sans Bengali','Hind Siliguri',sans-serif}
+body{background:#07090c;color:#f2f2f2;min-height:100vh;overflow-x:hidden}
+.bgglow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:900px;height:600px;
+  background:radial-gradient(ellipse,rgba(25,195,125,.18),transparent 70%);pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:36px 20px 60px;text-align:center}
+.logo{width:150px;height:150px;border-radius:34px;box-shadow:0 10px 60px rgba(25,195,125,.35);margin-bottom:18px}
+h1{font-size:2.1rem;font-weight:800;letter-spacing:.5px}
+h1 span{color:#19c37d}
+.tag{color:#9aa5a5;margin:8px 0 26px;font-size:1.02rem}
+.btn{display:block;background:linear-gradient(135deg,#19c37d,#0e9c62);color:#06281a;font-size:1.3rem;
+  font-weight:800;text-decoration:none;padding:18px 20px;border-radius:50px;margin:10px auto 6px;
+  box-shadow:0 8px 30px rgba(25,195,125,.4);transition:transform .15s}
+.btn:active{transform:scale(.97)}
+.ver{color:#5e6a6a;font-size:.85rem;margin-bottom:30px}
+.feats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:26px 0}
+.feat{background:#0e1419;border:1px solid #1b2a24;border-radius:18px;padding:16px 10px;font-size:.95rem}
+.feat b{display:block;font-size:1.35rem;margin-bottom:4px}
+.shots{display:flex;gap:14px;justify-content:center;margin:30px 0;flex-wrap:wrap}
+.shots img{width:44%;max-width:230px;border-radius:18px;border:1px solid #1e2b26;
+  box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.note{background:#0e1419;border:1px solid #243329;border-radius:16px;padding:14px;
+  font-size:.88rem;color:#aab5b2;text-align:right;direction:ltr;margin-top:8px}
+.note b{color:#19c37d}
+footer{margin-top:40px;color:#45504e;font-size:.8rem}
+h2{font-size:1.15rem;color:#19c37d;margin:34px 0 4px}
+</style>
+</head>
+<body>
+<div class="bgglow"></div>
+<div class="wrap">
+  <img class="logo" src="logo.png" alt="My Live TV">
+  <h1>My <span>Live</span> TV</h1>
+  <p class="tag">৮,০০০+ ফ্রি টিভি চ্যানেল — আপনার মোবাইলেই 📺</p>
+
+  <a class="btn" id="dlbtn" href="https://github.com/mylivetvbd/mylivetv/releases/latest">⬇&nbsp; ডাউনলোড করুন (ফ্রি)</a>
+  <p class="ver" id="ver">Android APK • সর্বশেষ ভার্সন</p>
+
+  <div class="feats">
+    <div class="feat"><b>📺</b>৮,০০০+ চ্যানেল</div>
+    <div class="feat"><b>🏏</b>লাইভ ম্যাচ — এক ক্লিকে খেলার চ্যানেল</div>
+    <div class="feat"><b>🎬</b>খেলা • সিনেমা • খবর • কার্টুন</div>
+    <div class="feat"><b>🔄</b>প্রতিদিন অটো আপডেট</div>
+  </div>
+
+  <h2>অ্যাপের ভিতরে</h2>
+  <div class="shots">
+    <img src="shot1.jpg" alt="চ্যানেল তালিকা">
+    <img src="shot2.jpg" alt="লাইভ ম্যাচ">
+  </div>
+
+  <div class="note" style="direction:rtl;text-align:left">
+    <span style="direction:ltr;display:block;text-align:center">
+    📌 <b>ইনস্টল টিপ:</b> ডাউনলোডের পর "Install" চাপুন — ফোন জিজ্ঞেস করলে <b>"Allow from this source"</b> চালু করে দিন। ব্যস!
+    </span>
+  </div>
+
+  <footer>© My Live TV • সম্পূর্ণ ফ্রি • কোনো সাবস্ক্রিপশন নেই</footer>
+</div>
+<script>
+fetch('https://api.github.com/repos/mylivetvbd/mylivetv/releases/latest')
+ .then(r=>r.json())
+ .then(d=>{
+   var a=(d.assets||[]).find(x=>x.name.endsWith('.apk'));
+   if(a){document.getElementById('dlbtn').href=a.browser_download_url;
+     document.getElementById('ver').textContent='Android APK • ভার্সন '+(d.tag_name||'')+' • '+Math.round(a.size/1048576)+' MB';}
+ }).catch(e=>{});
+</script>
+</body>
+</html>
