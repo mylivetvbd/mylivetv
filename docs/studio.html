@@ -7913,8 +7913,9 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
   </script>
 
 <script>
-/* ===== MyLiveTV Remote Control v1.2 ===== */
+/* ===== MyLiveTV Remote Control v1.3 ===== */
 (function(){
+  var CFG_API='https://api.github.com/repos/mylivetvbd/mylivetv/contents/docs/studio-config.json?ref=main';
   var CFG_RAW='https://raw.githubusercontent.com/mylivetvbd/mylivetv/main/docs/studio-config.json';
   var CFG_URL='studio-config.json';
   var isBoss = /(\?|&)boss=1/.test(location.search) || location.hash.indexOf('boss')>=0;
@@ -8080,8 +8081,15 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
   }
 
   async function loadCfg(){
+    /* ১) GitHub API — ক্যাশহীন, commit-এর সাথে সাথেই তাজা */
+    try{
+      var r0=await fetch(CFG_API+'&t='+Date.now(),{cache:'no-store',headers:{'Accept':'application/vnd.github.raw'}});
+      if(r0.ok) return await r0.json();
+    }catch(e){}
+    /* ২) raw ফলব্যাক (সর্বোচ্চ ~৫ মিনিট ক্যাশ) */
     try{ var r=await fetch(CFG_RAW+'?t='+Date.now(),{cache:'no-store'}); if(r.ok) return await r.json(); throw 0; }
     catch(e){}
+    /* ৩) সাইট ফলব্যাক */
     try{ var r2=await fetch(CFG_URL+'?t='+Date.now(),{cache:'no-store'}); return await r2.json(); }
     catch(e){ return null; }
   }
@@ -8126,5 +8134,5 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
   }
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a52974cdef007219',t:'MTc5MzM1MzIwMg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a52974cdef007219',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
