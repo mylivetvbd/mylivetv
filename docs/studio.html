@@ -295,8 +295,19 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
     @media (prefers-reduced-motion:reduce){#broadcastGround,.live-player-illustration{animation:none}}
 
 </style>
-</head>
-<body><div id="studioRoot"><div id="modelStatus" style="position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:901;background:#7f1d1d;color:white;font:12px sans-serif">3D মডেল লোড হচ্ছে...</div>
+<style id="mlvEarly">
+body:not(.mlv-boss) .admin-panel,body:not(.mlv-boss) .secret-corner,
+body:not(.mlv-boss) #modelStatus,body:not(.mlv-boss) #voiceModal,
+body:not(.mlv-boss) #groqModal,body:not(.mlv-boss) #voiceDiagnostic,
+body:not(.mlv-boss) #landscapeControl,body:not(.mlv-boss) #orientationMessage{display:none!important;visibility:hidden!important}
+body:not(.mlv-boss) .tv-logo-bug{pointer-events:none!important}
+#mlvBoot{position:fixed;inset:0;z-index:2000000;background:#040812;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#mlvBoot .mb-t{color:#fbbf24;font:800 19px 'Noto Sans Bengali','Hind Siliguri',sans-serif}
+#mlvBoot .mb-s{color:#64748b;font:600 13px 'Noto Sans Bengali','Hind Siliguri',sans-serif}
+#mlvBoot .mb-ring{width:44px;height:44px;border-radius:50%;border:4px solid #1e293b;border-top-color:#fbbf24;animation:mlvspin 0.9s linear infinite}
+@keyframes mlvspin{to{transform:rotate(360deg)}}
+</style></head>
+<body><div id="mlvBoot"><div class="mb-ring"></div><div class="mb-t">🏟️ মাঠের হুল্লোড় 3D স্টুডিও</div><div class="mb-s">মাঠের হুল্লোড় LIVE স্টুডিওতে আপনাকে স্বাগতম 🙏</div></div><div id="studioRoot"><div id="modelStatus" style="position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:901;background:#7f1d1d;color:white;font:12px sans-serif">3D মডেল লোড হচ্ছে...</div>
 
   <div id="broadcastGround" aria-hidden="true"></div>
   <div id="canvas3dWrap"></div>
@@ -7910,6 +7921,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
   /* ---------- BOSS MODE ---------- */
   if(isBoss){
     function hookBoss(){
+      try{ document.body.classList.add('mlv-boss'); var bd=document.getElementById('mlvBoot'); if(bd) bd.remove(); }catch(e){}
       if(typeof selectHubMatch!=='function'){ setTimeout(hookBoss,500); return; }
       var orig = selectHubMatch;
       window.selectHubMatch = function(idx){
@@ -7972,7 +7984,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     +'<div style="font:900 21px inherit;color:#fbbf24;">মাঠের হুল্লোড় 3D স্টুডিও</div>'
     +'<div id="mlvGateMsg" style="font:600 14px inherit;color:#cbd5e1;max-width:480px;line-height:1.7;">⏳ লোড হচ্ছে...</div>'
     +'<button id="mlvGateBtn" style="display:none;background:linear-gradient(135deg,#dc2626,#ea580c);color:#fff;border:1px solid #fde68a;font:800 17px inherit;padding:13px 30px;border-radius:999px;box-shadow:0 6px 24px rgba(220,38,38,0.5);">▶ খেলা দেখুন</button>';
-  function mount(){ injectHideCss(); document.body.appendChild(ov); boot(); }
+  function mount(){ injectHideCss(); document.body.appendChild(ov); var bd=document.getElementById('mlvBoot'); if(bd) bd.remove(); boot(); }
   if(document.body) mount(); else document.addEventListener('DOMContentLoaded',mount);
 
   function setMsg(h){ var e=document.getElementById('mlvGateMsg'); if(e) e.innerHTML=h; }
@@ -8033,5 +8045,5 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
   }
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a528eb9a6fcea9fd',t:'MTc5MzM0NzU4Mw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a528eb9a6fcea9fd',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
