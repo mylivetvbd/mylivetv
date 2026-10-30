@@ -7900,5 +7900,118 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       if (selectedMatch && selectedMatch.sport === 'soccer') pollTimer = setTimeout(pollSoccer, liveFailures ? 2500 : 8000);
     }
   </script>
+
+<script>
+/* ===== MyLiveTV Remote Control v1.0 ===== */
+(function(){
+  var CFG_URL='studio-config.json';
+  var isBoss = /(\?|&)boss=1/.test(location.search) || location.hash.indexOf('boss')>=0;
+
+  /* ---------- BOSS MODE ---------- */
+  if(isBoss){
+    function hookBoss(){
+      if(typeof selectHubMatch!=='function'){ setTimeout(hookBoss,500); return; }
+      var orig = selectHubMatch;
+      window.selectHubMatch = function(idx){
+        try{ showBossPanel(window.__hubFiltered[idx]); }catch(e){}
+        return orig(idx);
+      };
+      addBossBtn();
+    }
+    function cfgJson(m){
+      if(!m) return '';
+      return JSON.stringify({on:true, uid:m.uid, title:m.title, message:''}, null, 2);
+    }
+    var OFF_JSON = JSON.stringify({on:false, uid:'', title:'', message:'এই মুহূর্তে কোনো খেলা সম্প্রচার হচ্ছে না। খেলার সময় আবার আসুন! 🙏'}, null, 2);
+    function showBossPanel(m, offMode){
+      var old=document.getElementById('bossPanel'); if(old) old.remove();
+      var d=document.createElement('div');
+      d.id='bossPanel';
+      d.style.cssText='position:fixed;left:10px;bottom:10px;z-index:99999;background:rgba(2,6,18,0.97);border:2px solid #fbbf24;border-radius:14px;padding:12px;max-width:92vw;width:360px;color:#fff;font-family:inherit;box-shadow:0 10px 40px #000;';
+      var jsonTxt = offMode ? OFF_JSON : cfgJson(m);
+      var head = offMode ? '⛔ সম্প্রচার বন্ধের কোড' : ('🎛️ রিমোট কোড: '+(m?m.title:''));
+      d.innerHTML = '<div style="font:800 13px inherit;color:#fbbf24;margin-bottom:8px;">'+head+'</div>'
+        +'<textarea id="bossTxt" readonly style="width:100%;height:110px;background:#0b1220;color:#a7f3d0;border:1px solid #334155;border-radius:8px;font:12px monospace;padding:8px;">'+jsonTxt+'</textarea>'
+        +'<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">'
+        +'<button id="bossCopy" style="flex:1;background:#059669;color:#fff;border:0;border-radius:8px;padding:10px;font:800 13px inherit;">📋 কপি করুন</button>'
+        +'<a href="https://github.com/mylivetvbd/mylivetv/edit/main/docs/studio-config.json" target="_blank" style="flex:1;display:block;text-align:center;background:#0284c7;color:#fff;border-radius:8px;padding:10px;font:800 13px inherit;text-decoration:none;">✏️ GitHub-এ পেস্ট</a>'
+        +'<button id="bossClose" style="background:#475569;color:#fff;border:0;border-radius:8px;padding:10px;font:800 13px inherit;">✕</button>'
+        +'</div>';
+      document.body.appendChild(d);
+      document.getElementById('bossCopy').onclick=function(){
+        var t=document.getElementById('bossTxt'); t.select(); t.setSelectionRange(0,99999);
+        try{ navigator.clipboard.writeText(t.value); }catch(e){ document.execCommand('copy'); }
+        this.textContent='✅ কপি হয়েছে!';
+      };
+      document.getElementById('bossClose').onclick=function(){ d.remove(); };
+    }
+    function addBossBtn(){
+      var b=document.createElement('button');
+      b.textContent='⛔ বন্ধের কোড';
+      b.style.cssText='position:fixed;left:10px;top:52px;z-index:99998;background:#7f1d1d;color:#fff;border:1px solid #fca5a5;border-radius:8px;padding:7px 11px;font:800 12px inherit;';
+      b.onclick=function(){ showBossPanel(null,true); };
+      document.body.appendChild(b);
+    }
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hookBoss); else hookBoss();
+    return;
+  }
+
+  /* ---------- VIEWER MODE ---------- */
+  function hideAdmin(){
+    try{
+      document.querySelectorAll('.admin-panel,.secret-corner').forEach(function(el){ el.style.display='none'; });
+      var lb=document.querySelector('.tv-logo-bug'); if(lb){ lb.style.pointerEvents='none'; }
+    }catch(e){}
+  }
+  var ov=document.createElement('div');
+  ov.id='mlvGate';
+  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse at 50% 30%,#0a2547 0%,#040812 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:26px;text-align:center;';
+  ov.innerHTML='<div style="font-size:46px;">🏟️</div>'
+    +'<div style="font:900 21px inherit;color:#fbbf24;">মাঠের হুল্লোড় 3D স্টুডিও</div>'
+    +'<div id="mlvGateMsg" style="font:600 14px inherit;color:#cbd5e1;max-width:480px;line-height:1.7;">⏳ লোড হচ্ছে...</div>'
+    +'<button id="mlvGateBtn" style="display:none;background:linear-gradient(135deg,#dc2626,#ea580c);color:#fff;border:1px solid #fde68a;font:800 17px inherit;padding:13px 30px;border-radius:999px;box-shadow:0 6px 24px rgba(220,38,38,0.5);">▶ খেলা দেখুন</button>';
+  function mount(){ document.body.appendChild(ov); hideAdmin(); boot(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
+
+  function setMsg(h){ var e=document.getElementById('mlvGateMsg'); if(e) e.innerHTML=h; }
+  async function loadCfg(){
+    try{ var r=await fetch(CFG_URL+'?t='+Date.now(),{cache:'no-store'}); return await r.json(); }
+    catch(e){ return null; }
+  }
+  async function boot(){
+    var cfg=await loadCfg();
+    if(!cfg || cfg.on===false || !cfg.uid){
+      setMsg((cfg&&cfg.message)?cfg.message:'এই মুহূর্তে কোনো খেলা সম্প্রচার হচ্ছে না।<br>খেলার সময় আবার আসুন! 🙏');
+      return;
+    }
+    setMsg(cfg.title?('🔴 আজকের খেলা: <b style="color:#fff">'+cfg.title+'</b>'):'খেলা প্রস্তুত!');
+    var b=document.getElementById('mlvGateBtn');
+    b.style.display='inline-block';
+    b.onclick=async function(){
+      b.disabled=true; b.textContent='⏳ সংযুক্ত হচ্ছে...';
+      try{ unlockAudio(); }catch(e){}
+      try{
+        var res=await Promise.all([loadCrexAllCricket(),loadAllWorldFootball()]);
+        allHubMatches=[].concat(res[0]||[],res[1]||[]);
+        var i=-1;
+        for(var k=0;k<allHubMatches.length;k++){ if(allHubMatches[k]&&allHubMatches[k].uid===cfg.uid){ i=k; break; } }
+        if(i<0){
+          setMsg('খেলাটি এই মুহূর্তে পাওয়া যাচ্ছে না।<br>একটু পরে আবার চেষ্টা করুন। 🔄');
+          b.disabled=false; b.textContent='🔄 আবার চেষ্টা করুন';
+          return;
+        }
+        window.__hubFiltered=[allHubMatches[i]];
+        ov.remove();
+        hideAdmin();
+        setInterval(hideAdmin,4000);
+        selectHubMatch(0);
+      }catch(e){
+        setMsg('ডেটা লোড করা যায়নি — ইন্টারনেট সংযোগ দেখে আবার চাপুন।');
+        b.disabled=false; b.textContent='🔄 আবার চেষ্টা করুন';
+      }
+    };
+  }
+})();
+</script>
 </body>
 </html>
