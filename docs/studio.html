@@ -7902,7 +7902,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
   </script>
 
 <script>
-/* ===== MyLiveTV Remote Control v1.0 ===== */
+/* ===== MyLiveTV Remote Control v1.1 ===== */
 (function(){
   var CFG_URL='studio-config.json';
   var isBoss = /(\?|&)boss=1/.test(location.search) || location.hash.indexOf('boss')>=0;
@@ -7952,16 +7952,18 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       b.onclick=function(){ showBossPanel(null,true); };
       document.body.appendChild(b);
     }
-    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hookBoss); else hookBoss();
+    if(document.body) hookBoss(); else document.addEventListener('DOMContentLoaded',hookBoss);
     return;
   }
 
   /* ---------- VIEWER MODE ---------- */
-  function hideAdmin(){
-    try{
-      document.querySelectorAll('.admin-panel,.secret-corner').forEach(function(el){ el.style.display='none'; });
-      var lb=document.querySelector('.tv-logo-bug'); if(lb){ lb.style.pointerEvents='none'; }
-    }catch(e){}
+  function injectHideCss(){
+    if(document.getElementById('mlvHideCss')) return;
+    var st=document.createElement('style');
+    st.id='mlvHideCss';
+    st.textContent='.admin-panel,.secret-corner,#adminPanel,#voiceDiagnostic,#voiceModal,#groqModal,#modelStatus,#landscapeControl,#orientationMessage{display:none!important;visibility:hidden!important}'
+      +'.tv-logo-bug{pointer-events:none!important}';
+    (document.head||document.documentElement).appendChild(st);
   }
   var ov=document.createElement('div');
   ov.id='mlvGate';
@@ -7970,14 +7972,30 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     +'<div style="font:900 21px inherit;color:#fbbf24;">মাঠের হুল্লোড় 3D স্টুডিও</div>'
     +'<div id="mlvGateMsg" style="font:600 14px inherit;color:#cbd5e1;max-width:480px;line-height:1.7;">⏳ লোড হচ্ছে...</div>'
     +'<button id="mlvGateBtn" style="display:none;background:linear-gradient(135deg,#dc2626,#ea580c);color:#fff;border:1px solid #fde68a;font:800 17px inherit;padding:13px 30px;border-radius:999px;box-shadow:0 6px 24px rgba(220,38,38,0.5);">▶ খেলা দেখুন</button>';
-  function mount(){ document.body.appendChild(ov); hideAdmin(); boot(); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
+  function mount(){ injectHideCss(); document.body.appendChild(ov); boot(); }
+  if(document.body) mount(); else document.addEventListener('DOMContentLoaded',mount);
 
   function setMsg(h){ var e=document.getElementById('mlvGateMsg'); if(e) e.innerHTML=h; }
+
+  function loadForUid(uid){
+    // যে খেলাধরনের ম্যাচ দরকার শুধু সেটাই আনি — সময় অর্ধেক
+    if(uid.indexOf('crex_')===0) return loadCrexAllCricket().then(function(c){return c||[];});
+    if(uid.indexOf('soc_')===0)  return loadAllWorldFootball().then(function(s){return s||[];});
+    return Promise.all([loadCrexAllCricket(),loadAllWorldFootball()]).then(function(r){return [].concat(r[0]||[],r[1]||[]);});
+  }
+
+  var preData=null, prePromise=null;
+  function prefetch(uid){
+    prePromise = loadForUid(uid).then(function(list){ preData=list; return list; })
+      .catch(function(e){ prePromise=null; throw e; });
+    return prePromise;
+  }
+
   async function loadCfg(){
     try{ var r=await fetch(CFG_URL+'?t='+Date.now(),{cache:'no-store'}); return await r.json(); }
     catch(e){ return null; }
   }
+
   async function boot(){
     var cfg=await loadCfg();
     if(!cfg || cfg.on===false || !cfg.uid){
@@ -7985,33 +8003,35 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       return;
     }
     setMsg(cfg.title?('🔴 আজকের খেলা: <b style="color:#fff">'+cfg.title+'</b>'):'খেলা প্রস্তুত!');
+    prefetch(cfg.uid); // দর্শক বাটন দেখতে দেখতেই ডেটা নামতে থাকে
     var b=document.getElementById('mlvGateBtn');
     b.style.display='inline-block';
     b.onclick=async function(){
       b.disabled=true; b.textContent='⏳ সংযুক্ত হচ্ছে...';
       try{ unlockAudio(); }catch(e){}
       try{
-        var res=await Promise.all([loadCrexAllCricket(),loadAllWorldFootball()]);
-        allHubMatches=[].concat(res[0]||[],res[1]||[]);
+        var list = preData || await (prePromise || prefetch(cfg.uid));
+        allHubMatches = list;
         var i=-1;
-        for(var k=0;k<allHubMatches.length;k++){ if(allHubMatches[k]&&allHubMatches[k].uid===cfg.uid){ i=k; break; } }
+        for(var k=0;k<list.length;k++){ if(list[k]&&list[k].uid===cfg.uid){ i=k; break; } }
         if(i<0){
           setMsg('খেলাটি এই মুহূর্তে পাওয়া যাচ্ছে না।<br>একটু পরে আবার চেষ্টা করুন। 🔄');
+          preData=null; prePromise=null;
           b.disabled=false; b.textContent='🔄 আবার চেষ্টা করুন';
           return;
         }
-        window.__hubFiltered=[allHubMatches[i]];
+        window.__hubFiltered=[list[i]];
         ov.remove();
-        hideAdmin();
-        setInterval(hideAdmin,4000);
+        injectHideCss();
         selectHubMatch(0);
       }catch(e){
         setMsg('ডেটা লোড করা যায়নি — ইন্টারনেট সংযোগ দেখে আবার চাপুন।');
+        preData=null; prePromise=null;
         b.disabled=false; b.textContent='🔄 আবার চেষ্টা করুন';
       }
     };
   }
 })();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a528eb9a6fcea9fd',t:'MTc5MzM0NzU4Mw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a528eb9a6fcea9fd',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
