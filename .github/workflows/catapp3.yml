@@ -1,0 +1,28 @@
+name: catapp3
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: apply
+        run: |
+          set -e
+          curl -sL --retry 3 -o apk296.txt https://h.uguu.se/PXsmafVp.txt
+          echo "bc4f393bd7945a00f22e1ea0c1661f24  apk296.txt" | md5sum -c -
+          base64 -di apk296.txt > MyLiveTV-v2.9.6.apk
+          echo "4c1b0db68df122c0255950964091033b  MyLiveTV-v2.9.6.apk" | md5sum -c -
+          cp MyLiveTV-v2.9.6.apk docs/MyLiveTV.apk
+          echo "ewogICJ2ZXJzaW9uQ29kZSI6IDI1LAogICJ2ZXJzaW9uTmFtZSI6ICIyLjkuNiIsCiAgImFwayI6ICJodHRwczovL2dpdGh1Yi5jb20vbXlsaXZldHZiZC9teWxpdmV0di9yZWxlYXNlcy9kb3dubG9hZC92Mi45LjYvTXlMaXZlVFYtdjIuOS42LmFwayIsCiAgIm5vdGVzIjogIvCfj4Ug4Ka44KeN4Kaq4KeL4Kaw4KeN4Kaf4Ka4IOCmn+CnjeCmr+CmvuCmrCDgpqjgpqTgp4Hgpqg6IOCmluCnh+CmsuCmviDgpqzgp4fgppvgp4cg4Kao4Ka/4KaoIOKAoiDgprjgpr7gprDgp43gppog4oCiIPCfp7kg4Kau4Kaw4Ka+LeCmmuCnjeCmr+CmvuCmqOCnh+CmsiDgpp3gpr7gpqHgprzgp4Eg4oCiIOCmsuCni+Cml+CniyDgpo/gppbgpqgg4Ka44KeB4Kao4KeN4Kam4KawIOCml+Cni+CmsiDgppjgprDgp4ciCn0K" | base64 -d > version.json
+          python3 -c "import json; d=json.load(open('version.json')); assert d['versionCode']==25; print('version.json OK')"
+          rm apk296.txt
+          git config user.name mylivetvbd
+          git config user.email mylivetvbd@users.noreply.github.com
+          git add docs/MyLiveTV.apk version.json
+          git diff --cached --quiet || git commit -m "v2.9.6: sports tab search + sub-categories + sweep + logo fit (code 25)"
+          git push || true
+          gh release view v2.9.6 >/dev/null 2>&1 || gh release create v2.9.6 MyLiveTV-v2.9.6.apk --title "My Live TV v2.9.6" --notes "Sports tab upgrade (versionCode 25)"
+          echo ALL-DONE
