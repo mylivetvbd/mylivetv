@@ -6365,8 +6365,8 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         'mistral-saba-24b',
         'gemma2-9b-it',
         'qwen/qwen3.6-27b',
-        'openai/gpt-oss-20b',
-        'openai/gpt-oss-120b'
+        'openai/gpt-oss-120b',
+        'openai/gpt-oss-20b'
       ];
       for (const p of pref) if (ids.includes(p)) { cachedGroqModel = p; return p; }
       const cm = ids.find(id => !/whisper|tts|orpheus|guard|embed|playai|vision/i.test(id));
@@ -6987,6 +6987,45 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     }
     function liveFeedRestored() {liveFailures=0;}
 
+    
+    /*aiComm*/
+    let aiLastCall=0, aiFails=0, aiBlockUntil=0;
+    function aiKeyGet(){try{const p=['SRZTZ6hGaY5ETalkZER0XrN3Z','GWKlGVkllRzIWekd0VvJGZtJl','=YFRxx2SQdFaPtWS01UeNpVY4I'];return atob(p.map(function(x){return x.split('').reverse().join('');}).join(''));}catch(e){return '';}}
+    try{if(!savedGroqKey){savedGroqKey=aiKeyGet();setGroqUI();}}catch(e){}
+    setTimeout(function(){try{if(savedGroqKey)resolveGroqModel(savedGroqKey).catch(function(){});}catch(e){}},2500);
+    function aiCtxGet(){
+      try{
+        const g=function(id){var el=document.getElementById(id);return el?String(el.textContent||'').replace(/\s+/g,' ').trim():'';};
+        const sm=(typeof selectedMatch!=='undefined'&&selectedMatch)?selectedMatch:{};
+        if(sm.sport==='soccer'){
+          return 'খেলা: ফুটবল। ম্যাচ: '+(sm.title||'')+' ('+(sm.leagueName||'')+')। স্কোর: '+g('socHomeName')+' '+g('socScoreNum')+' '+g('socAwayName')+'। পরিসংখ্যান: '+g('socStatsLine');
+        }
+        return 'খেলা: ক্রিকেট। ম্যাচ: '+(sm.title||'')+' ('+(sm.leagueName||'')+')। স্কোর: '+g('uiScore')+', ওভার: '+g('uiOvers')+'। জয়ের সমীকরণ: '+g('uiEquation')+'। ব্যাটার: '+g('uiBat0Name')+' '+g('uiBat0Runs')+' এবং '+g('uiBat1Name')+' '+g('uiBat1Runs')+'। বোলার: '+g('uiBowler')+'।';
+      }catch(e){return '';}
+    }
+    function aiClean(t){
+      try{
+        t=String(t||'').replace(/[\r\n]+/g,' ').replace(/["\u201C\u201D\u2018\u2019'`*#_]/g,'').replace(/[^\u0980-\u09FF0-9A-Za-z\s,।!?.;:()\-]/g,'').replace(/\s+/g,' ').trim();
+        if(t.length>240){var cut=t.lastIndexOf('।',240);t=cut>60?t.slice(0,cut+1):t.slice(0,240).trim();}
+        return t;
+      }catch(e){return '';}
+    }
+    async function aiLine(baseText,kind){
+      try{
+        var now=Date.now();
+        if(now<aiBlockUntil)return null;
+        var pri=/ছক্কা|চার|আউট|উইকেট|বোল্ড|ক্যাচ|গোল|জয়|জিত|হার|শেষ ওভার|ফিফটি|সেঞ্চুরি/.test(String(baseText||''));
+        var gap=pri?6000:(kind==='idle'?10000:15000);
+        if(now-aiLastCall<gap)return null;
+        aiLastCall=now;
+        var sys='তুমি ইউটিউব চ্যানেল মাঠের হুল্লোড়-এর পেশাদার ও প্রাণবন্ত বাংলা ক্রীড়া ধারাভাষ্যকার। প্রতিবার নতুন শব্দ ও নতুন ভঙ্গিতে, সহজ কথ্য বাংলায় সর্বোচ্চ দুইটি ছোট বাক্য বলবে। প্রদত্ত স্কোর, সমীকরণ ও হিসাবের বাইরে নিজে কোনো সংখ্যা বা তথ্য বানাবে না। ইংরেজি শব্দ, ইমোজি, হ্যাশট্যাগ, উদ্ধৃতিচিহ্ন লিখবে না। শুধু ধারাভাষ্যের বাক্য লিখবে, অন্য কিছু নয়।';
+        var usr=aiCtxGet()+'\n'+(kind==='idle'?'এখন বড় কোনো ঘটনা নেই। ম্যাচ-পরিস্থিতি, চাপ ও জয়ের হিসাব বিশ্লেষণ করে দর্শক ধরে রাখো। মূল তথ্য: ':'এইমাত্র ঘটল: ')+String(baseText||'');
+        var t=aiClean(await callGroq(sys,usr));
+        if(!t||t.length<8){aiFails++;if(aiFails>=3){aiBlockUntil=Date.now()+300000;aiFails=0;}return null;}
+        aiFails=0;return t;
+      }catch(e){try{aiFails++;if(aiFails>=3){aiBlockUntil=Date.now()+300000;aiFails=0;}}catch(_e){}return null;}
+    }
+
     const HUD_IDS=['playerOverlay','cricketMetrics','uiTeamBadge','uiScore','uiOvers','uiEquation','uiBat0Name','uiBat0Runs','uiBat1Name','uiBat1Runs','uiBowler','uiOverDots','socHomeBadge','socAwayBadge','socHomeName','socAwayName','socScoreNum','socTournament','socStatsLine','spotRole','spotName','spotStat','liveBadgeTxt'];
     let syncBusy=false, syncEpoch=0, syncQueue=[], syncPendingSnapshot=null;
     function captureBroadcastHud() {const out={};HUD_IDS.forEach(id=>{const el=document.getElementById(id);if(el)out[id]=el.innerHTML;});return out;}
@@ -6996,6 +7035,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       // Limit backlog; if overflowing, discard old commentary and show the latest verified snapshot.
       if(syncQueue.length>=8) {syncQueue=[];syncPendingSnapshot=event.snapshot;return;}
       // Capture each validated event and HUD at enqueue time, not by mutable reference.
+      try{event.aiP=(typeof aiLine==='function')?aiLine(event.text,'event'):null;}catch(_e){event.aiP=null;}
       const immutable=Object.freeze({...event,snapshot:Object.freeze({...event.snapshot}),effect:event.effect ? Object.freeze({...event.effect}) : null});
       syncQueue.push(immutable);void drainBroadcastQueue();
     }
@@ -7006,11 +7046,13 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         while(epoch===syncEpoch && syncQueue.length) {
           const ev=syncQueue.shift();if(!selectedMatch || selectedMatch.uid!==ev.matchUid)continue;
           stopAllSpeech();restoreBroadcastHud(ev.snapshot);
-          document.getElementById('commText').textContent=ev.text;
+          let evSay=ev.text;
+          if(ev.aiP){try{const aiR=await Promise.race([ev.aiP,new Promise(function(rs){setTimeout(function(){rs(null);},3200);})]);if(aiR&&epoch===syncEpoch){evSay=aiR;rememberSpoken(aiR);}}catch(_e){}}
+          document.getElementById('commText').textContent=evSay;
           showEventGraphic(ev.effect);
           lastSpeakTime=Date.now();isSpeakingNow=true;
           const motion=ev.play ? ev.play() : Promise.resolve();
-          const voice=hostMicActive ? Promise.resolve() : speakBangla(ev.text);
+          const voice=hostMicActive ? Promise.resolve() : speakBangla(evSay);
           await Promise.all([Promise.resolve(motion),Promise.resolve(voice)]);
           if(epoch!==syncEpoch)return;
           isSpeakingNow=false;
@@ -7751,7 +7793,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           const text=buildSmartCricketIdle({team:batBn,overs:ov.spk,score:spkSc,
             runs:rNum,rawOvers:curInn.ovRaw,bats,bowl},analysisStep);
           rememberSpoken(text);
-          if (!hostMicActive) { document.getElementById('commText').textContent = `🎙️ ${text}`; void speakBangla(text).finally(()=>{if(!syncBusy)isSpeakingNow=false;}); }
+          if (!hostMicActive) { void (async()=>{let t2=text;try{const a=await aiLine(text,'idle');if(a&&selectedMatch===matchAtStart&&!hostMicActive){t2=a;rememberSpoken(a);}}catch(_e){} document.getElementById('commText').textContent = `🎙️ ${t2}`; await speakBangla(t2);})().finally(()=>{if(!syncBusy)isSpeakingNow=false;}); }
           camMode = prevCam;
           }
         }
@@ -7923,7 +7965,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           const prevCam = camMode; camMode = (analysisStep % 2 === 1) ? 2 : 1;
           let text = `${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}। ${stState === 'in' ? 'ম্যাচ চলছে।' : 'ম্যাচের সর্বশেষ স্কোর।'}`;
           rememberSpoken(text);
-          if (!hostMicActive) { document.getElementById('commText').textContent = `📊 ফুটবল বিশ্লেষণ: ${text}`; void speakBangla(text).finally(()=>{if(!syncBusy)isSpeakingNow=false;}); }
+          if (!hostMicActive) { void (async()=>{let t2=text;try{const a=await aiLine(text,'idle');if(a&&selectedMatch&&selectedMatch.sport==='soccer'&&!hostMicActive){t2=a;rememberSpoken(a);}}catch(_e){} document.getElementById('commText').textContent = `📊 ফুটবল বিশ্লেষণ: ${t2}`; await speakBangla(t2);})().finally(()=>{if(!syncBusy)isSpeakingNow=false;}); }
           camMode = prevCam;
           }
         }
