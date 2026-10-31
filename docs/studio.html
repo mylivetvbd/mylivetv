@@ -295,57 +295,38 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
     @media (prefers-reduced-motion:reduce){#broadcastGround,.live-player-illustration{animation:none}}
 
 
-/*tvTextBoost*/
-@media (max-width:920px),(max-height:520px){
-  .live-pill{font-size:13px!important}
-  .hud-btn{font-size:13px!important;padding:6px 10px!important}
-  .spot-role{font-size:12.5px!important}
-  .spot-name{font-size:16px!important}
-  .spot-stat{font-size:13px!important}
-  .comm-text{font-size:16px!important;line-height:1.5!important}
-  .team-badge{font-size:13px!important}
-  .score-main-num{font-size:26px!important}
-  .score-overs{font-size:14px!important}
-  .target-eq{font-size:13px!important}
-  .batters-cell{font-size:14.5px!important}
-  .bowler-cell{font-size:14px!important}
-  .odot{font-size:12px!important}
-  .soc-team-box{font-size:17px!important}
-  .soc-goals{font-size:26px!important}
-  .soc-clock{font-size:13.5px!important}
-  .soc-stats-row{font-size:13.5px!important}
-  .tour-group-hdr{font-size:13px!important}
-  .hot-pill{font-size:12px!important}
-  .sport-tag{font-size:12px!important}
-  .live-player-name{font-size:15px!important;min-height:26px!important}
-  .live-player-name small{font-size:.8em!important}
-  #cricketMetrics{font-size:13.5px!important}
-  .mic-pulse{font-size:16px!important}
-}
-@media (min-width:921px) and (min-height:521px){
-  .live-pill{font-size:clamp(12px,0.9vw,19px)!important}
-  .hud-btn{font-size:clamp(12px,0.9vw,18px)!important}
-  .spot-role{font-size:clamp(11px,0.85vw,17px)!important}
-  .spot-name{font-size:clamp(14px,1.25vw,25px)!important}
-  .spot-stat{font-size:clamp(12px,0.95vw,19px)!important}
-  .comm-text{font-size:clamp(14px,1.35vw,27px)!important;line-height:1.45!important}
-  .team-badge{font-size:clamp(12px,0.95vw,19px)!important}
-  .score-main-num{font-size:clamp(22px,1.9vw,38px)!important}
-  .score-overs{font-size:clamp(12px,1.05vw,21px)!important}
-  .target-eq{font-size:clamp(11.5px,0.95vw,19px)!important}
-  .batters-cell{font-size:clamp(13px,1.1vw,22px)!important}
-  .bowler-cell{font-size:clamp(12.5px,1.05vw,21px)!important}
-  .odot{font-size:clamp(11px,0.9vw,18px)!important}
-  .soc-team-box{font-size:clamp(15px,1.3vw,26px)!important}
-  .soc-goals{font-size:clamp(22px,1.9vw,38px)!important}
-  .soc-clock{font-size:clamp(12px,1vw,20px)!important}
-  .soc-stats-row{font-size:clamp(12px,1vw,20px)!important}
-  .live-player-name{font-size:clamp(13px,1.3vw,26px)!important}
-  .live-player-name small{font-size:.78em!important}
-  #cricketMetrics{font-size:clamp(12px,1.1vw,22px)!important}
-}
+/*stageTV*/
+#studioRoot{position:fixed!important;inset:auto!important;top:0!important;left:0!important;width:1920px!important;height:1080px!important;transform-origin:0 0!important;overflow:hidden!important}
+html,body{background:#000!important}
+#playerOverlay{height:265px!important}
+.event-premium{width:420px!important}
+.event-title{font-size:62px!important}
+#cricketMetrics{gap:26px!important;font-size:24px!important}
+.live-pill{font-size:21px!important}
+.hud-btn{font-size:18px!important;padding:8px 14px!important}
+.spot-role{font-size:20px!important}
+.spot-name{font-size:30px!important}
+.spot-stat{font-size:22px!important}
+.comm-text{font-size:32px!important;line-height:1.45!important}
+.team-badge{font-size:22px!important}
+.score-main-num{font-size:48px!important}
+.score-overs{font-size:24px!important}
+.target-eq{font-size:21px!important}
+.batters-cell{font-size:26px!important}
+.bowler-cell{font-size:25px!important}
+.odot{font-size:19px!important}
+.soc-team-box{font-size:30px!important}
+.soc-goals{font-size:48px!important}
+.soc-clock{font-size:23px!important}
+.soc-stats-row{font-size:23px!important}
+.tour-group-hdr{font-size:21px!important}
+.hot-pill{font-size:18px!important}
+.sport-tag{font-size:18px!important}
+.live-player-name{font-size:30px!important;min-height:46px!important}
+.live-player-name small{font-size:.72em!important}
+.mic-pulse{font-size:24px!important}
+.tv-scorestrip{max-width:1560px!important}
 
-body:not(.mlv-boss) .tv-logo-bug{pointer-events:none!important}
 #mlvBoot{position:fixed;inset:0;z-index:2000000;background:#040812;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 #mlvBoot .mb-t{color:#fbbf24;font:800 19px 'Noto Sans Bengali','Hind Siliguri',sans-serif}
 #mlvBoot .mb-s{color:#64748b;font:600 13px 'Noto Sans Bengali','Hind Siliguri',sans-serif}
@@ -5854,6 +5835,12 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       renderer.setSize(size.width,size.height);
     }
     window.addEventListener('resize',resizeStudio);
+    function fitStageTV(){var r=document.getElementById('studioRoot');if(!r)return;var W=window.innerWidth,H=window.innerHeight;var st=r.style;var fl=document.body.classList.contains('force-landscape')&&H>W;var sc;if(fl){sc=Math.min(H/1920,W/1080);st.setProperty('transform','translate('+((W-1080*sc)/2+1080*sc)+'px,'+((H-1920*sc)/2)+'px) rotate(90deg) scale('+sc+')','important');}else{sc=Math.min(W/1920,H/1080);st.setProperty('transform','translate('+((W-1920*sc)/2)+'px,'+((H-1080*sc)/2)+'px) scale('+sc+')','important');}
+      var target=Math.max(0.6,Math.min((window.devicePixelRatio||1)*sc,2));
+      if(Math.abs((window.__stagePR||0)-target)>0.08){window.__stagePR=target;try{renderer.setPixelRatio(target);resizeStudio();}catch(e){}}
+    }
+    window.addEventListener('resize',fitStageTV);window.addEventListener('orientationchange',fitStageTV);setInterval(fitStageTV,1500);fitStageTV();
+
     window.addEventListener('orientationchange',()=>requestAnimationFrame(resizeStudio));
 
     scene.add(new THREE.HemisphereLight(0xdbeafe, 0x064e3b, 0.8));
