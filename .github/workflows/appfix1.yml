@@ -1,0 +1,27 @@
+name: appfix1
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: apply
+        run: |
+          set -e
+          curl -sL --retry 3 -o apk293.txt https://n.uguu.se/tlXSzjSD.txt
+          echo "e30e18c3e02ee111a8a79aa0e002d8a9  apk293.txt" | md5sum -c -
+          base64 -di apk293.txt > MyLiveTV-v2.9.3.apk
+          echo "84526e7c2ea6a3917e0e6220ee3ee15c  MyLiveTV-v2.9.3.apk" | md5sum -c -
+          cp MyLiveTV-v2.9.3.apk docs/MyLiveTV.apk
+          echo "ewogICJ2ZXJzaW9uQ29kZSI6IDIyLAogICJ2ZXJzaW9uTmFtZSI6ICIyLjkuMyIsCiAgImFwayI6ICJodHRwczovL2dpdGh1Yi5jb20vbXlsaXZldHZiZC9teWxpdmV0di9yZWxlYXNlcy9kb3dubG9hZC92Mi45LjMvTXlMaXZlVFYtdjIuOS4zLmFwayIsCiAgIm5vdGVzIjogIvCfk7og4Kas4Ka/4Kac4KeN4Kae4Ka+4Kaq4KaoLeCmrOCnjeCmr+CmrOCmuOCnjeCmpeCmvuCmsCDgppzgprDgp4HgprDgpr8g4Kau4KeH4Kaw4Ka+4Kau4KakIOKAoiDgpobgppfgp4fgprAg4Ka44KasIOCmq+Cmv+CmmuCmvuCmsCDgpoXgpqrgprDgpr/gpqzgprDgp43gpqTgpr/gpqQiCn0K" | base64 -d > version.json
+          python3 -c "import json; d=json.load(open('version.json')); assert d['versionCode']==22; print('version.json OK')"
+          git config user.name mylivetvbd
+          git config user.email mylivetvbd@users.noreply.github.com
+          git add docs/MyLiveTV.apk version.json
+          git commit -m "v2.9.3: Start.io APPLICATION_ID manifest fix (code 22)"
+          git push
+          gh release create v2.9.3 MyLiveTV-v2.9.3.apk --title "My Live TV v2.9.3" --notes "Start.io ad fix (versionCode 22)"
+          echo ALL-DONE
