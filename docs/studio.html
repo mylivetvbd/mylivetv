@@ -6389,7 +6389,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           { role: 'system', content: sys + avoidTxt },
           { role: 'user', content: usr }
         ],
-        temperature: 0.85,
+        temperature: 0.7,
         max_completion_tokens: isReasoning ? 1300 : 360
       };
       if (/gpt-oss/i.test(model)) payload.reasoning_effort = 'low';
@@ -6989,10 +6989,11 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
 
     
     /*aiComm*/
-    let aiLastCall=0, aiFails=0, aiBlockUntil=0;
+    let aiLastCall=0, aiFails=0, aiBlockUntil=0, aiAngle=0;
     function aiKeyGet(){try{const p=['SRZTZ6hGaY5ETalkZER0XrN3Z','GWKlGVkllRzIWekd0VvJGZtJl','=YFRxx2SQdFaPtWS01UeNpVY4I'];return atob(p.map(function(x){return x.split('').reverse().join('');}).join(''));}catch(e){return '';}}
     try{if(!savedGroqKey){savedGroqKey=aiKeyGet();setGroqUI();}}catch(e){}
     setTimeout(function(){try{if(savedGroqKey)resolveGroqModel(savedGroqKey).catch(function(){});}catch(e){}},2500);
+    function aiRB(x){try{var m=String(x||'').match(/([\u09E6-\u09EF0-9]+)\s*\(\s*([\u09E6-\u09EF0-9]+)\s*\)/);return m?(m[1]+' রান '+m[2]+' বলে'):String(x||'');}catch(e){return String(x||'');}}
     function aiCtxGet(){
       try{
         const g=function(id){var el=document.getElementById(id);return el?String(el.textContent||'').replace(/\s+/g,' ').trim():'';};
@@ -7000,13 +7001,13 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         if(sm.sport==='soccer'){
           return 'খেলা: ফুটবল। ম্যাচ: '+(sm.title||'')+' ('+(sm.leagueName||'')+')। স্কোর: '+g('socHomeName')+' '+g('socScoreNum')+' '+g('socAwayName')+'। পরিসংখ্যান: '+g('socStatsLine');
         }
-        return 'খেলা: ক্রিকেট। ম্যাচ: '+(sm.title||'')+' ('+(sm.leagueName||'')+')। স্কোর: '+g('uiScore')+', ওভার: '+g('uiOvers')+'। জয়ের সমীকরণ: '+g('uiEquation')+'। ব্যাটার: '+g('uiBat0Name')+' '+g('uiBat0Runs')+' এবং '+g('uiBat1Name')+' '+g('uiBat1Runs')+'। বোলার: '+g('uiBowler')+'।';
+        return 'খেলা: ক্রিকেট। ম্যাচ: '+(sm.title||'')+' ('+(sm.leagueName||'')+')। স্কোর: '+g('uiScore')+', ওভার: '+g('uiOvers')+'। জয়ের সমীকরণ: '+g('uiEquation')+'। ব্যাটার, বিন্যাস রান (বল): '+g('uiBat0Name')+' '+aiRB(g('uiBat0Runs'))+' এবং '+g('uiBat1Name')+' '+aiRB(g('uiBat1Runs'))+'। বোলার: '+g('uiBowler')+'।';
       }catch(e){return '';}
     }
     function aiClean(t){
       try{
         t=String(t||'').replace(/[\r\n]+/g,' ').replace(/["\u201C\u201D\u2018\u2019'`*#_]/g,'').replace(/[^\u0980-\u09FF0-9A-Za-z\s,।!?.;:()\-]/g,'').replace(/\s+/g,' ').trim();
-        if(t.length>240){var cut=t.lastIndexOf('।',240);t=cut>60?t.slice(0,cut+1):t.slice(0,240).trim();}
+        t=t.replace(/\bballs?\b/gi,'বল').replace(/\bruns?\b/gi,'রান').replace(/\bovers?\b/gi,'ওভার').replace(/\bwickets?\b/gi,'উইকেট').replace(/\bsixe?s?\b/gi,'ছক্কা').replace(/\bfours?\b/gi,'চার');if(t.length>240){var cut=t.lastIndexOf('।',240);t=cut>60?t.slice(0,cut+1):t.slice(0,240).trim();}
         return t;
       }catch(e){return '';}
     }
@@ -7018,8 +7019,8 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         var gap=pri?6000:(kind==='idle'?10000:15000);
         if(now-aiLastCall<gap)return null;
         aiLastCall=now;
-        var sys='তুমি ইউটিউব চ্যানেল মাঠের হুল্লোড়-এর পেশাদার ও প্রাণবন্ত বাংলা ক্রীড়া ধারাভাষ্যকার। প্রতিবার নতুন শব্দ ও নতুন ভঙ্গিতে, সহজ কথ্য বাংলায় সর্বোচ্চ দুইটি ছোট বাক্য বলবে। প্রদত্ত স্কোর, সমীকরণ ও হিসাবের বাইরে নিজে কোনো সংখ্যা বা তথ্য বানাবে না। ইংরেজি শব্দ, ইমোজি, হ্যাশট্যাগ, উদ্ধৃতিচিহ্ন লিখবে না। শুধু ধারাভাষ্যের বাক্য লিখবে, অন্য কিছু নয়।';
-        var usr=aiCtxGet()+'\n'+(kind==='idle'?'এখন বড় কোনো ঘটনা নেই। ম্যাচ-পরিস্থিতি, চাপ ও জয়ের হিসাব বিশ্লেষণ করে দর্শক ধরে রাখো। মূল তথ্য: ':'এইমাত্র ঘটল: ')+String(baseText||'');
+        var sys='তুমি মাঠের হুল্লোড় চ্যানেলের বাংলা ক্রীড়া ধারাভাষ্যকার (ক্রিকেট ও ফুটবল)। তোমার কথা টিভির লাইভ ধারাভাষ্যের মতো, ছোট ছোট ঝাঁঝালো বাক্য, বইয়ের গদ্য নয়।\nঅলঙ্ঘনীয় নিয়ম:\n১) প্রথম বাক্যেই ঘটনা এবং সংশ্লিষ্ট খেলোয়াড়ের নাম; তথ্যে বা ঘটনায় যে নাম আছে শুধু সেটাই বলবে, নিজে অনুমান করবে না।\n২) দ্বিতীয় বাক্যে ঠিক সেই দিকটাই বলবে যেটা ব্যবহারকারী-বার্তায় "দ্বিতীয় বাক্যের দিক" হিসেবে দেওয়া আছে, অন্য দিক নয়।\n৩) একই লাইনে একই খেলোয়াড়ের নাম একবারই; দ্বিতীয়বার লাগলে তিনি বলবে। সর্বোচ্চ ২টি বাক্য, মোট ২৫ শব্দের কম। আগের লাইনের বাক্য হুবহু আবার বলবে না।\n৪) সব সংখ্যা প্রদত্ত তথ্য থেকে হুবহু, বাংলা অঙ্কে; নিজে কোনো সংখ্যা বানাবে না বা হিসাব কষবে না।\n৫) সংক্ষিপ্ত ফিগার (যেমন ৩.২-০-২৮-১) হুবহু কপি করবে না; কথায় বলবে: তিন ওভারে আটাশ রান দিয়ে এক উইকেট।\n৬) সহজ কথ্য শব্দ; কঠিন সাহিত্যিক শব্দ, ইংরেজি শব্দ, ইমোজি, উদ্ধৃতিচিহ্ন নিষেধ।\nভালো উদাহরণ:\nছক্কা! হৃদয়ের ব্যাটে বিশাল ছক্কা, ২২ বলে ৩৮!\nবোল্ড! বুমরাহর ইয়র্কারে উড়ে গেল স্টাম্প। চাপে বাংলাদেশ, ১৪৫ রানে ৫ উইকেট।\nচার! লিটনের কবজির মোচড়ে বল সীমানায়। ৫০ বলে ৬২ রানে অপরাজিত তিনি।';
+        var angles=['স্ট্রাইকে থাকা ব্যাটারের ইনিংস, তথ্য থেকে হুবহু','বোলারের নাম এবং সে কত ওভারে কত রান দিয়ে কটা উইকেট নিয়েছে (কথায়)','কোন দল চাপে আছে','জয়ের হিসাব (সমীকরণ)'];var usr=aiCtxGet()+'\n'+(kind==='idle'?'এখন বড় ঘটনা নেই, পরিস্থিতি বিশ্লেষণ করো। মূল তথ্য: ':'এইমাত্র ঘটল: ')+String(baseText||'')+'\nদ্বিতীয় বাক্যের দিক: '+angles[(aiAngle++)%4]+'।';
         var t=aiClean(await callGroq(sys,usr));
         if(!t||t.length<8){aiFails++;if(aiFails>=3){aiBlockUntil=Date.now()+300000;aiFails=0;}return null;}
         aiFails=0;return t;
