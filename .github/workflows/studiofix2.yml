@@ -1,0 +1,47 @@
+name: Studio Live Fix
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch studio live engine
+        run: |
+          base64 -di > patch2.py <<'EOF'
+          aW1wb3J0IGlvCnAgPSAnZG9jcy9zdHVkaW8uaHRtbCcKcyA9IGlvLm9wZW4ocCwgZW5jb2Rpbmc9
+          J3V0Zi04JykucmVhZCgpCkExID0gIiIiICAgICAgICAgIGlmKHNlbGVjdGVkTWF0Y2ghPT1wb2xs
+          ZWRNYXRjaClyZXR1cm47CiAgICAgICAgICBpZighaWRlbnRpdHkpIHsKICAgICAgICAgICAgc2hv
+          d0VudGl0eVZhbGlkYXRpb25QZW5kaW5nKHBvbGxlZE1hdGNoKTsKICAgICAgICAgICAgcG9sbFRp
+          bWVyPXNldFRpbWVvdXQocG9sbENyZXhDcmlja2V0LDI1MDApO3JldHVybjsKICAgICAgICAgIH0i
+          IiIKTjEgPSAiIiIgICAgICAgICAgaWYoc2VsZWN0ZWRNYXRjaCE9PXBvbGxlZE1hdGNoKXJldHVy
+          bjsKICAgICAgICAgIGlmKCFpZGVudGl0eSkgewogICAgICAgICAgICBwb2xsZWRNYXRjaC5fX2lk
+          RmFpbD0ocG9sbGVkTWF0Y2guX19pZEZhaWx8fDApKzE7CiAgICAgICAgICAgIGlmKHBvbGxlZE1h
+          dGNoLl9faWRGYWlsPj0zKSBpZGVudGl0eT12YWxpZGF0ZUNyaWNrZXRTY29yZU9ubHkoc3YsW3Bv
+          bGxlZE1hdGNoLnQxZixwb2xsZWRNYXRjaC50MmZdKTsKICAgICAgICAgICAgaWYoIWlkZW50aXR5
+          KXsKICAgICAgICAgICAgICBzaG93RW50aXR5VmFsaWRhdGlvblBlbmRpbmcocG9sbGVkTWF0Y2gp
+          OwogICAgICAgICAgICAgIHBvbGxUaW1lcj1zZXRUaW1lb3V0KHBvbGxDcmV4Q3JpY2tldCwyNTAw
+          KTtyZXR1cm47CiAgICAgICAgICAgIH0KICAgICAgICAgIH0gZWxzZSB7IHBvbGxlZE1hdGNoLl9f
+          aWRGYWlsPTA7IH0iIiIKQTIgPSAicG9sbFRpbWVyPXNldFRpbWVvdXQocG9sbFNvY2Nlciw4MDAw
+          KSIKYXNzZXJ0IHMuY291bnQoQTEpID09IDEsICdBMT0nICsgc3RyKHMuY291bnQoQTEpKQphc3Nl
+          cnQgcy5jb3VudChBMikgPT0gMiwgJ0EyPScgKyBzdHIocy5jb3VudChBMikpCmFzc2VydCAnX19p
+          ZEZhaWwnIG5vdCBpbiBzLCAnYWxyZWFkeScKcyA9IHMucmVwbGFjZShBMSwgTjEsIDEpLnJlcGxh
+          Y2UoQTIsICJwb2xsVGltZXI9c2V0VGltZW91dChwb2xsU29jY2VyLDUwMDApIiwgMikKaW8ub3Bl
+          bihwLCAndycsIGVuY29kaW5nPSd1dGYtOCcpLndyaXRlKHMpCnByaW50KCdwYXRjaDIgT0snKQo=
+          EOF
+          python3 patch2.py
+          rm patch2.py
+
+      - name: Commit & push
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "স্টুডিও লাইভ-আপডেট ফিক্স"
+          git push
