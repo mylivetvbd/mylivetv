@@ -1,0 +1,70 @@
+name: Studio Autopilot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch studio
+        run: |
+          base64 -di > patch.py <<'EOF'
+          aW1wb3J0IGlvCnAgPSAnZG9jcy9zdHVkaW8uaHRtbCcKcyA9IGlvLm9wZW4ocCwgZW5jb2Rpbmc9
+          J3V0Zi04JykucmVhZCgpCkExID0gIiAgYXN5bmMgZnVuY3Rpb24gYm9vdCgpeyIKQVVUTyA9ICIi
+          IiAgYXN5bmMgZnVuY3Rpb24gYXV0b0xpdmVNYXRjaCgpewogICAgdmFyIGxpc3Q7CiAgICB0cnl7
+          CiAgICAgIHZhciByPWF3YWl0IFByb21pc2UuYWxsKFsKICAgICAgICBsb2FkQ3JleEFsbENyaWNr
+          ZXQoKS5jYXRjaChmdW5jdGlvbigpe3JldHVybiBbXTt9KSwKICAgICAgICBsb2FkQWxsV29ybGRG
+          b290YmFsbCgpLmNhdGNoKGZ1bmN0aW9uKCl7cmV0dXJuIFtdO30pCiAgICAgIF0pOwogICAgICBs
+          aXN0PVtdLmNvbmNhdChyWzBdfHxbXSxyWzFdfHxbXSk7CiAgICB9Y2F0Y2goZSl7IHJldHVybiBu
+          dWxsOyB9CiAgICBpZighbGlzdHx8IWxpc3QubGVuZ3RoKSByZXR1cm4gbnVsbDsKICAgIHZhciBs
+          aXZlPWxpc3QuZmlsdGVyKGZ1bmN0aW9uKG0peyByZXR1cm4gbSAmJiBTdHJpbmcobS5zdGF0ZXx8
+          JycpPT09J2xpdmUnOyB9KTsKICAgIGlmKCFsaXZlLmxlbmd0aCkgcmV0dXJuIG51bGw7CiAgICBm
+          dW5jdGlvbiBwdHMobSl7CiAgICAgIHZhciB0PSgobS50aXRsZXx8JycpKycgJysobS5sZWFndWVO
+          YW1lfHwnJykpLnRvTG93ZXJDYXNlKCk7IHZhciBwPTA7CiAgICAgIGlmKHQuaW5kZXhPZignYmFu
+          Z2xhZGVzaCcpPj0wKSBwKz0xMDAwOwogICAgICBpZihtLnNwb3J0PT09J2NyaWNrZXQnKSBwKz01
+          MDsKICAgICAgcCs9KG0uaG90U2NvcmV8fDApOwogICAgICByZXR1cm4gcDsKICAgIH0KICAgIGxp
+          dmUuc29ydChmdW5jdGlvbihhLGIpeyByZXR1cm4gcHRzKGIpLXB0cyhhKTsgfSk7CiAgICByZXR1
+          cm4gbGl2ZVswXTsKICB9CgoiIiIKQTIgPSAiIiIgICAgaWYoIWNmZyB8fCBjZmcub249PT1mYWxz
+          ZSB8fCAhY2ZnLnVpZCl7CiAgICAgIHNldE1zZygoY2ZnJiZjZmcubWVzc2FnZSk/Y2ZnLm1lc3Nh
+          Z2U6J+Cmj+CmhyDgpq7gp4Hgprngp4LgprDgp43gpqTgp4cg4KaV4KeL4Kao4KeLIOCmluCnh+Cm
+          suCmviDgprjgpq7gp43gpqrgp43gprDgpprgpr7gprAg4Ka54Kaa4KeN4Kab4KeHIOCmqOCmvuCl
+          pDxicj7gppbgp4fgprLgpr7gprAg4Ka44Kau4Kav4Ka8IOCmhuCmrOCmvuCmsCDgpobgprjgp4Hg
+          pqghIPCfmY8nKTsKICAgICAgY2xlYXJUaW1lb3V0KHdpbmRvdy5fX21sdlBvbGwpOwogICAgICB3
+          aW5kb3cuX19tbHZQb2xsPXNldFRpbWVvdXQoYm9vdCwzMDAwMCk7IC8qIOCnqeCnpiDgprjgp4fg
+          ppXgp4fgpqjgp43gpqEg4Kaq4Kaw4Kaq4KawIOCmheCmn+Cniy3gpprgp4fgppUgKi8KICAgICAg
+          cmV0dXJuOwogICAgfSIiIgpOMiA9ICIiIiAgICBpZighY2ZnIHx8IGNmZy5vbj09PWZhbHNlIHx8
+          ICFjZmcudWlkKXsKICAgICAgLyog8J+kliDgpoXgpp/gp4st4Kaq4Ka+4KaH4Kay4KafOiDgpqzg
+          prgg4KaV4Ka/4Kab4KeBIOCmqOCmviDgpqzgprLgprLgp4cg4Kay4Ka+4KaH4KatIOCmruCnjeCm
+          r+CmvuCmmiDgpqjgpr/gppzgp4fgpocg4KaW4KeB4KaB4Kac4KeHIOCmheCmqC3gpo/gpq/gprzg
+          pr7gprAgKi8KICAgICAgdmFyIGF1dG9NPW51bGw7CiAgICAgIGlmKCFjZmcgfHwgY2ZnLmF1dG8h
+          PT1mYWxzZSl7IHRyeXsgYXV0b009YXdhaXQgYXV0b0xpdmVNYXRjaCgpOyB9Y2F0Y2goZSl7fSB9
+          CiAgICAgIGlmKGF1dG9NKXsKICAgICAgICBjZmc9e29uOnRydWUsdWlkOmF1dG9NLnVpZCx0aXRs
+          ZTphdXRvTS50aXRsZXx8JycsX19hdXRvOnRydWV9OwogICAgICB9ZWxzZXsKICAgICAgICBzZXRN
+          c2coKGNmZyYmY2ZnLm1lc3NhZ2UpP2NmZy5tZXNzYWdlOifgpo/gpocg4Kau4KeB4Ka54KeC4Kaw
+          4KeN4Kak4KeHIOCmleCni+CmqOCniyDgppbgp4fgprLgpr4g4Ka44Kau4KeN4Kaq4KeN4Kaw4Kaa
+          4Ka+4KawIOCmueCmmuCnjeCmm+CnhyDgpqjgpr7gpaQ8YnI+4KaW4KeH4Kay4Ka+4KawIOCmuOCm
+          ruCmr+CmvCDgpobgpqzgpr7gprAg4KaG4Ka44KeB4KaoISDwn5mPJyk7CiAgICAgICAgY2xlYXJU
+          aW1lb3V0KHdpbmRvdy5fX21sdlBvbGwpOwogICAgICAgIHdpbmRvdy5fX21sdlBvbGw9c2V0VGlt
+          ZW91dChib290LDEyMDAwKTsgLyog4Ken4KeoIOCmuOCnh+CmleCnh+CmqOCnjeCmoSDgpqrgprDg
+          pqrgprAg4KaF4Kaf4KeLLeCmmuCnh+CmlSAqLwogICAgICAgIHJldHVybjsKICAgICAgfQogICAg
+          fSIiIgphc3NlcnQgcy5jb3VudChBMSkgPT0gMSwgJ0ExJwphc3NlcnQgcy5jb3VudChBMikgPT0g
+          MSwgJ0EyJwphc3NlcnQgJ2F1dG9MaXZlTWF0Y2gnIG5vdCBpbiBzLCAnYWxyZWFkeScKcyA9IHMu
+          cmVwbGFjZShBMiwgTjIsIDEpLnJlcGxhY2UoQTEsIEFVVE8gKyBBMSwgMSkKaW8ub3BlbihwLCAn
+          dycsIGVuY29kaW5nPSd1dGYtOCcpLndyaXRlKHMpCnByaW50KCdwYXRjaGVkIE9LJykK
+          EOF
+          python3 patch.py
+          rm patch.py
+
+      - name: Commit & push
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "স্টুডিও অটো-পাইলট"
+          git push
