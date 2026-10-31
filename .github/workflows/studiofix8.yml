@@ -1,0 +1,94 @@
+name: studiofix8
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: patch
+        run: |
+          base64 -di > patch8.py << "B64EOF"
+          aW1wb3J0IGlvLGJhc2U2NApwPSdkb2NzL3N0dWRpby5odG1sJwpzPWlvLm9wZW4ocCxlbmNvZGlu
+          Zz0ndXRmLTgnKS5yZWFkKCkKQ1NTPWJhc2U2NC5iNjRkZWNvZGUoIkx5cHpkR0ZuWlZSV0tpOEtJ
+          M04wZFdScGIxSnZiM1I3Y0c5emFYUnBiMjQ2Wm1sNFpXUWhhVzF3YjNKMFlXNTBPMmx1YzJWME9t
+          RjFkRzhoYVcxd2IzSjBZVzUwTzNSdmNEb3dJV2x0Y0c5eWRHRnVkRHRzWldaME9qQWhhVzF3YjNK
+          MFlXNTBPM2RwWkhSb09qRTVNakJ3ZUNGcGJYQnZjblJoYm5RN2FHVnBaMmgwT2pFd09EQndlQ0Zw
+          YlhCdmNuUmhiblE3ZEhKaGJuTm1iM0p0TFc5eWFXZHBiam93SURBaGFXMXdiM0owWVc1ME8yOTJa
+          WEptYkc5M09taHBaR1JsYmlGcGJYQnZjblJoYm5SOUNtaDBiV3dzWW05a2VYdGlZV05yWjNKdmRX
+          NWtPaU13TURBaGFXMXdiM0owWVc1MGZRb2pjR3hoZVdWeVQzWmxjbXhoZVh0b1pXbG5hSFE2TWpZ
+          MWNIZ2hhVzF3YjNKMFlXNTBmUW91WlhabGJuUXRjSEpsYldsMWJYdDNhV1IwYURvME1qQndlQ0Zw
+          YlhCdmNuUmhiblI5Q2k1bGRtVnVkQzEwYVhSc1pYdG1iMjUwTFhOcGVtVTZOakp3ZUNGcGJYQnZj
+          blJoYm5SOUNpTmpjbWxqYTJWMFRXVjBjbWxqYzN0bllYQTZNalp3ZUNGcGJYQnZjblJoYm5RN1pt
+          OXVkQzF6YVhwbE9qSTBjSGdoYVcxd2IzSjBZVzUwZlFvdWJHbDJaUzF3YVd4c2UyWnZiblF0YzJs
+          NlpUb3lNWEI0SVdsdGNHOXlkR0Z1ZEgwS0xtaDFaQzFpZEc1N1ptOXVkQzF6YVhwbE9qRTRjSGdo
+          YVcxd2IzSjBZVzUwTzNCaFpHUnBibWM2T0hCNElERTBjSGdoYVcxd2IzSjBZVzUwZlFvdWMzQnZk
+          QzF5YjJ4bGUyWnZiblF0YzJsNlpUb3lNSEI0SVdsdGNHOXlkR0Z1ZEgwS0xuTndiM1F0Ym1GdFpY
+          dG1iMjUwTFhOcGVtVTZNekJ3ZUNGcGJYQnZjblJoYm5SOUNpNXpjRzkwTFhOMFlYUjdabTl1ZEMx
+          emFYcGxPakl5Y0hnaGFXMXdiM0owWVc1MGZRb3VZMjl0YlMxMFpYaDBlMlp2Ym5RdGMybDZaVG96
+          TW5CNElXbHRjRzl5ZEdGdWREdHNhVzVsTFdobGFXZG9kRG94TGpRMUlXbHRjRzl5ZEdGdWRIMEtM
+          blJsWVcwdFltRmtaMlY3Wm05dWRDMXphWHBsT2pJeWNIZ2hhVzF3YjNKMFlXNTBmUW91YzJOdmNt
+          VXRiV0ZwYmkxdWRXMTdabTl1ZEMxemFYcGxPalE0Y0hnaGFXMXdiM0owWVc1MGZRb3VjMk52Y21V
+          dGIzWmxjbk43Wm05dWRDMXphWHBsT2pJMGNIZ2hhVzF3YjNKMFlXNTBmUW91ZEdGeVoyVjBMV1Z4
+          ZTJadmJuUXRjMmw2WlRveU1YQjRJV2x0Y0c5eWRHRnVkSDBLTG1KaGRIUmxjbk10WTJWc2JIdG1i
+          MjUwTFhOcGVtVTZNalp3ZUNGcGJYQnZjblJoYm5SOUNpNWliM2RzWlhJdFkyVnNiSHRtYjI1MExY
+          TnBlbVU2TWpWd2VDRnBiWEJ2Y25SaGJuUjlDaTV2Wkc5MGUyWnZiblF0YzJsNlpUb3hPWEI0SVds
+          dGNHOXlkR0Z1ZEgwS0xuTnZZeTEwWldGdExXSnZlSHRtYjI1MExYTnBlbVU2TXpCd2VDRnBiWEJ2
+          Y25SaGJuUjlDaTV6YjJNdFoyOWhiSE43Wm05dWRDMXphWHBsT2pRNGNIZ2hhVzF3YjNKMFlXNTBm
+          UW91YzI5akxXTnNiMk5yZTJadmJuUXRjMmw2WlRveU0zQjRJV2x0Y0c5eWRHRnVkSDBLTG5Odll5
+          MXpkR0YwY3kxeWIzZDdabTl1ZEMxemFYcGxPakl6Y0hnaGFXMXdiM0owWVc1MGZRb3VkRzkxY2kx
+          bmNtOTFjQzFvWkhKN1ptOXVkQzF6YVhwbE9qSXhjSGdoYVcxd2IzSjBZVzUwZlFvdWFHOTBMWEJw
+          Ykd4N1ptOXVkQzF6YVhwbE9qRTRjSGdoYVcxd2IzSjBZVzUwZlFvdWMzQnZjblF0ZEdGbmUyWnZi
+          blF0YzJsNlpUb3hPSEI0SVdsdGNHOXlkR0Z1ZEgwS0xteHBkbVV0Y0d4aGVXVnlMVzVoYldWN1pt
+          OXVkQzF6YVhwbE9qTXdjSGdoYVcxd2IzSjBZVzUwTzIxcGJpMW9aV2xuYUhRNk5EWndlQ0ZwYlhC
+          dmNuUmhiblI5Q2k1c2FYWmxMWEJzWVhsbGNpMXVZVzFsSUhOdFlXeHNlMlp2Ym5RdGMybDZaVG91
+          TnpKbGJTRnBiWEJ2Y25SaGJuUjlDaTV0YVdNdGNIVnNjMlY3Wm05dWRDMXphWHBsT2pJMGNIZ2hh
+          VzF3YjNKMFlXNTBmUW91ZEhZdGMyTnZjbVZ6ZEhKcGNIdHRZWGd0ZDJsa2RHZzZNVFUyTUhCNElX
+          bHRjRzl5ZEdGdWRIMEsiKS5kZWNvZGUoKQpKUz1iYXNlNjQuYjY0ZGVjb2RlKCJDaUFnSUNCbWRX
+          NWpkR2x2YmlCbWFYUlRkR0ZuWlZSV0tDbDdkbUZ5SUhJOVpHOWpkVzFsYm5RdVoyVjBSV3hsYldW
+          dWRFSjVTV1FvSjNOMGRXUnBiMUp2YjNRbktUdHBaaWdoY2lseVpYUjFjbTQ3ZG1GeUlGYzlkMmx1
+          Wkc5M0xtbHVibVZ5VjJsa2RHZ3NTRDEzYVc1a2IzY3VhVzV1WlhKSVpXbG5hSFE3ZG1GeUlITjBQ
+          WEl1YzNSNWJHVTdkbUZ5SUdac1BXUnZZM1Z0Wlc1MExtSnZaSGt1WTJ4aGMzTk1hWE4wTG1OdmJu
+          UmhhVzV6S0NkbWIzSmpaUzFzWVc1a2MyTmhjR1VuS1NZbVNENVhPM1poY2lCell6dHBaaWhtYkNs
+          N2MyTTlUV0YwYUM1dGFXNG9TQzh4T1RJd0xGY3ZNVEE0TUNrN2MzUXVjMlYwVUhKdmNHVnlkSGtv
+          SjNSeVlXNXpabTl5YlNjc0ozUnlZVzV6YkdGMFpTZ25LeWdvVnkweE1EZ3dLbk5qS1M4eUt6RXdP
+          REFxYzJNcEt5ZHdlQ3duS3lnb1NDMHhPVEl3S25OaktTOHlLU3NuY0hncElISnZkR0YwWlNnNU1H
+          UmxaeWtnYzJOaGJHVW9KeXR6WXlzbktTY3NKMmx0Y0c5eWRHRnVkQ2NwTzMxbGJITmxlM05qUFUx
+          aGRHZ3ViV2x1S0Zjdk1Ua3lNQ3hJTHpFd09EQXBPM04wTG5ObGRGQnliM0JsY25SNUtDZDBjbUZ1
+          YzJadmNtMG5MQ2QwY21GdWMyeGhkR1VvSnlzb0tGY3RNVGt5TUNwell5a3ZNaWtySjNCNExDY3JL
+          Q2hJTFRFd09EQXFjMk1wTHpJcEt5ZHdlQ2tnYzJOaGJHVW9KeXR6WXlzbktTY3NKMmx0Y0c5eWRH
+          RnVkQ2NwTzMwS0lDQWdJQ0FnZG1GeUlIUmhjbWRsZEQxTllYUm9MbTFoZUNnd0xqWXNUV0YwYUM1
+          dGFXNG9LSGRwYm1SdmR5NWtaWFpwWTJWUWFYaGxiRkpoZEdsdmZId3hLU3B6WXl3eUtTazdDaUFn
+          SUNBZ0lHbG1LRTFoZEdndVlXSnpLQ2gzYVc1a2IzY3VYMTl6ZEdGblpWQlNmSHd3S1MxMFlYSm5a
+          WFFwUGpBdU1EZ3BlM2RwYm1SdmR5NWZYM04wWVdkbFVGSTlkR0Z5WjJWME8zUnllWHR5Wlc1a1pY
+          SmxjaTV6WlhSUWFYaGxiRkpoZEdsdktIUmhjbWRsZENrN2NtVnphWHBsVTNSMVpHbHZLQ2s3ZldO
+          aGRHTm9LR1VwZTMxOUNpQWdJQ0I5Q2lBZ0lDQjNhVzVrYjNjdVlXUmtSWFpsYm5STWFYTjBaVzVs
+          Y2lnbmNtVnphWHBsSnl4bWFYUlRkR0ZuWlZSV0tUdDNhVzVrYjNjdVlXUmtSWFpsYm5STWFYTjBa
+          VzVsY2lnbmIzSnBaVzUwWVhScGIyNWphR0Z1WjJVbkxHWnBkRk4wWVdkbFZGWXBPM05sZEVsdWRH
+          VnlkbUZzS0dacGRGTjBZV2RsVkZZc01UVXdNQ2s3Wm1sMFUzUmhaMlZVVmlncE93bz0iKS5kZWNv
+          ZGUoKQphc3NlcnQgJ3N0YWdlVFYnIG5vdCBpbiBzIGFuZCAnZml0U3RhZ2VUVicgbm90IGluIHMs
+          J2FscmVhZHkgcGF0Y2hlZCcKIyDgp6cpIOCmquCngeCmsOCmqOCniyB0dlRleHRCb29zdCDgpqzg
+          p43gprLgppUg4Kas4Ka+4KamIOCmpuCmv+Cmr+CmvOCnhyDgpqjgpqTgp4HgpqggQ1NTCm09cy5m
+          aW5kKCcvKnR2VGV4dEJvb3N0Ki8nKQphc3NlcnQgbT4wLCd0dlRleHRCb29zdCBtYXJrZXIgbWlz
+          c2luZycKdD1zLmZpbmQoJyNjcmlja2V0TWV0cmljc3tmb250LXNpemU6Y2xhbXAoMTJweCwxLjF2
+          dywyMnB4KSFpbXBvcnRhbnR9JyxtKQphc3NlcnQgdD5tLCd0YWlsIG1pc3NpbmcnCmVuZD1zLmZp
+          bmQoJ30nLHQrNTkpCmFzc2VydCBlbmQ+dAplbmQyPXMuZmluZCgnfScsZW5kKzEpCmFzc2VydCBl
+          bmQyPmVuZCBhbmQgZW5kMi1tPDQwMDAsJ2JvdW5kcyBiYWQnCnM9c1s6bV0rQ1NTK3NbZW5kMisx
+          Ol0KIyDgp6gpIHJlc2l6ZVN0dWRpbyDgprLgpr/gprjgp4fgpqjgpr7gprDgp4fgprAg4Kaq4Kaw
+          4KeHIGZpdFN0YWdlVFYKQT1jaHIoMTE5KSsiaW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigncmVzaXpl
+          JyxyZXNpemVTdHVkaW8pOyIKYXNzZXJ0IHMuY291bnQoQSk9PTEsJ3Jlc2l6ZSBhbmNob3I6ICcr
+          c3RyKHMuY291bnQoQSkpCnM9cy5yZXBsYWNlKEEsQStKUywxKQphc3NlcnQgcy5jb3VudCgnc3Rh
+          Z2VUVicpPT0xIGFuZCBzLmNvdW50KCdmaXRTdGFnZVRWJyk9PTUgYW5kIHMuY291bnQoJ3R2VGV4
+          dEJvb3N0Jyk9PTAKaW8ub3BlbihwLCd3JyxlbmNvZGluZz0ndXRmLTgnKS53cml0ZShzKQpwcmlu
+          dCgncGF0Y2g4IE9LOiBzdGFnZS1zY2FsaW5nIDE5MjB4MTA4MCArIFRWLWdyYWRlIHRleHQnKQo=
+          B64EOF
+          md5sum patch8.py
+          python3 patch8.py
+      - name: push
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add docs/studio.html
+          git commit -m "studio: 1920x1080 stage auto-fit all devices + TV-grade text"
+          git push
