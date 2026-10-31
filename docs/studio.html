@@ -7506,9 +7506,13 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           } catch(e) { identity=validateCricketScoreOnly(sv,[polledMatch.t1f,polledMatch.t2f]); }
           if(selectedMatch!==polledMatch)return;
           if(!identity) {
-            showEntityValidationPending(polledMatch);
-            pollTimer=setTimeout(pollCrexCricket,2500);return;
-          }
+            polledMatch.__idFail=(polledMatch.__idFail||0)+1;
+            if(polledMatch.__idFail>=3) identity=validateCricketScoreOnly(sv,[polledMatch.t1f,polledMatch.t2f]);
+            if(!identity){
+              showEntityValidationPending(polledMatch);
+              pollTimer=setTimeout(pollCrexCricket,2500);return;
+            }
+          } else { polledMatch.__idFail=0; }
         }
         const batFk = identity ? identity.batFk : (teamPair[0] || '');
         const bowlFk = identity ? identity.bowlFk : (teamPair[1] || '');
@@ -7776,7 +7780,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         const comp = (data.header && data.header.competitions && data.header.competitions[0]) || {};
         const comps = comp.competitors || [];
         const validated=validateSoccerTeams(comps,polledMatch);
-        if(!validated){showSoccerValidationPending(polledMatch);pollTimer=setTimeout(pollSoccer,8000);return;}
+        if(!validated){showSoccerValidationPending(polledMatch);pollTimer=setTimeout(pollSoccer,5000);return;}
         const homeC=validated.home,awayC=validated.away;
         [...socHomePlayers,...socAwayPlayers].forEach(p=>p.visible=true);
 
@@ -7830,7 +7834,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         if (!scoreAvailable) {
           document.getElementById('socStatsLine').textContent='স্কোর তথ্যের অপেক্ষায়';
           document.getElementById('commText').textContent='ম্যাচের স্কোর তথ্য এখনও পাওয়া যায়নি।';
-          if(selectedMatch && selectedMatch.sport==='soccer') pollTimer=setTimeout(pollSoccer,8000);
+          if(selectedMatch && selectedMatch.sport==='soccer') pollTimer=setTimeout(pollSoccer,5000);
           return;
         }
 
