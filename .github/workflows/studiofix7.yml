@@ -1,0 +1,89 @@
+name: studiofix7
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: patch
+        run: |
+          base64 -di > patch7.py << "B64EOF"
+          aW1wb3J0IGlvLGJhc2U2NApwPSdkb2NzL3N0dWRpby5odG1sJwpzPWlvLm9wZW4ocCxlbmNvZGlu
+          Zz0ndXRmLTgnKS5yZWFkKCkKQ1NTPWJhc2U2NC5iNjRkZWNvZGUoIkNpOHFkSFpVWlhoMFFtOXZj
+          M1FxTHdwQWJXVmthV0VnS0cxaGVDMTNhV1IwYURvNU1qQndlQ2tzS0cxaGVDMW9aV2xuYUhRNk5U
+          SXdjSGdwZXdvZ0lDNXNhWFpsTFhCcGJHeDdabTl1ZEMxemFYcGxPakV6Y0hnaGFXMXdiM0owWVc1
+          MGZRb2dJQzVvZFdRdFluUnVlMlp2Ym5RdGMybDZaVG94TTNCNElXbHRjRzl5ZEdGdWREdHdZV1Jr
+          YVc1bk9qWndlQ0F4TUhCNElXbHRjRzl5ZEdGdWRIMEtJQ0F1YzNCdmRDMXliMnhsZTJadmJuUXRj
+          Mmw2WlRveE1pNDFjSGdoYVcxd2IzSjBZVzUwZlFvZ0lDNXpjRzkwTFc1aGJXVjdabTl1ZEMxemFY
+          cGxPakUyY0hnaGFXMXdiM0owWVc1MGZRb2dJQzV6Y0c5MExYTjBZWFI3Wm05dWRDMXphWHBsT2pF
+          emNIZ2hhVzF3YjNKMFlXNTBmUW9nSUM1amIyMXRMWFJsZUhSN1ptOXVkQzF6YVhwbE9qRTJjSGdo
+          YVcxd2IzSjBZVzUwTzJ4cGJtVXRhR1ZwWjJoME9qRXVOU0ZwYlhCdmNuUmhiblI5Q2lBZ0xuUmxZ
+          VzB0WW1Ga1oyVjdabTl1ZEMxemFYcGxPakV6Y0hnaGFXMXdiM0owWVc1MGZRb2dJQzV6WTI5eVpT
+          MXRZV2x1TFc1MWJYdG1iMjUwTFhOcGVtVTZNalp3ZUNGcGJYQnZjblJoYm5SOUNpQWdMbk5qYjNK
+          bExXOTJaWEp6ZTJadmJuUXRjMmw2WlRveE5IQjRJV2x0Y0c5eWRHRnVkSDBLSUNBdWRHRnlaMlYw
+          TFdWeGUyWnZiblF0YzJsNlpUb3hNM0I0SVdsdGNHOXlkR0Z1ZEgwS0lDQXVZbUYwZEdWeWN5MWpa
+          V3hzZTJadmJuUXRjMmw2WlRveE5DNDFjSGdoYVcxd2IzSjBZVzUwZlFvZ0lDNWliM2RzWlhJdFky
+          VnNiSHRtYjI1MExYTnBlbVU2TVRSd2VDRnBiWEJ2Y25SaGJuUjlDaUFnTG05a2IzUjdabTl1ZEMx
+          emFYcGxPakV5Y0hnaGFXMXdiM0owWVc1MGZRb2dJQzV6YjJNdGRHVmhiUzFpYjNoN1ptOXVkQzF6
+          YVhwbE9qRTNjSGdoYVcxd2IzSjBZVzUwZlFvZ0lDNXpiMk10WjI5aGJITjdabTl1ZEMxemFYcGxP
+          akkyY0hnaGFXMXdiM0owWVc1MGZRb2dJQzV6YjJNdFkyeHZZMnQ3Wm05dWRDMXphWHBsT2pFekxq
+          VndlQ0ZwYlhCdmNuUmhiblI5Q2lBZ0xuTnZZeTF6ZEdGMGN5MXliM2Q3Wm05dWRDMXphWHBsT2pF
+          ekxqVndlQ0ZwYlhCdmNuUmhiblI5Q2lBZ0xuUnZkWEl0WjNKdmRYQXRhR1J5ZTJadmJuUXRjMmw2
+          WlRveE0zQjRJV2x0Y0c5eWRHRnVkSDBLSUNBdWFHOTBMWEJwYkd4N1ptOXVkQzF6YVhwbE9qRXlj
+          SGdoYVcxd2IzSjBZVzUwZlFvZ0lDNXpjRzl5ZEMxMFlXZDdabTl1ZEMxemFYcGxPakV5Y0hnaGFX
+          MXdiM0owWVc1MGZRb2dJQzVzYVhabExYQnNZWGxsY2kxdVlXMWxlMlp2Ym5RdGMybDZaVG94TlhC
+          NElXbHRjRzl5ZEdGdWREdHRhVzR0YUdWcFoyaDBPakkyY0hnaGFXMXdiM0owWVc1MGZRb2dJQzVz
+          YVhabExYQnNZWGxsY2kxdVlXMWxJSE50WVd4c2UyWnZiblF0YzJsNlpUb3VPR1Z0SVdsdGNHOXlk
+          R0Z1ZEgwS0lDQWpZM0pwWTJ0bGRFMWxkSEpwWTNON1ptOXVkQzF6YVhwbE9qRXpMalZ3ZUNGcGJY
+          QnZjblJoYm5SOUNpQWdMbTFwWXkxd2RXeHpaWHRtYjI1MExYTnBlbVU2TVRad2VDRnBiWEJ2Y25S
+          aGJuUjlDbjBLUUcxbFpHbGhJQ2h0YVc0dGQybGtkR2c2T1RJeGNIZ3BJR0Z1WkNBb2JXbHVMV2hs
+          YVdkb2REbzFNakZ3ZUNsN0NpQWdMbXhwZG1VdGNHbHNiSHRtYjI1MExYTnBlbVU2WTJ4aGJYQW9N
+          VEp3ZUN3d0xqbDJkeXd4T1hCNEtTRnBiWEJ2Y25SaGJuUjlDaUFnTG1oMVpDMWlkRzU3Wm05dWRD
+          MXphWHBsT21Oc1lXMXdLREV5Y0hnc01DNDVkbmNzTVRod2VDa2hhVzF3YjNKMFlXNTBmUW9nSUM1
+          emNHOTBMWEp2YkdWN1ptOXVkQzF6YVhwbE9tTnNZVzF3S0RFeGNIZ3NNQzQ0TlhaM0xERTNjSGdw
+          SVdsdGNHOXlkR0Z1ZEgwS0lDQXVjM0J2ZEMxdVlXMWxlMlp2Ym5RdGMybDZaVHBqYkdGdGNDZ3hO
+          SEI0TERFdU1qVjJkeXd5TlhCNEtTRnBiWEJ2Y25SaGJuUjlDaUFnTG5Od2IzUXRjM1JoZEh0bWIy
+          NTBMWE5wZW1VNlkyeGhiWEFvTVRKd2VDd3dMamsxZG5jc01UbHdlQ2toYVcxd2IzSjBZVzUwZlFv
+          Z0lDNWpiMjF0TFhSbGVIUjdabTl1ZEMxemFYcGxPbU5zWVcxd0tERTBjSGdzTVM0ek5YWjNMREkz
+          Y0hncElXbHRjRzl5ZEdGdWREdHNhVzVsTFdobGFXZG9kRG94TGpRMUlXbHRjRzl5ZEdGdWRIMEtJ
+          Q0F1ZEdWaGJTMWlZV1JuWlh0bWIyNTBMWE5wZW1VNlkyeGhiWEFvTVRKd2VDd3dMamsxZG5jc01U
+          bHdlQ2toYVcxd2IzSjBZVzUwZlFvZ0lDNXpZMjl5WlMxdFlXbHVMVzUxYlh0bWIyNTBMWE5wZW1V
+          NlkyeGhiWEFvTWpKd2VDd3hMamwyZHl3ek9IQjRLU0ZwYlhCdmNuUmhiblI5Q2lBZ0xuTmpiM0ps
+          TFc5MlpYSnplMlp2Ym5RdGMybDZaVHBqYkdGdGNDZ3hNbkI0TERFdU1EVjJkeXd5TVhCNEtTRnBi
+          WEJ2Y25SaGJuUjlDaUFnTG5SaGNtZGxkQzFsY1h0bWIyNTBMWE5wZW1VNlkyeGhiWEFvTVRFdU5Y
+          QjRMREF1T1RWMmR5d3hPWEI0S1NGcGJYQnZjblJoYm5SOUNpQWdMbUpoZEhSbGNuTXRZMlZzYkh0
+          bWIyNTBMWE5wZW1VNlkyeGhiWEFvTVROd2VDd3hMakYyZHl3eU1uQjRLU0ZwYlhCdmNuUmhiblI5
+          Q2lBZ0xtSnZkMnhsY2kxalpXeHNlMlp2Ym5RdGMybDZaVHBqYkdGdGNDZ3hNaTQxY0hnc01TNHdO
+          WFozTERJeGNIZ3BJV2x0Y0c5eWRHRnVkSDBLSUNBdWIyUnZkSHRtYjI1MExYTnBlbVU2WTJ4aGJY
+          QW9NVEZ3ZUN3d0xqbDJkeXd4T0hCNEtTRnBiWEJ2Y25SaGJuUjlDaUFnTG5Odll5MTBaV0Z0TFdK
+          dmVIdG1iMjUwTFhOcGVtVTZZMnhoYlhBb01UVndlQ3d4TGpOMmR5d3lObkI0S1NGcGJYQnZjblJo
+          Ym5SOUNpQWdMbk52WXkxbmIyRnNjM3RtYjI1MExYTnBlbVU2WTJ4aGJYQW9Nakp3ZUN3eExqbDJk
+          eXd6T0hCNEtTRnBiWEJ2Y25SaGJuUjlDaUFnTG5Odll5MWpiRzlqYTN0bWIyNTBMWE5wZW1VNlky
+          eGhiWEFvTVRKd2VDd3hkbmNzTWpCd2VDa2hhVzF3YjNKMFlXNTBmUW9nSUM1emIyTXRjM1JoZEhN
+          dGNtOTNlMlp2Ym5RdGMybDZaVHBqYkdGdGNDZ3hNbkI0TERGMmR5d3lNSEI0S1NGcGJYQnZjblJo
+          Ym5SOUNpQWdMbXhwZG1VdGNHeGhlV1Z5TFc1aGJXVjdabTl1ZEMxemFYcGxPbU5zWVcxd0tERXpj
+          SGdzTVM0emRuY3NNalp3ZUNraGFXMXdiM0owWVc1MGZRb2dJQzVzYVhabExYQnNZWGxsY2kxdVlX
+          MWxJSE50WVd4c2UyWnZiblF0YzJsNlpUb3VOemhsYlNGcGJYQnZjblJoYm5SOUNpQWdJMk55YVdO
+          clpYUk5aWFJ5YVdOemUyWnZiblF0YzJsNlpUcGpiR0Z0Y0NneE1uQjRMREV1TVhaM0xESXljSGdw
+          SVdsdGNHOXlkR0Z1ZEgwS2ZRbz0iKS5kZWNvZGUoKQphc3NlcnQgJ3R2VGV4dEJvb3N0JyBub3Qg
+          aW4gcywnYWxyZWFkeSBwYXRjaGVkJwptPXMuZmluZCgnLyptb2JpbGVUZXh0Qm9vc3QqLycpCmFz
+          c2VydCBtPjAsJ29sZCBibG9jayBtYXJrZXIgbWlzc2luZycKaj1zLmZpbmQoJy5taWMtcHVsc2V7
+          Zm9udC1zaXplOjE2cHghaW1wb3J0YW50fScsbSkKYXNzZXJ0IGo+bSwnb2xkIGJsb2NrIHRhaWwg
+          bWlzc2luZycKZW5kPXMuZmluZCgnfScsaiszNikKYXNzZXJ0IGVuZD5qIGFuZCBzW2VuZF09PSd9
+          JwplbmQyPXMuZmluZCgnfScsZW5kKzEpCmFzc2VydCBlbmQyPmVuZCBhbmQgZW5kMi1tPDI1MDAs
+          J29sZCBibG9jayBib3VuZHMgYmFkJwpzPXNbOm1dK0NTUy5zdHJpcCgpKydcbicrc1tlbmQyKzE6
+          XQphc3NlcnQgcy5jb3VudCgndHZUZXh0Qm9vc3QnKT09MSBhbmQgcy5jb3VudCgnbW9iaWxlVGV4
+          dEJvb3N0Jyk9PTAKaW8ub3BlbihwLCd3JyxlbmNvZGluZz0ndXRmLTgnKS53cml0ZShzKQpwcmlu
+          dCgncGF0Y2g3IE9LOiBUVi1ncmFkZSB0ZXh0IGZvciBzdHJlYW0gKyBtb2JpbGUnKQo=
+          B64EOF
+          md5sum patch7.py
+          python3 patch7.py
+      - name: push
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add docs/studio.html
+          git commit -m "studio: TV-grade big text for stream capture + mobile"
+          git push
