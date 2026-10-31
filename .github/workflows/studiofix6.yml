@@ -1,0 +1,55 @@
+name: studiofix6
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: patch
+        run: |
+          base64 -di > patch6.py << "B64EOF"
+          aW1wb3J0IGlvLGJhc2U2NApwPSdkb2NzL3N0dWRpby5odG1sJwpzPWlvLm9wZW4ocCxlbmNvZGlu
+          Zz0ndXRmLTgnKS5yZWFkKCkKQ1NTPWJhc2U2NC5iNjRkZWNvZGUoIkNpOHFiVzlpYVd4bFZHVjRk
+          RUp2YjNOMEtpOEtRRzFsWkdsaElDaHRZWGd0ZDJsa2RHZzZPVEl3Y0hncExDaHRZWGd0YUdWcFoy
+          aDBPalV5TUhCNEtYc0tJQ0F1YkdsMlpTMXdhV3hzZTJadmJuUXRjMmw2WlRveE0zQjRJV2x0Y0c5
+          eWRHRnVkSDBLSUNBdWFIVmtMV0owYm50bWIyNTBMWE5wZW1VNk1UTndlQ0ZwYlhCdmNuUmhiblE3
+          Y0dGa1pHbHVaem8yY0hnZ01UQndlQ0ZwYlhCdmNuUmhiblI5Q2lBZ0xuTndiM1F0Y205c1pYdG1i
+          MjUwTFhOcGVtVTZNVEl1TlhCNElXbHRjRzl5ZEdGdWRIMEtJQ0F1YzNCdmRDMXVZVzFsZTJadmJu
+          UXRjMmw2WlRveE5uQjRJV2x0Y0c5eWRHRnVkSDBLSUNBdWMzQnZkQzF6ZEdGMGUyWnZiblF0YzJs
+          NlpUb3hNM0I0SVdsdGNHOXlkR0Z1ZEgwS0lDQXVZMjl0YlMxMFpYaDBlMlp2Ym5RdGMybDZaVG94
+          Tm5CNElXbHRjRzl5ZEdGdWREdHNhVzVsTFdobGFXZG9kRG94TGpVaGFXMXdiM0owWVc1MGZRb2dJ
+          QzUwWldGdExXSmhaR2RsZTJadmJuUXRjMmw2WlRveE0zQjRJV2x0Y0c5eWRHRnVkSDBLSUNBdWMy
+          TnZjbVV0YldGcGJpMXVkVzE3Wm05dWRDMXphWHBsT2pJMmNIZ2hhVzF3YjNKMFlXNTBmUW9nSUM1
+          elkyOXlaUzF2ZG1WeWMzdG1iMjUwTFhOcGVtVTZNVFJ3ZUNGcGJYQnZjblJoYm5SOUNpQWdMblJo
+          Y21kbGRDMWxjWHRtYjI1MExYTnBlbVU2TVROd2VDRnBiWEJ2Y25SaGJuUjlDaUFnTG1KaGRIUmxj
+          bk10WTJWc2JIdG1iMjUwTFhOcGVtVTZNVFF1TlhCNElXbHRjRzl5ZEdGdWRIMEtJQ0F1WW05M2JH
+          VnlMV05sYkd4N1ptOXVkQzF6YVhwbE9qRTBjSGdoYVcxd2IzSjBZVzUwZlFvZ0lDNXZaRzkwZTJa
+          dmJuUXRjMmw2WlRveE1uQjRJV2x0Y0c5eWRHRnVkSDBLSUNBdWMyOWpMWFJsWVcwdFltOTRlMlp2
+          Ym5RdGMybDZaVG94TjNCNElXbHRjRzl5ZEdGdWRIMEtJQ0F1YzI5akxXZHZZV3h6ZTJadmJuUXRj
+          Mmw2WlRveU5uQjRJV2x0Y0c5eWRHRnVkSDBLSUNBdWMyOWpMV05zYjJOcmUyWnZiblF0YzJsNlpU
+          b3hNeTQxY0hnaGFXMXdiM0owWVc1MGZRb2dJQzV6YjJNdGMzUmhkSE10Y205M2UyWnZiblF0YzJs
+          NlpUb3hNeTQxY0hnaGFXMXdiM0owWVc1MGZRb2dJQzUwYjNWeUxXZHliM1Z3TFdoa2NudG1iMjUw
+          TFhOcGVtVTZNVE53ZUNGcGJYQnZjblJoYm5SOUNpQWdMbWh2ZEMxd2FXeHNlMlp2Ym5RdGMybDZa
+          VG94TW5CNElXbHRjRzl5ZEdGdWRIMEtJQ0F1YzNCdmNuUXRkR0ZuZTJadmJuUXRjMmw2WlRveE1u
+          QjRJV2x0Y0c5eWRHRnVkSDBLSUNBdWJHbDJaUzF3YkdGNVpYSXRibUZ0Wlh0bWIyNTBMWE5wZW1V
+          Nk1UVndlQ0ZwYlhCdmNuUmhiblE3YldsdUxXaGxhV2RvZERveU5uQjRJV2x0Y0c5eWRHRnVkSDBL
+          SUNBdWJHbDJaUzF3YkdGNVpYSXRibUZ0WlNCemJXRnNiSHRtYjI1MExYTnBlbVU2TGpobGJTRnBi
+          WEJ2Y25SaGJuUjlDaUFnSTJOeWFXTnJaWFJOWlhSeWFXTnplMlp2Ym5RdGMybDZaVG94TXk0MWNI
+          Z2hhVzF3YjNKMFlXNTBmUW9nSUM1dGFXTXRjSFZzYzJWN1ptOXVkQzF6YVhwbE9qRTJjSGdoYVcx
+          d2IzSjBZVzUwZlFwOUNnPT0iKS5kZWNvZGUoKQphc3NlcnQgJ21vYmlsZVRleHRCb29zdCcgbm90
+          IGluIHMsJ2FscmVhZHkgcGF0Y2hlZCcKaT1zLmZpbmQoJzwvc3R5bGU+JykKYXNzZXJ0IGk+MTAw
+          MCwnc3R5bGUgYW5jaG9yIG1pc3NpbmcnCnM9c1s6aV0rQ1NTK3NbaTpdCmFzc2VydCBzLmNvdW50
+          KCdtb2JpbGVUZXh0Qm9vc3QnKT09MQppby5vcGVuKHAsJ3cnLGVuY29kaW5nPSd1dGYtOCcpLndy
+          aXRlKHMpCnByaW50KCdwYXRjaDYgT0s6IG1vYmlsZSB0ZXh0IGJvb3N0JykK
+          B64EOF
+          md5sum patch6.py
+          python3 patch6.py
+      - name: push
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add docs/studio.html
+          git commit -m "studio: bigger clear text on mobile (responsive boost)"
+          git push
