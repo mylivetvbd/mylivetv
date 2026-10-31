@@ -8098,13 +8098,43 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     catch(e){ return null; }
   }
 
+  async function autoLiveMatch(){
+    var list;
+    try{
+      var r=await Promise.all([
+        loadCrexAllCricket().catch(function(){return [];}),
+        loadAllWorldFootball().catch(function(){return [];})
+      ]);
+      list=[].concat(r[0]||[],r[1]||[]);
+    }catch(e){ return null; }
+    if(!list||!list.length) return null;
+    var live=list.filter(function(m){ return m && String(m.state||'')==='live'; });
+    if(!live.length) return null;
+    function pts(m){
+      var t=((m.title||'')+' '+(m.leagueName||'')).toLowerCase(); var p=0;
+      if(t.indexOf('bangladesh')>=0) p+=1000;
+      if(m.sport==='cricket') p+=50;
+      p+=(m.hotScore||0);
+      return p;
+    }
+    live.sort(function(a,b){ return pts(b)-pts(a); });
+    return live[0];
+  }
+
   async function boot(){
     var cfg=await loadCfg();
     if(!cfg || cfg.on===false || !cfg.uid){
-      setMsg((cfg&&cfg.message)?cfg.message:'এই মুহূর্তে কোনো খেলা সম্প্রচার হচ্ছে না।<br>খেলার সময় আবার আসুন! 🙏');
-      clearTimeout(window.__mlvPoll);
-      window.__mlvPoll=setTimeout(boot,30000); /* ৩০ সেকেন্ড পরপর অটো-চেক */
-      return;
+      /* 🤖 অটো-পাইলট: বস কিছু না বললে লাইভ ম্যাচ নিজেই খুঁজে অন-এয়ার */
+      var autoM=null;
+      if(!cfg || cfg.auto!==false){ try{ autoM=await autoLiveMatch(); }catch(e){} }
+      if(autoM){
+        cfg={on:true,uid:autoM.uid,title:autoM.title||'',__auto:true};
+      }else{
+        setMsg((cfg&&cfg.message)?cfg.message:'এই মুহূর্তে কোনো খেলা সম্প্রচার হচ্ছে না।<br>খেলার সময় আবার আসুন! 🙏');
+        clearTimeout(window.__mlvPoll);
+        window.__mlvPoll=setTimeout(boot,12000); /* ১২ সেকেন্ড পরপর অটো-চেক */
+        return;
+      }
     }
     clearTimeout(window.__mlvPoll);
     setMsg(cfg.title?('🔴 আজকের খেলা: <b style="color:#fff">'+cfg.title+'</b>'):'খেলা প্রস্তুত!');
