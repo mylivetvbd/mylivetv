@@ -7005,11 +7005,11 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         if(sm.sport==='soccer'){var scn=(g('socScoreNum').match(/[০-৯0-9]+/g)||[]);return {sport:'soccer',home:g('socHomeName'),away:g('socAwayName'),hs:scn[0]||'',as:scn[1]||''};}
         var sc=g('uiScore');var m=sc.match(/([০-৯0-9]+)\s*\/\s*([০-৯0-9]+)/);
         var ov=(g('uiOvers').match(/[০-৯0-9]+(?:\.[০-৯0-9]+)?/)||[''])[0];
-        var eq=g('uiEquation');var nd=(eq.match(/([০-৯0-9]+)\s*রান/)||[])[1]||'';
-        var wait=/অপেক্ষা/.test(g('uiBat0Name'))||/অপেক্ষা/.test(g('uiBowler'));
+        var eq=g('uiEquation');var nd=(eq.match(/জয়ের জন্য\s*([০-৯0-9]+)\s*রান/)||eq.match(/([০-৯0-9]+)\s*রান দরকার/)||[])[1]||'';var chase=(window.__cricInnIdx===1)||/রান দরকার|জয়ের জন্য/.test(eq);if(chase&&!nd&&window.__cricPrev&&window.__cricCur){var _nn=(window.__cricPrev.runs+1)-window.__cricCur.runs;if(_nn>0)nd=String(_nn);}
+        var opM=eq.match(/\(([^:()]+):\s*([০-৯0-9]+\s*\/\s*[০-৯0-9]+)\)/);var opp=opM?opM[1].trim():'';var osc=opM?opM[2].replace(/\s+/g,''):'';var tg=(eq.match(/টার্গেট\s*([০-৯0-9]+)/)||[])[1]||'';if(!tg&&chase&&window.__cricPrev)tg=String(window.__cricPrev.runs+1);if(!osc&&window.__cricPrev)osc=window.__cricPrev.runs+'/'+window.__cricPrev.wkts;var wait=/অপেক্ষা/.test(g('uiBat0Name'))||/অপেক্ষা/.test(g('uiBowler'));
         var brk=/বিরতি/.test(g('uiBowler'))||/বিরতি/.test(g('spotRole'));
         var tm='';var srM=g('spotRole').match(/স্ট্রাইকে\s*•\s*([\u0980-\u09FF ]+?)\s*\(/);if(srM)tm=srM[1].trim();
-        return {sport:'cricket',phase:brk?'break':(wait?'wait':(/রান দরকার|জয়ের জন্য/.test(eq)?'chase':'first')),team:tm||'ব্যাটিং দল',runs:m?m[1]:'',wkts:m?m[2]:'',overs:ov,need:nd};
+        return {sport:'cricket',phase:brk?'break':(wait?'wait':(chase?'chase':'first')),team:tm||'ব্যাটিং দল',runs:m?m[1]:'',wkts:m?m[2]:'',overs:ov,need:nd,tgt:tg,opp:opp,oscore:osc};
       }catch(e){return null;}
     };
     function aiCtxGet(){
@@ -7040,7 +7040,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         if(now-aiLastCall<gap)return null;
         aiLastCall=now;
         var sys='তুমি মাঠের হুল্লোড় চ্যানেলের বাংলা ক্রীড়া ধারাভাষ্যকার (ক্রিকেট ও ফুটবল)। তোমার কথা টিভির লাইভ ধারাভাষ্যের মতো, ছোট ছোট ঝাঁঝালো বাক্য, বইয়ের গদ্য নয়।\nঅলঙ্ঘনীয় নিয়ম:\n১) প্রথম বাক্যেই ঘটনা এবং সংশ্লিষ্ট খেলোয়াড়ের নাম; তথ্যে বা ঘটনায় যে নাম আছে শুধু সেটাই বলবে, নিজে অনুমান করবে না।\n২) দ্বিতীয় বাক্যে ঠিক সেই দিকটাই বলবে যেটা ব্যবহারকারী-বার্তায় "দ্বিতীয় বাক্যের দিক" হিসেবে দেওয়া আছে, অন্য দিক নয়।\n৩) একই লাইনে একই খেলোয়াড়ের নাম একবারই; দ্বিতীয়বার লাগলে তিনি বলবে। সর্বোচ্চ ২টি বাক্য, মোট ২৫ শব্দের কম। আগের লাইনের বাক্য হুবহু আবার বলবে না।\n৪) সব সংখ্যা প্রদত্ত তথ্য থেকে হুবহু, বাংলা অঙ্কে; নিজে কোনো সংখ্যা বানাবে না বা হিসাব কষবে না।\n৫) সংক্ষিপ্ত ফিগার (যেমন ৩.২-০-২৮-১) হুবহু কপি করবে না; কথায় বলবে: তিন ওভারে আটাশ রান দিয়ে এক উইকেট।\n৬) সহজ কথ্য শব্দ; কঠিন সাহিত্যিক শব্দ, ইংরেজি শব্দ, ইমোজি, উদ্ধৃতিচিহ্ন নিষেধ।\n৭) দল বা খেলোয়াড়ের নাম বার্তায় যে বানানে লেখা আছে হুবহু সেই বানানে বলবে; নামের অনুবাদ, নতুন বানান বা বিকৃতি কঠোর নিষেধ।\n৮) স্কোর সবসময় অঙ্কে লিখবে X/Y রূপে (যেমন ১৭৯/৫); স্কোর ভেঙে আলাদা শব্দে লেখা নিষেধ।\n৯) পরিস্থিতি-তথ্যে প্রথম ইনিংস লেখা থাকলে টার্গেট বা রান তাড়ার কথা বলা সম্পূর্ণ নিষেধ; রান তাড়া লেখা থাকলে তাড়ার ভাষাতেই বলবে।\nভালো উদাহরণ:\nছক্কা! হৃদয়ের ব্যাটে বিশাল ছক্কা, ২২ বলে ৩৮!\nবোল্ড! বুমরাহর ইয়র্কারে উড়ে গেল স্টাম্প। চাপে বাংলাদেশ, ১৪৫ রানে ৫ উইকেট।\nচার! লিটনের কবজির মোচড়ে বল সীমানায়। ৫০ বলে ৬২ রানে অপরাজিত তিনি।';
-        var fb=!!(typeof selectedMatch!=='undefined'&&selectedMatch&&selectedMatch.sport==='soccer');if(fb){sys=sys.split('ভালো উদাহরণ:')[0]+'১০) এখন খেলা চলছে ফুটবল। ক্রিকেটের কোনো শব্দ (ওভার, উইকেট, ব্যাটার, বোলার, রান, ছক্কা, চার, ইনিংস, স্টাম্প, বল হাতে) সম্পূর্ণ নিষেধ; শুধু ফুটবলের ভাষা।\nভালো উদাহরণ:\nগোল! দারুণ শটে বল জালে, স্কোর এখন দুই এক!\nহলুদ কার্ড! কড়া ট্যাকলে রেফারি কঠোর। চাপ বাড়ছে রক্ষণে।\nদুর্দান্ত সেভ! গোলরক্ষকের হাতে আটকে গেল নিশ্চিত গোল।';}var angles=fb?['কোন দল আক্রমণে দাপট দেখাচ্ছে','স্কোরলাইন অনুযায়ী ম্যাচ কোন দিকে ঝুঁকছে','কোন দল চাপে আছে','বাকি সময়ে ফলাফলের সম্ভাবনা']:['স্ট্রাইকে থাকা ব্যাটারের ইনিংস, তথ্য থেকে হুবহু','বোলারের নাম এবং সে কত ওভারে কত রান দিয়ে কটা উইকেট নিয়েছে (কথায়)','কোন দল চাপে আছে','জয়ের হিসাব (সমীকরণ)'];var bnf=function(x){try{return (window.__bnFix?window.__bnFix(String(x||'')):String(x||''));}catch(e){return String(x||'');}};var innS='';try{if(!fb){var _eq=document.getElementById('uiEquation');_eq=_eq?String(_eq.textContent||''):'';innS=/রান দরকার|জয়ের জন্য/.test(_eq)?'পরিস্থিতি: রান তাড়া চলছে। ':'পরিস্থিতি: প্রথম ইনিংস, টার্গেট নেই। ';}}catch(_e){}var usr=bnf(aiCtxGet())+'\n'+innS+(kind==='idle'?'এখন বড় ঘটনা নেই, পরিস্থিতি বিশ্লেষণ করো। মূল তথ্য: ':'এইমাত্র ঘটল: ')+bnf(baseText)+'\nদ্বিতীয় বাক্যের দিক: '+angles[(aiAngle++)%4]+'।';
+        var fb=!!(typeof selectedMatch!=='undefined'&&selectedMatch&&selectedMatch.sport==='soccer');if(fb){sys=sys.split('ভালো উদাহরণ:')[0]+'১০) এখন খেলা চলছে ফুটবল। ক্রিকেটের কোনো শব্দ (ওভার, উইকেট, ব্যাটার, বোলার, রান, ছক্কা, চার, ইনিংস, স্টাম্প, বল হাতে) সম্পূর্ণ নিষেধ; শুধু ফুটবলের ভাষা।\nভালো উদাহরণ:\nগোল! দারুণ শটে বল জালে, স্কোর এখন দুই এক!\nহলুদ কার্ড! কড়া ট্যাকলে রেফারি কঠোর। চাপ বাড়ছে রক্ষণে।\nদুর্দান্ত সেভ! গোলরক্ষকের হাতে আটকে গেল নিশ্চিত গোল।';}var angles=fb?['কোন দল আক্রমণে দাপট দেখাচ্ছে','স্কোরলাইন অনুযায়ী ম্যাচ কোন দিকে ঝুঁকছে','কোন দল চাপে আছে','বাকি সময়ে ফলাফলের সম্ভাবনা']:['স্ট্রাইকে থাকা ব্যাটারের ইনিংস, তথ্য থেকে হুবহু','বোলারের নাম এবং সে কত ওভারে কত রান দিয়ে কটা উইকেট নিয়েছে (কথায়)','কোন দল চাপে আছে','জয়ের হিসাব (সমীকরণ)'];var bnf=function(x){try{return (window.__bnFix?window.__bnFix(String(x||'')):String(x||''));}catch(e){return String(x||'');}};var innS='';try{if(!fb){var _eq=document.getElementById('uiEquation');_eq=_eq?String(_eq.textContent||''):'';var _ch=(window.__cricInnIdx===1)||/রান দরকার|জয়ের জন্য/.test(_eq);innS=_ch?'পরিস্থিতি: রান তাড়া চলছে (দ্বিতীয় ইনিংস), দল জয়ের জন্য ব্যাট করছে। ':'পরিস্থিতি: প্রথম ইনিংস, টার্গেট নেই, দল সংগ্রহ গড়ছে। ';}}catch(_e){}var usr=bnf(aiCtxGet())+'\n'+innS+(kind==='idle'?'এখন বড় ঘটনা নেই, পরিস্থিতি বিশ্লেষণ করো। মূল তথ্য: ':'এইমাত্র ঘটল: ')+bnf(baseText)+'\nদ্বিতীয় বাক্যের দিক: '+angles[(aiAngle++)%4]+'।';
         var t=aiClean(await callGroq(sys,usr));
         try{if(t&&window.__guardAI){t=window.__guardAI(t,aiCtxGet()+' '+String(baseText||''));}}catch(_e){}
         if(!t||t.length<8){aiFails++;if(aiFails>=3){aiBlockUntil=Date.now()+300000;aiFails=0;}if(kind==='idle'&&anI&&window.__anLine){var _al=window.__anLine(anI);if(_al)return _al;}return null;}
@@ -7681,6 +7681,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         const curInn = parseInning(crexInningValue(sv, activeIndex)) || { runs:0, wkts:0, ovRaw:'0.0', dispScore:'0/0' };
         // In Tests a follow-on can change innings order; do not guess an opponent's score.
         const prevInn = activeIndex === 1 ? inn1 : null;
+        try{window.__cricInnIdx=activeIndex;window.__cricPrev=prevInn?{runs:prevInn.runs,wkts:prevInn.wkts}:null;window.__cricCur={runs:curInn.runs,wkts:curInn.wkts};}catch(_e){}
 
         const rNum = curInn.runs, wNum = curInn.wkts;
         const ov = normOvers(curInn.ovRaw);
@@ -7690,6 +7691,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         // Compute live chase equation if 2nd innings in limited overs!
         let eqText = '';
         if (!eqText) eqText = isInactive ? (/innings break/i.test(breakStatus) ? 'ইনিংস বিরতি' : statusBn(breakStatus)) : statusBn(selectedMatch.resStr || selectedMatch.bdTime);
+        if (prevInn && !isInactive && !/দরকার/.test(eqText)) { const _tgt=prevInn.runs+1, _nd=_tgt-rNum; if(_nd>0) eqText = `টার্গেট ${bn(_tgt)} • জয়ের জন্য ${bn(_nd)} রান দরকার` + (eqText ? ` • ${eqText}` : ''); }
         const oppScore = prevInn ? ` (${bowlBn}: ${bn(prevInn.dispScore)})` : '';
         document.getElementById('uiEquation').textContent = `${batBn} বনাম ${bowlBn}${oppScore} • ${eqText}`;
 
@@ -8126,7 +8128,12 @@ window.__anPools={
   'ব্যাট করতে নেমে {T} তুলেছে {R}/{W}। জয় থেকে {ND} রান দূরে তারা।',
   'তাড়ার চাপ সামলে এগোচ্ছে {T}, এখন {R}/{W}। প্রতিটা বল এখন দামি।',
   'জয়ের জন্য চাই {ND} রান। বোলিং দল জানে, একটা উইকেটই বদলে দিতে পারে ম্যাচ।',
-  'স্কোর {R}/{W}, দরকার {ND} রান। শেষ পর্যন্ত স্নায়ুর লড়াই।'
+  'স্কোর {R}/{W}, দরকার {ND} রান। শেষ পর্যন্ত স্নায়ুর লড়াই।',
+  'রান তাড়া চলছে। {T} এখন {R}/{W}। প্রতিটা বল এখন দামি।',
+  'তাড়ায় {T}, স্কোর {R}/{W}। উইকেট হাতে রেখে এগোনোই এখন বড় কাজ।',
+  'দ্বিতীয় ইনিংস চলছে, {T} ছুটছে জয়ের দিকে। স্কোর {R}/{W}।',
+  '{OP} আগে ব্যাট করে তুলেছিল {OS}। জবাবে {T} এখন {R}/{W}।',
+  'টার্গেট {TG} রান। {T} দাঁড়িয়ে {R}/{W}-এ। সমীকরণ জমছে প্রতি ওভারে।'
  ],
  wait:[
   'নতুন ব্যাটসম্যান আসছেন ক্রিজে। স্কোর এই মুহূর্তে {R}/{W}।',
@@ -8161,16 +8168,18 @@ window.__anLine=function(info){
   else pool='first';
   var arr=window.__anPools[pool]||[];if(!arr.length)return '';
   var hist=window.__anHist[pool]||(window.__anHist[pool]=[]);
-  var idxs=[],i;for(i=0;i<arr.length;i++)if(hist.indexOf(i)<0)idxs.push(i);
-  if(!idxs.length){hist.length=0;for(i=0;i<arr.length;i++)idxs.push(i);}
-  var pick=idxs[Math.floor(Math.random()*idxs.length)];
-  hist.push(pick);if(hist.length>Math.max(1,Math.floor(arr.length/2)))hist.shift();
-  var t=arr[pick];var hw=(info.wkts!==''&&info.wkts!=null)?(10-(parseInt(window.__gAr(info.wkts),10)||0)):'';
-  var map={T:info.team||'ব্যাটিং দল',R:info.runs,W:info.wkts,O:info.overs,ND:info.need,HW:hw,H:info.home,A:info.away,HS:info.hs,AS:info.as};
-  var ok=true;
-  t=t.replace(/\{(T|R|W|O|ND|HW|H|A|HS|AS)\}/g,function(_,k){var v=map[k];if(v==null||v==='')ok=false;return window.__gBn(String(v==null?'':v));});
-  if(!ok)return pool==='wait'?'পরের বলের অপেক্ষায় সবাই। ম্যাচের উত্তেজনা কিন্তু কমছে না।':'খেলা চলছে, চোখ রাখুন স্কোরবোর্ডে। উত্তেজনা বাড়ছে প্রতি মুহূর্তে।';
-  return t;
+  var hw=(info.wkts!==''&&info.wkts!=null)?(10-(parseInt(window.__gAr(info.wkts),10)||0)):'';
+  var map={T:info.team||'ব্যাটিং দল',R:info.runs,W:info.wkts,O:info.overs,ND:info.need,TG:info.tgt,OP:info.opp,OS:info.oscore,HW:hw,H:info.home,A:info.away,HS:info.hs,AS:info.as};
+  var fill=function(t){var ok=true;var r=t.replace(/\{(TG|OP|OS|T|R|W|O|ND|HW|H|A|HS|AS)\}/g,function(_,k){var v=map[k];if(v==null||v===''){ok=false;return '';}return window.__gBn(String(v));});return ok?r:null;};
+  var cands=[],i;for(i=0;i<arr.length;i++)if(hist.indexOf(i)<0)cands.push(i);
+  if(!cands.length){hist.length=0;for(i=0;i<arr.length;i++)cands.push(i);}
+  while(cands.length){
+   var ci=Math.floor(Math.random()*cands.length),pick=cands[ci];cands.splice(ci,1);
+   var out=fill(arr[pick]);
+   if(out){hist.push(pick);if(hist.length>Math.max(1,Math.floor(arr.length/2)))hist.shift();return out;}
+  }
+  for(i=0;i<arr.length;i++){var o2=fill(arr[i]);if(o2)return o2;}
+  return pool==='wait'?'পরের বলের অপেক্ষায় সবাই। ম্যাচের উত্তেজনা কিন্তু কমছে না।':(pool==='chase'?'রান তাড়া চলছে, ম্যাচ জমে উঠেছে। চোখ রাখুন স্কোরবোর্ডে।':'খেলা চলছে, চোখ রাখুন স্কোরবোর্ডে। উত্তেজনা বাড়ছে প্রতি মুহূর্তে।');
  }catch(e){return 'খেলা চলছে, চোখ রাখুন স্কোরবোর্ডে। উত্তেজনা বাড়ছে প্রতি মুহূর্তে।';}
 };
 /* ---- সাদা-তালিকা শব্দভাণ্ডার ---- */
@@ -8304,6 +8313,22 @@ window.__hd2Toggle=function(){window.__hd2=!window.__hd2;localStorage.setItem('h
       };
       window.__bnWrapped=true;
     } else if(!window.__bnWrapped) setTimeout(wrapSpeak,700);
+  })();
+
+  /* shimGuard — অ্যান্ড্রয়েড-অ্যাপের TTS-সেতু speakBangla বদলে দিলে সংখ্যা→কথা স্তর আবার জুড়ে দাও */
+  (function shimGuard(){
+    try{
+      if(window.__mlvTtsShim && !window.__bnWrapped2){
+        var o2=window.speakBangla;
+        window.speakBangla=function(t,fp){
+          try{t=window.__bnFix(t);}catch(e){}
+          try{t=window.__spokenFix(t);}catch(e){}
+          return o2(t,fp);
+        };
+        window.__bnWrapped2=true;
+      }
+    }catch(e){}
+    setTimeout(shimGuard,1000);
   })();
 
 
