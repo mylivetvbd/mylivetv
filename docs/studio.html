@@ -8425,7 +8425,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         for(let __i=0;__i<__all.length;__i++){const __k=__keyOf(__all[__i]);if(__k&&!__seen.keys[__k])__new.push(__all[__i]);}
         if(!__seen.primed){for(let __i=0;__i<__new.length;__i++)__seen.keys[__keyOf(__new[__i])]=1;__seen.primed=true;__new=[];}
         if(__new.length>3)__new=__new.slice(-3);
-        if (__new.length && stState==='in') {
+        if (__new.length && stState==='in' && socLiveRunning) {
           lastSoccerEventKey = evKey;
           for(const __it of __new){
           __seen.keys[__keyOf(__it)]=1;
@@ -8494,7 +8494,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           try{
             var X=window.__socX||null,P=window.__socPrev||null;
             if(X&&!P){window.__socPrev=X;}
-            else if(X&&P&&stState==='in'&&!hostMicActive&&!isSpeakingNow&&!syncBusy&&Date.now()-lastSpeakTime>6000){
+            else if(X&&P&&stState==='in'&&socLiveRunning&&!hostMicActive&&!isSpeakingNow&&!syncBusy&&Date.now()-lastSpeakTime>6000){
               var gkH=(window.__socRoster&&window.__socRoster.gk[String(homeC.team.id)])||'';
               var gkA=(window.__socRoster&&window.__socRoster.gk[String(awayC.team.id)])||'';
               var dl=null;
@@ -8520,9 +8520,10 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           analysisStep++;
           const prevCam = camMode; camMode = (analysisStep % 2 === 1) ? 2 : 1;
           let text = `${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}। ${stState === 'in' ? 'ম্যাচ চলছে।' : 'ম্যাচের সর্বশেষ স্কোর।'}`;
-          let quick=null;try{quick=(stState==='in'&&window.__socQuickLine)?window.__socQuickLine():null;}catch(_e){}
-          rememberSpoken(quick||text);
-          if (!hostMicActive) { void (async()=>{let t2=quick||text;try{if(!quick){const a=await aiLine(text,'idle');if(a&&selectedMatch&&selectedMatch.sport==='soccer'&&!hostMicActive){t2=a;rememberSpoken(a);}}}catch(_e){} document.getElementById('commText').textContent = (quick?`⚽ `:`📊 ফুটবল বিশ্লেষণ: `)+t2; await speakBangla(t2);})().finally(()=>{if(!syncBusy)isSpeakingNow=false;}); }
+          let htLine=null;try{if(stState==='in'&&!socLiveRunning){var _hp=['বিরতি চলছে। স্কোর '+hBn+' '+bn(hSc)+', '+aBn+' '+bn(aSc)+'। দুই দল এখন ড্রেসিংরুমে।','প্রথমার্ধ শেষ। কোচের পরামর্শ চলছে, একটু পরেই দ্বিতীয়ার্ধ।','বিরতির বিশ্রাম চলছে। দ্বিতীয়ার্ধে কৌশল কী বদলায়, সেটাই দেখার।'];htLine=_hp[analysisStep%_hp.length];}}catch(_e){}
+          let quick=null;try{quick=(stState==='in'&&socLiveRunning&&window.__socQuickLine)?window.__socQuickLine():null;}catch(_e){}
+          rememberSpoken(htLine||quick||text);
+          if (!hostMicActive) { void (async()=>{let t2=htLine||quick||text;try{if(!htLine&&!quick){const a=await aiLine(text,'idle');if(a&&selectedMatch&&selectedMatch.sport==='soccer'&&!hostMicActive){t2=a;rememberSpoken(a);}}}catch(_e){} document.getElementById('commText').textContent = (htLine?`⏸️ `:(quick?`⚽ `:`📊 ফুটবল বিশ্লেষণ: `))+t2; await speakBangla(t2);})().finally(()=>{if(!syncBusy)isSpeakingNow=false;}); }
           camMode = prevCam;
           }
         }
