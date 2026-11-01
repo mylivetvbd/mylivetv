@@ -1,0 +1,23 @@
+name: catapp4
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: apply
+        run: |
+          set -e
+          curl -sL --retry 3 -o m4.txt https://d.uguu.se/tkdzMdeF.txt
+          echo "502e6f16fd4544520c124e4a4ba80297  m4.txt" | md5sum -c -
+          base64 -di m4.txt > my-channels-master.m3u
+          echo "5f0c2e4e87407480124162a416723085  my-channels-master.m3u" | md5sum -c -
+          test "$(grep -c '^#EXTINF' my-channels-master.m3u)" = "8733"
+          rm m4.txt
+          git config user.name mylivetvbd
+          git config user.email mylivetvbd@users.noreply.github.com
+          git add my-channels-master.m3u
+          git diff --cached --quiet || git commit -m "restore: 75-category master playlist (round-2)"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
