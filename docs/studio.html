@@ -7002,7 +7002,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       try{
         var g=function(id){var el=document.getElementById(id);return el?String(el.textContent||'').trim():'';};
         var sm=(typeof selectedMatch!=='undefined'&&selectedMatch)?selectedMatch:{};
-        if(sm.sport==='soccer'){var scn=(g('socScoreNum').match(/[০-৯0-9]+/g)||[]);return {sport:'soccer',home:g('socHomeName'),away:g('socAwayName'),hs:scn[0]||'',as:scn[1]||''};}
+        if(sm.sport==='soccer'){var scn=(g('socScoreNum').match(/[০-৯0-9]+/g)||[]);var sx=window.__socX||{};var pt='',pp='';if(sx.posH!=null&&sx.posA!=null){pt=sx.posH>=sx.posA?g('socHomeName'):g('socAwayName');pp=String(Math.round(Math.max(sx.posH,sx.posA)));}return {sport:'soccer',home:g('socHomeName'),away:g('socAwayName'),hs:scn[0]||'',as:scn[1]||'',min:(sx.min!=null?String(sx.min):''),pt:pt,pp:pp,sh:(sx.shH>=0?String(sx.shH):''),sa:(sx.shA>=0?String(sx.shA):'')};}
         var sc=g('uiScore');var m=sc.match(/([০-৯0-9]+)\s*\/\s*([০-৯0-9]+)/);
         var ov=(g('uiOvers').match(/[০-৯0-9]+(?:\.[০-৯0-9]+)?/)||[''])[0];
         var eq=g('uiEquation');var nd=(eq.match(/জয়ের জন্য\s*([০-৯0-9]+)\s*রান/)||eq.match(/([০-৯0-9]+)\s*রান দরকার/)||[])[1]||'';var chase=(window.__cricInnIdx===1)||/রান দরকার|জয়ের জন্য/.test(eq);if(chase&&!nd&&window.__cricPrev&&window.__cricCur){var _nn=(window.__cricPrev.runs+1)-window.__cricCur.runs;if(_nn>0)nd=String(_nn);}
@@ -7017,7 +7017,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         const g=function(id){var el=document.getElementById(id);return el?String(el.textContent||'').replace(/\s+/g,' ').trim():'';};
         const sm=(typeof selectedMatch!=='undefined'&&selectedMatch)?selectedMatch:{};
         if(sm.sport==='soccer'){
-          return 'খেলা: ফুটবল। ম্যাচ: '+(sm.title||'')+' ('+(sm.leagueName||'')+')। স্কোর: '+g('socHomeName')+' '+g('socScoreNum')+' '+g('socAwayName')+'। পরিসংখ্যান: '+g('socStatsLine');
+          var _sx=window.__socX||{};return 'খেলা: ফুটবল। ম্যাচ: '+(sm.title||'')+' ('+(sm.leagueName||'')+')। স্কোর: '+g('socHomeName')+' '+g('socScoreNum')+' '+g('socAwayName')+'। পরিসংখ্যান: '+g('socStatsLine')+(_sx.min!=null?'। ম্যাচের মিনিট: '+_sx.min:'')+(window.__socLastEv?'। সর্বশেষ ঘটনা: '+window.__socLastEv:'');
         }
         return 'খেলা: ক্রিকেট। ম্যাচ: '+(sm.title||'')+' ('+(sm.leagueName||'')+')। স্কোর: '+g('uiScore')+', ওভার: '+g('uiOvers')+'। জয়ের সমীকরণ: '+g('uiEquation')+'। ব্যাটার, বিন্যাস রান (বল): '+g('uiBat0Name')+' '+aiRB(g('uiBat0Runs'))+' এবং '+g('uiBat1Name')+' '+aiRB(g('uiBat1Runs'))+'। বোলার: '+g('uiBowler')+'।';
       }catch(e){return '';}
@@ -7868,6 +7868,21 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         const previousHud=captureBroadcastHud();
         const lgTitle = (data.header && data.header.league && data.header.league.name) || selectedMatch.leagueName || 'Football';
         selectedMatch.leagueName = lgTitle;
+        /*soc2 roster*/
+        try{
+          if(!window.__socRoster || window.__socRoster.uid!==polledMatch.uid){
+            var _ro={uid:polledMatch.uid,jer:{},gk:{}};
+            (data.rosters||[]).forEach(function(rt){
+              var tid=String((rt.team&&rt.team.id)||'');
+              (rt.roster||[]).forEach(function(p){
+                var nm=(p.athlete&&(p.athlete.displayName||p.athlete.fullName))||'';
+                if(nm&&p.jersey)_ro.jer[nm]=String(p.jersey);
+                if(nm&&p.starter&&p.position&&/^G/.test(String(p.position.abbreviation||'')))_ro.gk[tid]=nm;
+              });
+            });
+            window.__socRoster=_ro;
+          }
+        }catch(_e){}
 
         const comp = (data.header && data.header.competitions && data.header.competitions[0]) || {};
         const comps = comp.competitors || [];
@@ -7947,6 +7962,8 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           if (sh0 && sh1) parts.push(`শট: ${bn(sh0)} - ${bn(sh1)}`);
           if (c0 && c1) parts.push(`কর্নার: ${bn(c0)} - ${bn(c1)}`);
           statSummary = parts.join(' • ');
+          /*soc2 stats*/
+          try{window.__socX={min:parseInt(dispClock,10)||null,posH:parseFloat(p0)||null,posA:parseFloat(p1)||null,shH:parseInt(sh0,10),shA:parseInt(sh1,10),sotH:parseInt(getStat(0,'shotsOnTarget'),10),sotA:parseInt(getStat(1,'shotsOnTarget'),10),coH:parseInt(c0,10),coA:parseInt(c1,10),svH:parseInt(getStat(0,'saves'),10),svA:parseInt(getStat(1,'saves'),10)};}catch(_e){}
         }
         document.getElementById('socStatsLine').textContent = statSummary || `${hBn} বনাম ${aBn} • সরাসরি ফুটবল আপডেট`;
 
@@ -7971,6 +7988,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           // Do not assign a player to a team unless that player's team is explicit on the participant.
           const person=participants.find(p=>team && String(p.team?.id || p.athlete?.team?.id || '')===teamId && (p.athlete?.displayName || p.athlete?.fullName));
           const name=person ? (person.athlete.displayName || person.athlete.fullName) : '';
+          const jer=(name&&window.__socRoster&&window.__socRoster.jer[name])||'';
           const clk = (latestComm.time && latestComm.time.displayValue) || (latestComm.clock && latestComm.clock.displayValue) || '';
           const minute = clk ? `${bn(String(clk).replace(/['’]/g,'').replace(/\+/g,' যোগ '))} মিনিটে ` : '';
           const actor = [team ? teamBn(team) : '', name].filter(Boolean).join(' এর ');
@@ -7987,12 +8005,43 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           else if (/foul/.test(combined)) action = 'ফাউল';
           else if (/saved|save/.test(combined)) action = 'শট বা সেভ';
           else if (/shot|attempt|header/.test(combined)) action = 'শট';
-          const line = action ? `${minute}${action}। ${label}। স্কোর ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।` : `${minute}ম্যাচের নতুন আপডেট এসেছে। স্কোর ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
+          const jerTxt=(name&&jer)?` — জার্সি নম্বর ${bn(jer)}`:'';
+          let line;
+          if(action==='গোল') line=`${minute}গোওওল! ${label}${jerTxt}। স্কোর এখন ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
+          else if(action==='আত্মঘাতী গোল') line=`${minute}আত্মঘাতী গোল! ${label}${jerTxt}। স্কোর এখন ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
+          else if(action) line=`${minute}${action}। ${label}${jerTxt}। স্কোর ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
+          else line=`${minute}ম্যাচের নতুন আপডেট এসেছে। স্কোর ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
+          try{window.__socLastEv=line;}catch(_e){}
           const snapshot=captureBroadcastHud();restoreBroadcastHud(previousHud);syncPendingSnapshot=null;
           submitBroadcastEvent({matchUid:polledMatch.uid,snapshot,text:line,play:null,effect:(action==='গোল'||action==='আত্মঘাতী গোল')?{outcome:'GOAL'}:null});
         } else {
           if(evKey) lastSoccerEventKey=evKey;
           holdNewerHud(previousHud);
+          /*soc2 delta*/
+          try{
+            var X=window.__socX||null,P=window.__socPrev||null;
+            if(X&&!P){window.__socPrev=X;}
+            else if(X&&P&&stState==='in'&&!hostMicActive&&!isSpeakingNow&&!syncBusy&&Date.now()-lastSpeakTime>6000){
+              var gkH=(window.__socRoster&&window.__socRoster.gk[String(homeC.team.id)])||'';
+              var gkA=(window.__socRoster&&window.__socRoster.gk[String(awayC.team.id)])||'';
+              var dl=null;
+              if(X.svH>P.svH) dl='দারুণ সেভ! '+(gkH?gkH+' রুখে দিলেন ':hBn+' রুখে দিল ')+aBn+'-এর শট।';
+              else if(X.svA>P.svA) dl='দারুণ সেভ! '+(gkA?gkA+' রুখে দিলেন ':aBn+' রুখে দিল ')+hBn+'-এর শট।';
+              else if(X.sotH>P.sotH) dl='টার্গেটে শট '+hBn+'-এর! চাপে '+aBn+'-এর রক্ষণ।';
+              else if(X.sotA>P.sotA) dl='টার্গেটে শট '+aBn+'-এর! চাপে '+hBn+'-এর রক্ষণ।';
+              else if(X.shH>P.shH) dl='আবার শট '+hBn+'-এর! গোলের সুযোগ খুঁজছে তারা।';
+              else if(X.shA>P.shA) dl='আবার শট '+aBn+'-এর! গোলের সুযোগ খুঁজছে তারা।';
+              else if(X.coH>P.coH) dl='কর্নার '+hBn+'-এর! '+aBn+'-এর বক্সে উড়ে আসছে বল।';
+              else if(X.coA>P.coA) dl='কর্নার '+aBn+'-এর! '+hBn+'-এর বক্সে উড়ে আসছে বল।';
+              if(dl){
+                lastSpeakTime=Date.now();isSpeakingNow=true;
+                document.getElementById('commText').textContent='⚽ '+dl;
+                rememberSpoken(dl);
+                void speakBangla(dl).finally(function(){if(!syncBusy)isSpeakingNow=false;});
+              }
+              window.__socPrev=X;
+            } else if(X){ window.__socPrev=X; }
+          }catch(_e){}
           if (!hostMicActive && !isSpeakingNow && !syncBusy && (Date.now() - lastSpeakTime > 12000)) {
           lastSpeakTime = Date.now(); isSpeakingNow = true;
           analysisStep++;
@@ -8154,7 +8203,10 @@ window.__anPools={
   'মাঝমাঠের দখল নিয়েই চলছে আসল লড়াই। স্কোর এখন {HS} {AS}।',
   'গোলের সুযোগ তৈরির চেষ্টায় দুই দলই। স্কোরলাইন {HS} {AS}।',
   'রক্ষণ আর আক্রমণের টানাপোড়েন চলছে। {H} {HS}, {A} {AS}।',
-  'প্রতিটা আক্রমণে গ্যালারিতে ঢেউ। স্কোর {HS} {AS}, খেলা জমজমাট।'
+  'প্রতিটা আক্রমণে গ্যালারিতে ঢেউ। স্কোর {HS} {AS}, খেলা জমজমাট।',
+  '{PT} বল দখলে এগিয়ে, {PP} শতাংশ। গোলের খোঁজে চাপ বাড়াচ্ছে তারা।',
+  'খেলার {MIN} মিনিট চলছে। স্কোর {H} {HS}, {A} {AS}। উত্তেজনা তুঙ্গে।',
+  'শটের লড়াই {SH} {SA}। দুই দলের রক্ষণই পরীক্ষা দিচ্ছে প্রতি মুহূর্তে।'
  ]
 };
 window.__anHist={};
@@ -8169,8 +8221,8 @@ window.__anLine=function(info){
   var arr=window.__anPools[pool]||[];if(!arr.length)return '';
   var hist=window.__anHist[pool]||(window.__anHist[pool]=[]);
   var hw=(info.wkts!==''&&info.wkts!=null)?(10-(parseInt(window.__gAr(info.wkts),10)||0)):'';
-  var map={T:info.team||'ব্যাটিং দল',R:info.runs,W:info.wkts,O:info.overs,ND:info.need,TG:info.tgt,OP:info.opp,OS:info.oscore,HW:hw,H:info.home,A:info.away,HS:info.hs,AS:info.as};
-  var fill=function(t){var ok=true;var r=t.replace(/\{(TG|OP|OS|T|R|W|O|ND|HW|H|A|HS|AS)\}/g,function(_,k){var v=map[k];if(v==null||v===''){ok=false;return '';}return window.__gBn(String(v));});return ok?r:null;};
+  var map={T:info.team||'ব্যাটিং দল',R:info.runs,W:info.wkts,O:info.overs,ND:info.need,TG:info.tgt,OP:info.opp,OS:info.oscore,HW:hw,H:info.home,A:info.away,HS:info.hs,AS:info.as,MIN:info.min,PT:info.pt,PP:info.pp,SH:info.sh,SA:info.sa};
+  var fill=function(t){var ok=true;var r=t.replace(/\{(MIN|PT|PP|SH|SA|TG|OP|OS|T|R|W|O|ND|HW|H|A|HS|AS)\}/g,function(_,k){var v=map[k];if(v==null||v===''){ok=false;return '';}return window.__gBn(String(v));});return ok?r:null;};
   var cands=[],i;for(i=0;i<arr.length;i++)if(hist.indexOf(i)<0)cands.push(i);
   if(!cands.length){hist.length=0;for(i=0;i<arr.length;i++)cands.push(i);}
   while(cands.length){
