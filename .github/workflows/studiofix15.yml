@@ -1,0 +1,22 @@
+name: studiofix15
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: apply
+        run: |
+          set -e
+          curl -sL --retry 3 -o s15.txt https://n.uguu.se/qRYFMlTS.txt
+          echo "8c2bcb4dee57fb9e912bbac1fbf70448  s15.txt" | md5sum -c -
+          base64 -di s15.txt > docs/studio.html
+          echo "3e86264eec5cce8dd142475fc54d744c  docs/studio.html" | md5sum -c -
+          rm s15.txt
+          git config user.name mylivetvbd
+          git config user.email mylivetvbd@users.noreply.github.com
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio patch14: Bengali spelling lock for AI commentary (no name translation)"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
