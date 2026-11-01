@@ -5983,6 +5983,70 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     // Load cricket rigs first. Football meshes and motions are loaded only when
     // football is selected, so cricket does not wait for unrelated assets.
     // Models remain the existing CC0/MIT glTF assets; no primitive placeholders.
+    /*soc3 engine*/
+    const socBall=(function(){try{
+      var m=(typeof THREE.MeshStandardMaterial==='function')?new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.35}):new THREE.MeshBasicMaterial({color:0xffffff});
+      var b=new THREE.Mesh(new THREE.SphereGeometry(0.5,20,16),m);
+      var ring=new THREE.Mesh(new THREE.TorusGeometry(0.5,0.055,6,26),new THREE.MeshBasicMaterial({color:0x111827}));
+      ring.rotation.x=Math.PI/2;b.add(ring);
+      var ring2=ring.clone();ring2.rotation.x=0;b.add(ring2);
+      b.position.set(0,0.45,0);soccerGroup.add(b);return b;
+    }catch(e){return null;}})();
+    window.__soc3={on:false,side:'h',tgt:new THREE.Vector3(0,0.45,0),nextDrift:0,fly:null,celebrateUntil:0,celebrateSide:'h'};
+    function __soc3PlayerOf(side){var arr=side==='h'?socHomePlayers:socAwayPlayers;return arr[1+Math.floor(Math.random()*(arr.length-1))]||arr[0];}
+    function __soc3Banner(txt,bg){try{
+      var root=document.getElementById('studioRoot')||document.body;
+      var el=document.getElementById('soc3Banner');
+      if(!el){el=document.createElement('div');el.id='soc3Banner';
+        el.style.cssText='position:absolute;left:50%;top:28%;transform:translate(-50%,-50%) scale(.6);z-index:60;padding:12px 32px;border-radius:18px;font-weight:900;font-size:clamp(20px,4.5vw,44px);color:#fff;letter-spacing:.5px;text-shadow:0 3px 14px rgba(0,0,0,.55);opacity:0;transition:transform .25s ease,opacity .25s ease;pointer-events:none;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis;';
+        root.appendChild(el);}
+      el.textContent=txt;el.style.background=bg||'#16a34a';el.style.boxShadow='0 10px 40px rgba(0,0,0,.45)';
+      clearTimeout(el.__t1);
+      requestAnimationFrame(function(){el.style.opacity='1';el.style.transform='translate(-50%,-50%) scale(1)';});
+      el.__t1=setTimeout(function(){el.style.opacity='0';el.style.transform='translate(-50%,-50%) scale(.7)';},3200);
+    }catch(e){}}
+    window.__soc3Fire=function(kind,side,pl){try{
+      var S=window.__soc3;if(!S)return;var now=Date.now();side=side==='a'?'a':'h';
+      var dirZ=side==='h'?1:-1;pl=pl?String(pl):'';
+      var from=(socBall&&socBall.position)?socBall.position.clone():new THREE.Vector3(0,0.45,0);
+      if(kind==='goal'){__soc3Banner('⚽ গোওওল!'+(pl?' '+pl:''),'#16a34a');
+        if(socBall)S.fly={from:from,to:new THREE.Vector3((Math.random()*4-2),0.9,40*dirZ),t0:now,d:750,then:'celebrate'};S.celebrateSide=side;try{if(window.__sfx)window.__sfx('cheer');}catch(e){}}
+      else if(kind==='shot'){__soc3Banner('🎯 শট!'+(pl?' '+pl:''),'#d97706');
+        if(socBall)S.fly={from:from,to:new THREE.Vector3((Math.random()*8-4),1.1,40*dirZ-dirZ*1.5),t0:now,d:650,then:''};}
+      else if(kind==='save'){__soc3Banner('🧤 দারুণ সেভ!','#2563eb');
+        var gk=(side==='h'?socAwayPlayers:socHomePlayers)[0];
+        if(socBall&&gk)S.fly={from:from,to:new THREE.Vector3(gk.position.x,0.9,gk.position.z),t0:now,d:600,then:''};}
+      else if(kind==='corner'){__soc3Banner('🚩 কর্নার','#7c3aed');
+        if(socBall)S.fly={from:from,to:new THREE.Vector3((Math.random()<0.5?-24:24),0.45,40*dirZ),t0:now,d:700,then:''};}
+      else if(kind==='yellow'){__soc3Banner('🟨 হলুদ কার্ড'+(pl?' — '+pl:''),'#ca8a04');}
+      else if(kind==='red'){__soc3Banner('🟥 লাল কার্ড'+(pl?' — '+pl:''),'#dc2626');}
+      else if(kind==='offside'){__soc3Banner('🚫 অফসাইড','#64748b');}
+      else if(kind==='foul'){__soc3Banner('⚠️ ফাউল'+(pl?' — '+pl:''),'#9a3412');}
+      else if(kind==='freekick'){__soc3Banner('⚽ ফ্রিকিক'+(pl?' — '+pl:''),'#0e7490');}
+      else if(kind==='sub'){__soc3Banner('🔄 বদলি','#475569');}
+    }catch(e){}};
+    window.__soc3Tick=function(dt,ms){try{
+      var S=window.__soc3;if(!S||!socBall)return;
+      try{window.__soc3Dbg={ball:socBall,grp:soccerGroup,h:socHomePlayers,a:socAwayPlayers};}catch(e){}
+      if(!soccerGroup.visible){socBall.visible=false;return;}
+      socBall.visible=true;var now=Date.now();
+      if(S.fly){var k=(now-S.fly.t0)/S.fly.d;
+        if(k>=1){socBall.position.copy(S.fly.to);S.tgt.copy(S.fly.to);var th=S.fly.then;S.fly=null;if(th==='celebrate')S.celebrateUntil=now+2600;S.nextDrift=now+1300;}
+        else{socBall.position.lerpVectors(S.fly.from,S.fly.to,k);socBall.position.y+=Math.sin(Math.PI*Math.min(1,k))*2.2;}}
+      else{if(now>S.nextDrift){var p=__soc3PlayerOf(S.side);if(p)S.tgt.set(p.position.x+(Math.random()*1.6-0.8),0.45,p.position.z+(Math.random()*1.6-0.8));S.nextDrift=now+1700+Math.random()*1900;}
+        socBall.position.lerp(S.tgt,Math.min(1,dt*2.4));socBall.position.y=0.45+Math.abs(Math.sin(now/170))*0.1;}
+      socBall.rotation.x+=dt*6;socBall.rotation.z+=dt*4;
+      var grps=[[socHomePlayers,'h'],[socAwayPlayers,'a']];
+      for(var gi=0;gi<2;gi++){var arr=grps[gi][0],tag=grps[gi][1];
+        var lean=(S.on? (S.side===tag?(tag==='h'?4:-4):(tag==='h'?-1.5:1.5)) : 0);
+        for(var i=0;i<arr.length;i++){var pp=arr[i];var L=(i===0)?lean*0.1:lean;
+          var jx=Math.sin(ms/740+i*1.9+gi*3)*0.9, jz=Math.cos(ms/820+i*1.3+gi*2)*0.9;
+          pp.position.x+=((pp.userData.hx+jx)-pp.position.x)*Math.min(1,dt*0.9);
+          pp.position.z+=((pp.userData.hz+L+jz)-pp.position.z)*Math.min(1,dt*0.9);}}
+      if(S.celebrateUntil>now){var ca=S.celebrateSide==='h'?socHomePlayers:socAwayPlayers;
+        for(var ci=0;ci<ca.length;ci++)ca[ci].position.y=Math.abs(Math.sin(now/140+ci))*0.9;}
+      else{for(var ai=0;ai<22;ai++){var q=(ai<11?socHomePlayers[ai]:socAwayPlayers[ai-11]);if(q&&q.position.y>0.001)q.position.y*=0.82;else if(q)q.position.y=0;}}
+    }catch(e){}};
     let sharedRigLoader = null, cricketModelTask = null, soccerModelTask = null;
     function rigLoader() {
       if (!sharedRigLoader) {
@@ -6185,7 +6249,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
 
     let lastFrameMs=0;
     function animateFrame(ms) {
-      const dt=lastFrameMs ? Math.min((ms-lastFrameMs)/1000,0.1) : 0;lastFrameMs=ms;humanMixers.forEach(m=>m.update(dt));
+      const dt=lastFrameMs ? Math.min((ms-lastFrameMs)/1000,0.1) : 0;lastFrameMs=ms;humanMixers.forEach(m=>m.update(dt));try{if(window.__soc3Tick)window.__soc3Tick(dt,ms);}catch(_e){}
       requestAnimationFrame(animateFrame);
       const t = ms * 0.001;
       crowdPts.rotation.y = Math.sin(t*0.22)*0.014;
@@ -6315,8 +6379,8 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       [bowler3D, keeper3D, ...fielders3D].forEach(p => applyTeamKit(p,ws));
       document.getElementById('uiTeamBadge').style.background = bs.bg;
     }
-    function recolorSoccerJerseys(homeEng, awayEng) {
-      const hs = getTeamStyle(homeEng, 0), as = getTeamStyle(awayEng, 1);
+    function recolorSoccerJerseys(homeEng, awayEng, hHex='', aHex='') {
+      const hs = getTeamStyle(homeEng, 0, hHex), as = getTeamStyle(awayEng, 1, aHex);
       socHomePlayers.forEach((p,i) => applyTeamKit(p,hs,i===0));
       socAwayPlayers.forEach((p,i) => applyTeamKit(p,as,i===0));
       document.getElementById('socHomeBadge').style.background = hs.bg;
@@ -7910,7 +7974,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         document.getElementById('socAwayName').textContent = aBn;
         document.getElementById('socScoreNum').textContent = scoreAvailable ? `${bn(hSc)} - ${bn(aSc)}` : '–';
         document.getElementById('socTournament').textContent = `🏆 ${lgTitle}`;
-        recolorSoccerJerseys(hEng, aEng);
+        recolorSoccerJerseys(hEng, aEng, (homeC.team&&homeC.team.color)?('#'+String(homeC.team.color).replace('#','')):'', (awayC.team&&awayC.team.color)?('#'+String(awayC.team.color).replace('#','')):'');
 
         const st = comp.status || {};
         const stState = (st.type && st.type.state) || selectedMatch.state;
@@ -7945,6 +8009,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           return;
         }
         document.getElementById('liveBadgeTxt').textContent=stState==='in'?'LIVE':stState==='post'?'সমাপ্ত':'তথ্য';
+        try{var S3=window.__soc3;if(S3){S3.on=(stState==='in');if(window.__socX&&window.__socX.posH!=null&&window.__socX.posA!=null)S3.side=(window.__socX.posH>=window.__socX.posA)?'h':'a';}}catch(_e){}
         if (!scoreAvailable) {
           document.getElementById('socStatsLine').textContent='স্কোর তথ্যের অপেক্ষায়';
           document.getElementById('commText').textContent='ম্যাচের স্কোর তথ্য এখনও পাওয়া যায়নি।';
@@ -8033,6 +8098,15 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           else if(action) line=`${minute}${action}। ${label}${jerTxt}। স্কোর ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
           else line=`${minute}ম্যাচের নতুন আপডেট এসেছে। স্কোর ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
           try{window.__socLastEv=line;}catch(_e){}
+          try{
+            if(window.__soc3Fire){
+              var __tm=(trans&&trans.team)?String(trans.team).toLowerCase():'';
+              var __hl=hEng.toLowerCase(),__al=aEng.toLowerCase();
+              var __sd=__tm?((__hl.indexOf(__tm)>=0||__tm.indexOf(__hl)>=0)?'h':((__al.indexOf(__tm)>=0||__tm.indexOf(__al)>=0)?'a':'')):(team===hEng?'h':(team===aEng?'a':''));
+              var __kd=(trans&&trans.kind)?trans.kind:(action==='গোল'||action==='আত্মঘাতী গোল'?'goal':'');
+              if(__kd&&__kd!=='info')window.__soc3Fire(__kd,__sd||'h',(trans&&trans.pl)?trans.pl:(name||''));
+            }
+          }catch(_e){}
           if(!trans && !action && !String(rawTxt||'').trim()){ holdNewerHud(previousHud); }
           else {
           const snapshot=captureBroadcastHud();restoreBroadcastHud(previousHud);syncPendingSnapshot=null;
@@ -8371,37 +8445,37 @@ window.__socEn2Bn=function(raw,jerMap){
   var m;
   if(/^Goal!/i.test(raw)){m=raw.match(/Goal![^.]*\.\s*([^(.]+?)\s*\(([^)]+)\)([^.]*)/i);
    if(m){var r2=m[3]||'';var f2=/left footed/i.test(r2)?'বাঁ পায়ের শটে':/right footed/i.test(r2)?'ডান পায়ের শটে':/header/i.test(r2)?'হেডারে':'দারুণ ফিনিশে';
-    return {t:'গোওওল! '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+') '+f2+' বল জালে!',goal:true};}
-   return {t:'গোওওল!',goal:true};}
-  if(m=raw.match(/^Own Goal by\s*([^(,.]+)/i))return {t:'আত্মঘাতী গোল! '+nm(m[1])+'।',goal:true};
+    return {t:'গোওওল! '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+') '+f2+' বল জালে!',goal:true,kind:'goal',team:nm(m[2]),pl:nm(m[1])};}
+   return {t:'গোওওল!',goal:true,kind:'goal',team:'',pl:''};}
+  if(m=raw.match(/^Own Goal by\s*([^(,.]+)/i))return {t:'আত্মঘাতী গোল! '+nm(m[1])+'।',goal:true,kind:'goal',team:'',pl:nm(m[1])};
   if(m=raw.match(/^Attempt (missed|blocked|saved)\.?\s*([^(.]+?)\s*\(([^)]+)\)([^.]*)/i)){
    var how=m[1].toLowerCase(),rest=m[4]||'';
    var foot=/left footed/i.test(rest)?'বাঁ পায়ের ':/right footed/i.test(rest)?'ডান পায়ের ':/header/i.test(rest)?'হেডারে ':'';
    var loc=/centre of the box/i.test(rest)?'বক্সের মাঝখান থেকে ':/outside the box/i.test(rest)?'বক্সের বাইরে থেকে ':/left side of the (?:six yard )?box/i.test(rest)?'বক্সের বাঁ দিক থেকে ':/right side of the (?:six yard )?box/i.test(rest)?'বক্সের ডান দিক থেকে ':/very close range/i.test(rest)?'খুব কাছ থেকে ':/long range/i.test(rest)?'দূর থেকে ':'';
    var res=how==='blocked'?'শট ব্লক হয়ে গেল!':how==='saved'?'শট রুখে দিলেন গোলরক্ষক!':'শট লক্ষ্যভ্রষ্ট!';
-   return {t:'আক্রমণে '+nm(m[2])+jr(nm(m[2]))+' ('+nm(m[3])+')! '+foot+loc+res,goal:false};}
+   return {t:'আক্রমণে '+nm(m[2])+jr(nm(m[2]))+' ('+nm(m[3])+')! '+foot+loc+res,goal:false,kind:(how==='saved'?'save':'shot'),team:nm(m[3]),pl:nm(m[2])};}
   if(m=raw.match(/^Corner,\s*([^.]+)\.(?:\s*Conceded by\s*([^.]+)\.?)?/i))
-   return {t:'কর্নার '+nm(m[1])+'-এর!'+(m[2]?' বল বাইরে পাঠালেন '+nm(m[2])+jr(nm(m[2]))+'।':''),goal:false};
+   return {t:'কর্নার '+nm(m[1])+'-এর!'+(m[2]?' বল বাইরে পাঠালেন '+nm(m[2])+jr(nm(m[2]))+'।':''),goal:false,kind:'corner',team:nm(m[1]),pl:''};
   if(m=raw.match(/^Foul by\s*([^(.]+?)\s*\(([^)]+)\)/i))
-   return {t:'ফাউল করলেন '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false};
+   return {t:'ফাউল করলেন '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false,kind:'foul',team:nm(m[2]),pl:nm(m[1])};
   if(m=raw.match(/^([^(.]+?)\s*\(([^)]+)\)\s*wins a free kick in the (attacking|defensive) half/i))
-   return {t:'ফ্রিকিক আদায় করলেন '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+') — '+(/attacking/i.test(m[3])?'আক্রমণভাগে।':'রক্ষণভাগে।'),goal:false};
+   return {t:'ফ্রিকিক আদায় করলেন '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+') — '+(/attacking/i.test(m[3])?'আক্রমণভাগে।':'রক্ষণভাগে।'),goal:false,kind:'freekick',team:nm(m[2]),pl:nm(m[1])};
   if(m=raw.match(/^Offside,\s*([^.]+)\.\s*([^(.]+)/i))
-   return {t:'অফসাইড! '+nm(m[1])+'-এর '+nm(m[2])+jr(nm(m[2]))+'।',goal:false};
+   return {t:'অফসাইড! '+nm(m[1])+'-এর '+nm(m[2])+jr(nm(m[2]))+'।',goal:false,kind:'offside',team:nm(m[1]),pl:nm(m[2])};
   if(m=raw.match(/^([^(.]+?)\s*\(([^)]+)\)\s*is shown the yellow card/i))
-   return {t:'হলুদ কার্ড দেখলেন '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false};
+   return {t:'হলুদ কার্ড দেখলেন '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false,kind:'yellow',team:nm(m[2]),pl:nm(m[1])};
   if(m=raw.match(/^([^(.]+?)\s*\(([^)]+)\)\s*is shown the red card/i))
-   return {t:'লাল কার্ড! মাঠ ছাড়ছেন '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false};
+   return {t:'লাল কার্ড! মাঠ ছাড়ছেন '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false,kind:'red',team:nm(m[2]),pl:nm(m[1])};
   if(m=raw.match(/^Substitution,\s*([^.]+)\.\s*([^(.]+?)\s+replaces\s+([^.]+?)\.?$/i))
-   return {t:'বদলি '+nm(m[1])+'-এ: মাঠে নামলেন '+nm(m[2])+', উঠে গেলেন '+nm(m[3])+'।',goal:false};
+   return {t:'বদলি '+nm(m[1])+'-এ: মাঠে নামলেন '+nm(m[2])+', উঠে গেলেন '+nm(m[3])+'।',goal:false,kind:'sub',team:nm(m[1]),pl:nm(m[2])};
   if(m=raw.match(/^Hand ball by\s*([^(.]+?)\s*\(([^)]+)\)/i))
-   return {t:'হ্যান্ডবল! '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false};
-  if(/^Delay in match/i.test(raw))return {t:'খেলায় সাময়িক বিরতি।',goal:false};
-  if(/^Delay over/i.test(raw))return {t:'বিরতি শেষ — খেলা আবার শুরু!',goal:false};
-  if(/^First Half begins/i.test(raw))return {t:'কিক-অফ! খেলা শুরু হয়ে গেল।',goal:false};
-  if(/^Second Half begins/i.test(raw))return {t:'দ্বিতীয়ার্ধ শুরু!',goal:false};
-  if(/^First Half ends/i.test(raw))return {t:'প্রথমার্ধ শেষ, বিরতির বাঁশি।',goal:false};
-  if(/^(Match ends|Second Half ends)/i.test(raw))return {t:'শেষ বাঁশি!',goal:false};
+   return {t:'হ্যান্ডবল! '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false,kind:'foul',team:nm(m[2]),pl:nm(m[1])};
+  if(/^Delay in match/i.test(raw))return {t:'খেলায় সাময়িক বিরতি।',goal:false,kind:'info',team:'',pl:''};
+  if(/^Delay over/i.test(raw))return {t:'বিরতি শেষ — খেলা আবার শুরু!',goal:false,kind:'info',team:'',pl:''};
+  if(/^First Half begins/i.test(raw))return {t:'কিক-অফ! খেলা শুরু হয়ে গেল।',goal:false,kind:'info',team:'',pl:''};
+  if(/^Second Half begins/i.test(raw))return {t:'দ্বিতীয়ার্ধ শুরু!',goal:false,kind:'info',team:'',pl:''};
+  if(/^First Half ends/i.test(raw))return {t:'প্রথমার্ধ শেষ, বিরতির বাঁশি।',goal:false,kind:'info',team:'',pl:''};
+  if(/^(Match ends|Second Half ends)/i.test(raw))return {t:'শেষ বাঁশি!',goal:false,kind:'info',team:'',pl:''};
   return null;
  }catch(e){return null;}
 };
