@@ -1,0 +1,23 @@
+name: studiofix23
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          curl -sfL "https://n.uguu.se/FZnWtWys.txt" -o /tmp/s23.txt
+          echo "5cce6a60d3b0497530dbc3c012218cef  /tmp/s23.txt" | md5sum -c -
+          base64 -di /tmp/s23.txt > docs/studio.html
+          echo "7ba805985dc4a4b8bf3905534a5fd531  docs/studio.html" | md5sum -c -
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio patch21: football 2.1 play-by-play translator + event queue"
+          git push || (git pull --rebase --autostash && git push)
