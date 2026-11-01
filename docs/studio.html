@@ -6149,10 +6149,11 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       }catch(e){}};
       show();
       clearInterval(window.__brkTimer);window.__brkTimer=setInterval(show,8000);
-      try{if(mode==='soccer'){camMode=2;var S=window.__soc3;if(S){S.on=false;S.carrierP=null;S.fly=null;}}}catch(e){}
+      try{if(mode==='soccer'){camMode=2;var S=window.__soc3;if(S){S.on=false;S.carrierP=null;S.fly=null;}try{[].concat(socHomePlayers,socAwayPlayers).forEach(function(p){p.visible=false;});}catch(_e2){}}}catch(e){}
     }catch(e){}};
     window.__brkStop=function(){try{
-      if(!window.__brkActive)return;window.__brkActive='';
+      if(!window.__brkActive)return;var _wasSoc=(window.__brkActive==='soccer');window.__brkActive='';
+      if(_wasSoc)try{[].concat(socHomePlayers,socAwayPlayers).forEach(function(p){p.visible=true;});}catch(_e3){}
       clearInterval(window.__brkTimer);
       var el=document.getElementById('brkStage');if(el)el.style.display='none';
     }catch(e){}};
@@ -8322,7 +8323,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         const validated=validateSoccerTeams(comps,polledMatch);
         if(!validated){showSoccerValidationPending(polledMatch);pollTimer=setTimeout(pollSoccer,5000);return;}
         const homeC=validated.home,awayC=validated.away;
-        [...socHomePlayers,...socAwayPlayers].forEach(p=>p.visible=true);
+        [...socHomePlayers,...socAwayPlayers].forEach(p=>p.visible=(window.__brkActive!=='soccer'));
 
         const hEng = (homeC.team && homeC.team.displayName) || selectedMatch.t1 || 'Home';
         const aEng = (awayC.team && awayC.team.displayName) || selectedMatch.t2 || 'Away';
@@ -8345,7 +8346,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           selectedMatch.state = 'live';
           const mins = parseInt(dispClock, 10);
           if (!isNaN(mins) && Math.abs(mins*60 - socLiveSec) > 75) socLiveSec = mins * 60;
-          socLiveRunning = !/ht|half/i.test(dispClock);
+          socLiveRunning = !((/ht|half/i.test(dispClock)) || /HALFTIME/i.test(String((st.type&&st.type.name)||'')) || /^ht$/i.test(String((st.type&&st.type.shortDetail)||'').trim()));
           if (!socLiveRunning) document.getElementById('socClockTxt').textContent = '⏸️ হাফ-টাইম বিরতি';
         } else {
           socLiveRunning = false;
