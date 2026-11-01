@@ -301,31 +301,33 @@ html,body{background:#000!important}
 #playerOverlay{height:265px!important}
 .event-premium{width:420px!important}
 .event-title{font-size:62px!important}
-#cricketMetrics{gap:26px!important;font-size:24px!important}
-.live-pill{font-size:21px!important}
+#cricketMetrics{gap:26px!important;font-size:28px!important}
+.live-pill{font-size:24px!important}
 .hud-btn{font-size:18px!important;padding:8px 14px!important}
-.spot-role{font-size:20px!important}
-.spot-name{font-size:30px!important}
-.spot-stat{font-size:22px!important}
-.comm-text{font-size:32px!important;line-height:1.45!important}
-.team-badge{font-size:22px!important}
-.score-main-num{font-size:48px!important}
-.score-overs{font-size:24px!important}
-.target-eq{font-size:21px!important}
-.batters-cell{font-size:26px!important}
-.bowler-cell{font-size:25px!important}
-.odot{font-size:19px!important}
-.soc-team-box{font-size:30px!important}
-.soc-goals{font-size:48px!important}
-.soc-clock{font-size:23px!important}
-.soc-stats-row{font-size:23px!important}
+.spot-role{font-size:23px!important}
+.spot-name{font-size:34px!important}
+.spot-stat{font-size:25px!important}
+.comm-text{font-size:38px!important;line-height:1.45!important}
+.team-badge{font-size:26px!important;width:46px!important;height:46px!important}
+.score-main-num{font-size:56px!important}
+.score-overs{font-size:28px!important}
+.target-eq{font-size:25px!important}
+.batters-cell{font-size:30px!important}
+.bowler-cell{font-size:29px!important;line-height:1.3!important;text-align:right!important}
+.odot{font-size:23px!important;width:27px!important;height:27px!important}
+.soc-team-box{font-size:34px!important}
+.soc-goals{font-size:56px!important}
+.soc-clock{font-size:27px!important}
+.soc-stats-row{font-size:27px!important}
 .tour-group-hdr{font-size:21px!important}
 .hot-pill{font-size:18px!important}
 .sport-tag{font-size:18px!important}
-.live-player-name{font-size:30px!important;min-height:46px!important}
+.live-player-name{font-size:34px!important;min-height:52px!important}
 .live-player-name small{font-size:.72em!important}
-.mic-pulse{font-size:24px!important}
-.tv-scorestrip{max-width:1560px!important}
+.mic-pulse{font-size:28px!important;width:40px!important;height:40px!important}
+.tv-scorestrip{max-width:1700px!important;grid-template-columns:1fr 1.1fr 1.25fr!important}
+.commentary-ribbon{max-width:1700px!important}
+#uiBowler{white-space:normal!important}
 
 #mlvBoot{position:fixed;inset:0;z-index:2000000;background:#040812;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 #mlvBoot .mb-t{color:#fbbf24;font:800 19px 'Noto Sans Bengali','Hind Siliguri',sans-serif}
@@ -7008,7 +7010,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     function aiClean(t){
       try{
         t=String(t||'').replace(/[\r\n]+/g,' ').replace(/["\u201C\u201D\u2018\u2019'`*#_]/g,'').replace(/[^\u0980-\u09FF0-9A-Za-z\s,।!?.;:()\-]/g,'').replace(/\s+/g,' ').trim();
-        t=t.replace(/\bballs?\b/gi,'বল').replace(/\bruns?\b/gi,'রান').replace(/\bovers?\b/gi,'ওভার').replace(/\bwickets?\b/gi,'উইকেট').replace(/\bsixe?s?\b/gi,'ছক্কা').replace(/\bfours?\b/gi,'চার');if(t.length>240){var cut=t.lastIndexOf('।',240);t=cut>60?t.slice(0,cut+1):t.slice(0,240).trim();}
+        t=t.replace(/\bballs?\b/gi,'বল').replace(/\bruns?\b/gi,'রান').replace(/\bovers?\b/gi,'ওভার').replace(/\bwickets?\b/gi,'উইকেট').replace(/\bsixe?s?\b/gi,'ছক্কা').replace(/\bfours?\b/gi,'চার');if(t.length>240){var cut=t.lastIndexOf('।',240);t=cut>60?t.slice(0,cut+1):t.slice(0,240).trim();}var sm=t.match(/[^।!?]+[।!?]?/g);if(sm&&sm.length>2){t=(sm[0]+sm[1]).trim();if(!/[।!?]$/.test(t))t+='।';}
         return t;
       }catch(e){return '';}
     }
