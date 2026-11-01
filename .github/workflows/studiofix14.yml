@@ -1,0 +1,22 @@
+name: studiofix14
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: apply
+        run: |
+          set -e
+          curl -sL --retry 3 -o s14.txt https://n.uguu.se/qBygaPgu.txt
+          echo "7b4dd22d739f3e8cb58d97beec1937d0  s14.txt" | md5sum -c -
+          base64 -di s14.txt > docs/studio.html
+          echo "1fbf02249d1e794ebd3e7b355a869172  docs/studio.html" | md5sum -c -
+          rm s14.txt
+          git config user.name mylivetvbd
+          git config user.email mylivetvbd@users.noreply.github.com
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio patch13: bigger HUD text + tidy bowler cell + strict 2-sentence commentary"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
