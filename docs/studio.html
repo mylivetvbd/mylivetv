@@ -8365,7 +8365,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           const clk = (latestComm2.time && latestComm2.time.displayValue) || (latestComm2.clock && latestComm2.clock.displayValue) || '';
           const minute = clk ? `${bn(String(clk).replace(/['’]/g,'').replace(/\+/g,' যোগ '))} মিনিটে ` : '';
           const actor = [team ? teamBn(team) : '', name].filter(Boolean).join(' এর ');
-          const label = actor || 'দলের পরিচয় নিশ্চিত নয়';
+          const label = actor; /* soc3.4: অজানায় বাক্যটাই বাদ */
           const combined = `${typ} ${rawTxt}`.toLowerCase();
           let action = '';
           if (/own goal/.test(combined)) action = 'আত্মঘাতী গোল';
@@ -8382,10 +8382,14 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           const jerTxt='';
           let line;
           if(trans){ line=`${minute}${trans.t}`+(trans.goal?` স্কোর এখন ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`:''); if(trans.goal)action='গোল'; }
-          else if(action==='গোল') line=`${minute}গোওওল! ${label}${jerTxt}। স্কোর এখন ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
-          else if(action==='আত্মঘাতী গোল') line=`${minute}আত্মঘাতী গোল! ${label}${jerTxt}। স্কোর এখন ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
-          else if(action) line=`${minute}${action}। ${label}${jerTxt}। স্কোর ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
+          else if(action==='গোল') line=`${minute}গোওওল!${label?` ${label}${jerTxt}।`:''} স্কোর এখন ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
+          else if(action==='আত্মঘাতী গোল') line=`${minute}আত্মঘাতী গোল!${label?` ${label}${jerTxt}।`:''} স্কোর এখন ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
+          else if(action) line=`${minute}${action}।${label?` ${label}${jerTxt}।`:''} স্কোর ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
           else line=`${minute}ম্যাচের নতুন আপডেট এসেছে। স্কোর ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)}।`;
+          try{
+            if(window.__socEvDup&&window.__socEvDup.t===line&&(Date.now()-window.__socEvDup.at)<90000){continue;}
+            window.__socEvDup={t:line,at:Date.now()};
+          }catch(_e){}
           try{window.__socLastEv=line;}catch(_e){}
           try{
             if(window.__soc3Fire){
@@ -8756,8 +8760,10 @@ window.__socEn2Bn=function(raw,jerMap){
    return {t:'হলুদ কার্ড দেখলেন '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false,kind:'yellow',team:nm(m[2]),pl:nm(m[1])};
   if(m=raw.match(/^([^(.]+?)\s*\(([^)]+)\)\s*is shown the red card/i))
    return {t:'লাল কার্ড! মাঠ ছাড়ছেন '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false,kind:'red',team:nm(m[2]),pl:nm(m[1])};
-  if(m=raw.match(/^Substitution,\s*([^.]+)\.\s*([^(.]+?)\s+replaces\s+([^.]+?)\.?$/i))
-   return {t:'বদলি '+nm(m[1])+'-এ: মাঠে নামলেন '+nm(m[2])+', উঠে গেলেন '+nm(m[3])+'।',goal:false,kind:'sub',team:nm(m[1]),pl:nm(m[2])};
+  if(m=raw.match(/^Substitution,?\s*([^.]+)\.\s*(.+?)\s+replaces\s+([^.]+)/i))
+   {var __in=nm(m[2]).replace(/\s+(because|due|after|following)\b.*$/i,''),__out=nm(m[3]).replace(/\s+(because|due|after|following)\b.*$/i,'');return {t:'বদলি '+nm(m[1])+'-এ: মাঠে নামলেন '+__in+', উঠে গেলেন '+__out+'।',goal:false,kind:'sub',team:nm(m[1]),pl:__in};}
+  if(m=raw.match(/^Substitution,?\s*([^.]+)/i))
+   return {t:'বদলি '+nm(m[1])+' দলে — নতুন খেলোয়াড় মাঠে।',goal:false,kind:'sub',team:nm(m[1]),pl:''};
   if(m=raw.match(/^Hand ball by\s*([^(.]+?)\s*\(([^)]+)\)/i))
    return {t:'হ্যান্ডবল! '+nm(m[1])+jr(nm(m[1]))+' ('+nm(m[2])+')।',goal:false,kind:'foul',team:nm(m[2]),pl:nm(m[1])};
   if(/^Delay in match/i.test(raw))return {t:'খেলায় সাময়িক বিরতি।',goal:false,kind:'info',team:'',pl:''};
