@@ -8239,9 +8239,18 @@ window.__numLock=function(t,ctx){
  }catch(e){return false;}
 };
 /* ---- স্কোর-ফরম্যাট তালা: "১৭৯ ৫ তে" → "১৭৯/৫" ---- */
-window.__scoreFmt=function(t){
+window.__scoreFmt=function(t,ctx){
  try{
   t=String(t||'');
+  var cm=String(ctx||'').match(/স্কোর:?\s*([০-৯0-9]+)\s*\/\s*([০-৯0-9]+)/);
+  if(cm){
+   var pr=[[cm[1],cm[2]],[window.__gAr(cm[1]),window.__gAr(cm[2])],[window.__gBn(window.__gAr(cm[1])),window.__gBn(window.__gAr(cm[2]))]];
+   for(var pi=0;pi<pr.length;pi++){
+    var rr=pr[pi][0],ww=pr[pi][1];
+    var re=new RegExp('(^|[^০-৯0-9/.])'+rr+'[ ,]+'+ww+'(?![০-৯0-9/.])','g');
+    t=t.replace(re,'$1'+rr+'/'+ww);
+   }
+  }
   t=t.replace(/([০-৯0-9]{2,3})[ ]+([০-৯0-9])[ ]*(?:তে|এ)(?![\u0980-\u09FF])/g,function(all,a,b){
    var av=parseInt(window.__gAr(a),10),bv=parseInt(window.__gAr(b),10);
    if(av>=20&&bv<=10)return a+'/'+b+' এ';
@@ -8263,7 +8272,7 @@ window.__excuseChk=function(t){
 window.__guardAI=function(t,ctx){
  try{
   t=String(t||'').trim();if(!t)return null;
-  t=window.__scoreFmt(t);
+  t=window.__scoreFmt(t,ctx);
   if(window.__excuseChk(t))return null;
   if(!window.__wlCheck(t,ctx))return null;
   if(!window.__numLock(t,ctx))return null;
