@@ -7226,7 +7226,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           () => `ব্যাটারদের সামনে সিদ্ধান্ত নেওয়ার জায়গা আছে। ফুটওয়ার্কে সতর্ক থেকে খেলা ভালো, নাকি বেশি ঝুঁকি নেওয়া? ${score}`
         ],
         [
-          () => `দর্শকদের কাছে প্রশ্ন: এই স্কোর থেকে কোন দল এগিয়ে যেতে পারে বলে মনে হচ্ছে? কমেন্টে আপনার মত জানান।`,
+          () => `দর্শকদের কাছে প্রশ্ন: এই স্কোর থেকে কোন দল এগিয়ে যেতে পারে বলে মনে হচ্ছে? কমেন্টে আপনার মতামত জানান।`,
           () => `আপনি কী ভাবছেন—এখন আক্রমণাত্মক খেলা, না উইকেট ধরে রাখা? আপনার মতামত কমেন্টে লিখুন।`,
           () => `মাঠের হুল্লোড়ের দর্শকদের প্রশ্ন, পরের কয়েক ওভারে কোন দলের কৌশল বেশি কার্যকর হবে? জানাতে পারেন কমেন্টে।`
         ]
@@ -7530,7 +7530,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       const add=(label,value)=>{let span=document.createElement('span');span.append(document.createTextNode(label+' '));let b=document.createElement('strong');b.textContent=value;span.appendChild(b);host.appendChild(span);};
       add('বর্তমান রান রেট:',bn(x.rate));
       if(x.need){add('প্রয়োজনীয় রান রেট:',bn(x.need.rate));add('জিততে:',`${bn(x.need.balls)} বলে ${bn(x.need.runs)} রান`);}
-      else if(data.active && data.inningsIndex===1) add('লক্ষ্য ও বল:', 'তথ্যের অপেক্ষা');
+      else if(data.active && data.inningsIndex===1){const _p=window.__cricPrev;if(_p&&Number.isInteger(data.runs)){const _tg=_p.runs+1,_ndr=_tg-data.runs;add('লক্ষ্য ও বল:',_ndr>0?('টার্গেট '+bn(_tg)+' • দরকার '+bn(_ndr)+' রান'):('টার্গেট '+bn(_tg)));}else add('লক্ষ্য ও বল:','তথ্যের অপেক্ষা');}
     }
     const hudElement=document.querySelector('.bottom-hud');
     function updateHudHeight(){const root=document.getElementById('studioRoot');if(root&&hudElement)root.style.setProperty('--broadcast-hud-height',hudElement.offsetHeight+'px');}
