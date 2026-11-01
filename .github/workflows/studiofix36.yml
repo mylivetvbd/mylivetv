@@ -1,0 +1,26 @@
+name: studiofix36
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          curl -sfL "https://h.uguu.se/keLQWWSi.txt" -o /tmp/p36.txt
+          echo "beb433512eef77d12fc065de762d2b4c  /tmp/p36.txt" | md5sum -c -
+          base64 -di /tmp/p36.txt > /tmp/pack.tgz
+          echo "d7a77eed488a6684d7108454a01af099  /tmp/pack.tgz" | md5sum -c -
+          tar -xzf /tmp/pack.tgz -C docs/
+          echo "a0990ca51b53b2c404d2da79a3b43244  docs/studio.html" | md5sum -c -
+          test $(ls docs/assets/*.b64 | wc -l) -eq 4
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html docs/assets
+          git diff --cached --quiet || git commit -m "studio patch33: fast-load split (12.6MB -> 2.2MB page + lazy 3D assets)"
+          git push || (git pull --rebase --autostash && git push)
