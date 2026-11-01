@@ -6191,6 +6191,25 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       if(!encoded) return Promise.reject(new Error('Embedded model unavailable'));
       return new Promise((resolve,reject)=>rigLoader().parse(window.__decodeEmbedded(encoded),'',resolve,reject));
     }
+    /* shorts3: উচ্চতা-ভিত্তিক শর্টস/পা/মোজা — শুধু 'outfit' (ফুটবল), ক্রিকেট অক্ষত */
+    var __shortsTones=[[0.91,0.72,0.54],[0.85,0.63,0.40],[0.66,0.44,0.29],[0.55,0.35,0.23],[0.94,0.78,0.63]];
+    function __shortsPatch(m,mesh){try{
+      if(m.userData.__shorts)return;m.userData.__shorts=true;
+      var g=mesh.geometry;if(!g)return;
+      if(!g.boundingBox)g.computeBoundingBox();
+      var minY=g.boundingBox.min.y,maxY=g.boundingBox.max.y,h=maxY-minY;if(!(h>0))return;
+      var thigh=minY+0.42*h, sock=minY+0.085*h;
+      var tone=__shortsTones[Math.floor(Math.random()*__shortsTones.length)];
+      m.onBeforeCompile=function(sh){
+        sh.uniforms.uThighY={value:thigh};sh.uniforms.uSockY={value:sock};
+        sh.uniforms.uSkin={value:new THREE.Vector3(tone[0],tone[1],tone[2])};
+        sh.vertexShader='varying float vBindY;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vBindY=position.y;');
+        sh.fragmentShader='varying float vBindY;\nuniform float uThighY;\nuniform float uSockY;\nuniform vec3 uSkin;\n'
+          +sh.fragmentShader.replace('#include <dithering_fragment>',
+          '#include <dithering_fragment>\n float lum=dot(gl_FragColor.rgb,vec3(0.299,0.587,0.114));\n if(vBindY<uThighY && vBindY>uSockY){ gl_FragColor.rgb=uSkin*(0.55+0.65*lum); }\n else if(vBindY<=uSockY){ gl_FragColor.rgb=vec3(0.93,0.93,0.95)*(0.5+0.7*lum); }');
+      };
+      m.needsUpdate=true;
+    }catch(e){}}
     function attachRig(holder, asset, clips, idleName) {
       if (holder.userData.mixer) return;
       const idle=clips.find(c=>c.name===idleName) || clips.find(c=>c.name==='idle');
@@ -6201,7 +6220,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           const mats=Array.isArray(o.material)?o.material:[o.material];
           o.material=Array.isArray(o.material)?mats.map(m=>m.clone()):o.material.clone();
           const mm=Array.isArray(o.material)?o.material:[o.material];
-          mm.forEach(m=>{if(/outfit|kit_fabric|fielding_fabric/i.test(m.name)){m.color.copy(holder.userData.jerseyMat.color);holder.userData.outfitMat=m;}});
+          mm.forEach(m=>{if(/outfit|kit_fabric|fielding_fabric/i.test(m.name)){m.color.copy(holder.userData.jerseyMat.color);holder.userData.outfitMat=m;if(/^outfit$/i.test(m.name))__shortsPatch(m,o);}});
         }
       });
       holder.add(copy);
