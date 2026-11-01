@@ -1,0 +1,22 @@
+name: updatev2
+on:
+  schedule:
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+permissions: { contents: write }
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: refresh
+        run: |
+          set -e
+          test -f tools/refresh2.py
+          python3 tools/refresh2.py
+          git config user.name mylivetvbd
+          git config user.email mylivetvbd@users.noreply.github.com
+          git add my-channels-master.m3u
+          git diff --cached --quiet || git commit -m "robot v2: nightly additions (grouping preserved)"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
