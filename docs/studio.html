@@ -7516,12 +7516,16 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     function computeCricketMetrics({runs,overs,status,active,inningsIndex}) {
       const m=String(overs||'').match(/^(\d+)\.([0-5])$/);const balls=m?Number(m[1])*6+Number(m[2]):0;
       const rate=Number.isInteger(runs)&&runs>=0&&balls>0?(runs*6/balls).toFixed(2):'';
-      let need=null;
-      if(active && inningsIndex===1) {
-        const match=String(status||'').match(/\bneed(?:s|ed)?\s+(\d+)\s+runs?\s+(?:in|off|from)\s+(\d+)\s+balls?\b/i);
+      let need=null,lead=null,trail=null;
+      if(active && inningsIndex>=1) {
+        const sTxt=String(status||'');
+        const match=sTxt.match(/\bneed(?:s|ed)?\s+(\d+)\s+runs?\s+(?:in|off|from)\s+(\d+)\s+balls?\b/i);
         if(match){const r=Number(match[1]),b=Number(match[2]);if(r>0&&b>0&&r<1000&&b<1000)need={runs:r,balls:b,rate:(r*6/b).toFixed(2)};}
+        if(!need){const m2=sTxt.match(/\b(?:need|needs|require|requires)(?:\s+another)?\s+(\d+)\s+(?:more\s+)?runs?\b/i);if(m2){const r2=Number(m2[1]);if(r2>0&&r2<1500)need={runs:r2,balls:null,rate:null};}}
+        const mL=sTxt.match(/\blead(?:s)?\s+by\s+(\d+)\s+runs?\b/i);if(mL&&Number(mL[1])>0)lead=Number(mL[1]);
+        const mT=sTxt.match(/\btrail(?:s)?\s+by\s+(\d+)\s+runs?\b/i);if(mT&&Number(mT[1])>0)trail=Number(mT[1]);
       }
-      return {rate,need};
+      return {rate,need,lead,trail};
     }
     function updateCricketMetrics(data) {
       const host=document.getElementById('cricketMetrics');if(!host)return;
@@ -7529,7 +7533,10 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       if(!x.rate)return;
       const add=(label,value)=>{let span=document.createElement('span');span.append(document.createTextNode(label+' '));let b=document.createElement('strong');b.textContent=value;span.appendChild(b);host.appendChild(span);};
       add('বর্তমান রান রেট:',bn(x.rate));
-      if(x.need){add('প্রয়োজনীয় রান রেট:',bn(x.need.rate));add('জিততে:',`${bn(x.need.balls)} বলে ${bn(x.need.runs)} রান`);}
+      if(x.need&&x.need.balls){add('প্রয়োজনীয় রান রেট:',bn(x.need.rate));add('জিততে:',`${bn(x.need.balls)} বলে ${bn(x.need.runs)} রান`);}
+      else if(x.need){add('লক্ষ্য:',`জিততে দরকার ${bn(x.need.runs)} রান`);}
+      else if(x.lead!=null){add('লিড:',`${bn(x.lead)} রানে এগিয়ে`);}
+      else if(x.trail!=null){add('পিছিয়ে:',`${bn(x.trail)} রান`);}
       else if(data.active && data.inningsIndex===1){const _p=window.__cricPrev;if(_p&&Number.isInteger(data.runs)){const _tg=_p.runs+1,_ndr=_tg-data.runs;add('লক্ষ্য ও বল:',_ndr>0?('টার্গেট '+bn(_tg)+' • দরকার '+bn(_ndr)+' রান'):('টার্গেট '+bn(_tg)));}else add('লক্ষ্য ও বল:','তথ্যের অপেক্ষা');}
     }
     const hudElement=document.querySelector('.bottom-hud');
