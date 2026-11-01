@@ -6156,6 +6156,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       else{S.tgt.set(0,0.32,0);socBall.position.lerp(S.tgt,Math.min(1,dt*1.5));socBall.position.y=0.32;}
       socBall.rotation.x+=dt*6;socBall.rotation.z+=dt*4;
       try{__soc3ApplyLabels();}catch(e){}
+      try{var _cp=S.carrierP;for(var _li=0;_li<22;_li++){var _pq=_li<11?socHomePlayers[_li]:socAwayPlayers[_li-11];if(_pq&&_pq.userData.socLbl)_pq.userData.socLbl.visible=!!(S.on&&_cp&&_pq===_cp);}}catch(e){}
       try{if(socDisc){if(S.on&&S.carrierP){socDisc.visible=true;socDisc.position.x=S.carrierP.position.x;socDisc.position.z=S.carrierP.position.z;}else socDisc.visible=false;}}catch(e){}
       /* soc3.1 সিনেমাটিক ক্যামেরা */
       try{
@@ -6206,8 +6207,66 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       holder.add(copy);
       const mixer=new THREE.AnimationMixer(copy);if(idle)mixer.clipAction(idle).play();
       holder.userData.mixer=mixer;holder.userData.animClips=clips;holder.userData.idleClip=idle;
+      try{var _bn={};copy.traverse(function(o){if(o.isBone){var n=String(o.name).toLowerCase();
+        if(!_bn.head&&/head/.test(n))_bn.head=o;
+        if(!_bn.rh&&/hand/.test(n)&&/(^|[^a-z])r($|[^a-z])|right|_r$|r_|\.r/.test(n))_bn.rh=o;
+        if(!_bn.lh&&/hand/.test(n)&&/(^|[^a-z])l($|[^a-z])|left|_l$|l_|\.l/.test(n))_bn.lh=o;
+      }});holder.userData.bones=_bn;}catch(e){}
       humanMixers.push(mixer);
     }
+    /* gear3: ইলাস্ট্রেটেড মুখ + ক্রিকেট-গিয়ার */
+    window.__gearCfg={face:0.145,faceY:0.028,faceZ:0.055,helm:0.175,batW:0.095,batL:0.56,ball:0.05,glove:0.085};
+    var __skinTones=['#e8b88a','#d9a066','#c98a5a','#a9714b','#8d5a3b','#f0c8a0'];
+    function __mkFaceTex(tone){
+      var cv=document.createElement('canvas');cv.width=128;cv.height=128;var cx=cv.getContext('2d');
+      cx.fillStyle=tone;cx.fillRect(0,0,128,128);
+      cx.fillStyle='#2b2016';cx.fillRect(0,0,128,26); /* চুল */
+      cx.fillStyle='#ffffff';cx.beginPath();cx.ellipse(46,56,9,6,0,0,7);cx.fill();cx.beginPath();cx.ellipse(82,56,9,6,0,0,7);cx.fill();
+      cx.fillStyle='#231a10';cx.beginPath();cx.arc(46,57,3.6,0,7);cx.fill();cx.beginPath();cx.arc(82,57,3.6,0,7);cx.fill();
+      cx.strokeStyle='#3a2a18';cx.lineWidth=3;cx.beginPath();cx.moveTo(36,45);cx.quadraticCurveTo(46,41,56,45);cx.stroke();
+      cx.beginPath();cx.moveTo(72,45);cx.quadraticCurveTo(82,41,92,45);cx.stroke();
+      cx.strokeStyle=tone==='#8d5a3b'?'#6e4228':'#b07a50';cx.lineWidth=2.5;cx.beginPath();cx.moveTo(64,60);cx.lineTo(64,74);cx.quadraticCurveTo(64,78,60,78);cx.stroke();
+      cx.strokeStyle='#7a3b2e';cx.lineWidth=4;cx.beginPath();cx.moveTo(50,94);cx.quadraticCurveTo(64,102,78,94);cx.stroke();
+      var t=new THREE.CanvasTexture(cv);t.anisotropy=2;return t;
+    }
+    function __fitToBone(obj,bone){
+      bone.add(obj);
+      var ws=new THREE.Vector3();bone.getWorldScale(ws);
+      var inv=1/(((Math.abs(ws.x)+Math.abs(ws.y)+Math.abs(ws.z))/3)||1);
+      obj.scale.multiplyScalar(inv);obj.userData.__inv=inv;return inv;
+    }
+    function __equipHuman(holder,role){try{
+      if(holder.userData.__equipped)return;holder.userData.__equipped=true;
+      var B=holder.userData.bones||{};var C=window.__gearCfg;
+      var tone=__skinTones[Math.floor(Math.random()*__skinTones.length)];
+      if(B.head){
+        var face=new THREE.Mesh(new THREE.SphereGeometry(C.face,20,16),new THREE.MeshStandardMaterial({map:__mkFaceTex(tone),roughness:0.6}));
+        var inv=__fitToBone(face,B.head);face.position.set(0,C.faceY*inv,C.faceZ*inv*0);face.rotation.y=0;
+        if(role==='bat'||role==='keep'){
+          var helm=new THREE.Mesh(new THREE.SphereGeometry(C.helm,18,12,0,Math.PI*2,0,Math.PI*0.62),new THREE.MeshStandardMaterial({color:0x1e3a8a,roughness:0.35}));
+          var iv2=__fitToBone(helm,B.head);helm.position.set(0,C.faceY*iv2+0.02*iv2,0);
+          var brim=new THREE.Mesh(new THREE.BoxGeometry(C.helm*2.1,0.018,C.helm*1.1),new THREE.MeshStandardMaterial({color:0x172554}));
+          var iv3=__fitToBone(brim,B.head);brim.position.set(0,(C.faceY+0.028)*iv3,(C.helm*0.75)*iv3);
+        }
+      }
+      if(B.rh&&role==='bat'){
+        var bat=new THREE.Group();
+        var blade=new THREE.Mesh(new THREE.BoxGeometry(C.batW,C.batL,0.028),new THREE.MeshStandardMaterial({color:0xd9b98a,roughness:0.6}));
+        blade.position.y=-C.batL*0.62;bat.add(blade);
+        var hndl=new THREE.Mesh(new THREE.CylinderGeometry(0.016,0.016,C.batL*0.42,8),new THREE.MeshStandardMaterial({color:0x4a2e18}));
+        hndl.position.y=-C.batL*0.12;bat.add(hndl);
+        var iv4=__fitToBone(bat,B.rh);bat.position.set(0,-0.02*iv4,0);bat.rotation.x=0.35;
+      }
+      if(B.rh&&role==='bowl'){
+        var bl=new THREE.Mesh(new THREE.SphereGeometry(C.ball,12,10),new THREE.MeshStandardMaterial({color:0xdc2626,roughness:0.4}));
+        var iv5=__fitToBone(bl,B.rh);bl.position.set(0,-0.03*iv5,0);
+      }
+      if(role==='keep'){
+        [B.rh,B.lh].forEach(function(hb){if(!hb)return;
+          var gl=new THREE.Mesh(new THREE.BoxGeometry(C.glove,C.glove*1.35,C.glove*0.55),new THREE.MeshStandardMaterial({color:0xf8fafc,roughness:0.7}));
+          var iv6=__fitToBone(gl,hb);gl.position.set(0,-0.03*iv6,0);});
+      }
+    }catch(e){}}
     function loadRiggedHumanModels() {
       if (cricketModelTask) return cricketModelTask;
       const status=document.getElementById('modelStatus');
@@ -6220,6 +6279,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         // Main players first: they can render as soon as their rigs are attached.
         [striker3D,nonStriker3D].forEach(p=>attachRig(p,batter,batter.animations,'stance'));
         [bowler3D,keeper3D,...fielders3D].forEach(p=>attachRig(p,fielder,fielder.animations,'idle'));
+        try{[striker3D,nonStriker3D].forEach(p=>__equipHuman(p,'bat'));__equipHuman(keeper3D,'keep');__equipHuman(bowler3D,'bowl');fielders3D.forEach(p=>__equipHuman(p,'field'));window.__crkDbg={s:striker3D,ns:nonStriker3D,k:keeper3D,b:bowler3D,g:cricketGroup};}catch(e){}
         status.textContent='';
         window.__cricketBatterGLB='';window.__cricketFielderGLB='';
       }).catch(e=>{
@@ -6238,6 +6298,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         let skinned=false;human.scene.traverse(o=>{if(o.isSkinnedMesh)skinned=true;});
         if (!skinned || !motions.animations.length) throw new Error('Football rig or animation missing');
         [...socHomePlayers,...socAwayPlayers].forEach(p=>attachRig(p,human,motions.animations,'unarmed_idle'));
+        try{[...socHomePlayers,...socAwayPlayers].forEach(p=>__equipHuman(p,'soc'));}catch(e){}
         status.textContent='';window.__humanGLB='';window.__motionGLB='';
       }).catch(e=>{
         status.textContent='ফুটবল খেলোয়াড় লোড হয়নি';console.error('Football model failed',e);
@@ -6357,7 +6418,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       const a0=striker.position.z, b0=partner.position.z, serial=++cricketActionSerial;
       const start=performance.now(), bowlTime=2105, crossing=1450;
       const crossings=Number.isInteger(runs)&&runs>=1&&runs<=3?runs:0;
-      const duration=bowlTime+Math.max(750,crossings*crossing);
+      const duration=bowlTime+Math.max(runs===6?1350:750,crossings*crossing);
       const previousCam=camMode; animPhase='observed_replay';camMode=1;
       document.getElementById('modelStatus').textContent='৩ডি রিপ্লে';
       bowler3D.position.z=-17.5; playRigClip(bowler3D,'bowl',false);
@@ -6372,9 +6433,10 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         else {
           const after=elapsed-bowlTime;
           if(shot && !shotPlayed && ['drive','lofted_shot'].includes(shot.type)) {shotPlayed=true;playRigClip(striker,shot.type==='lofted_shot'?'drive_up':shot.direction==='cover'||shot.direction==='point'?'drive_left':'drive_right',false);}
-          if(target && after<750) {
-            const p=Math.min(after/750,1);ball3D.visible=true;
-            ball3D.position.set(target.x*p,0.16+(runs===6?12:0.5)*Math.sin(Math.PI*p),a0+(target.z-a0)*p);
+          const flyMs=(runs===6)?1250:750, mulSix=(runs===6)?1.55:1, hgtSix=(runs===6)?17:(runs===4?2.0:0.5);
+          if(target && after<flyMs) {
+            const p=Math.min(after/flyMs,1);ball3D.visible=true;
+            ball3D.position.set(target.x*mulSix*p,0.16+hgtSix*Math.sin(Math.PI*p),a0+(target.z*mulSix-a0)*p);
           } else ball3D.visible=false;
           if(crossings && after>=300) {
             if(!startedRun) {startedRun=true;playRigClip(striker,'run');playRigClip(partner,'run');}
@@ -6398,6 +6460,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       const t = ms * 0.001;
       crowdPts.rotation.y = Math.sin(t*0.22)*0.014;
       if (activeSport === 'cricket') {
+        try{if(animPhase==='idle'&&selectedMatch&&selectedMatch.sport==='cricket'){var _cc=window.__crkCam||(window.__crkCam={next:0,i:0});var _n2=Date.now();if(_n2>_cc.next){_cc.i++;camMode=[0,2,0,1][_cc.i%4];_cc.next=_n2+(camMode===1?7000:13000);}}}catch(_e){}
         if (animPhase === 'idle') {
           striker3D.userData.rightArm.rotation.x = -0.62 + Math.sin(t*4.2)*0.07;
           striker3D.userData.leftArm.rotation.x = -0.55 + Math.sin(t*4.2)*0.07;
