@@ -7655,6 +7655,67 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       return b ? `${bn(o)} ওভার ${bn(b)} বল` : `${bn(o)} ওভার`;
     }
 
+    /* xsrc: ক্রিকেট ক্রস-সোর্স — রিপ্লে-নিশ্চিত আউট-ধরন (CREX-গতি অক্ষুণ্ণ, ESPN শুধু সাজসজ্জা) */
+    window.__xs={uid:'',lg:'',ev:'',batSide:-1,seen:null,innIdx:-1,pend:0,lastSum:0,mapTried:false};
+    function __xsNorm(st){return String(st||'').toLowerCase().replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim();}
+    async function __xsMapFromTitle(title,uid){try{
+      const X=window.__xs;
+      X.uid=uid;X.ev='';X.lg='';X.mapTried=true;X.seen=null;X.batSide=-1;X.innIdx=-1;X.pend=0;
+      const base=String(title||'').split('(')[0];
+      const t=__xsNorm(base).split(' vs ');if(t.length<2)return;
+      const a=t[0].trim(),b=t[1].trim();if(!a||!b)return;
+      const r=await fetchT('https://site.web.api.espn.com/apis/v2/scoreboard/header?sport=cricket',{},6000);
+      const d=await r.json();const lgs=((d.sports||[])[0]||{}).leagues||[];
+      for(const lg of lgs){for(const ev of (lg.events||[])){
+        const n=__xsNorm(ev.name||'');
+        if(n.includes(a)&&n.includes(b)){X.lg=String(lg.id);X.ev=String(ev.id);return;}
+      }}
+    }catch(e){}}
+    function __xsMap(){try{
+      const sm=selectedMatch;if(!sm||sm.sport==='soccer')return;
+      const X=window.__xs;if(X.uid===sm.uid&&(X.ev||X.mapTried))return;
+      void __xsMapFromTitle(sm.title||'',sm.uid);
+    }catch(e){}}
+    const __xsCard={'c':'ক্যাচ আউট!','b':'বোল্ড!','lbw':'এলবিডব্লিউ!','st':'স্টাম্পড!','run out':'রান আউট!','runout':'রান আউট!','hit wicket':'হিট উইকেট!'};
+    async function __xsCheck(innIdx,batEngName){try{
+      const X=window.__xs;const now=Date.now();
+      if(!X.ev||!X.pend||now-X.pend>90000)return;
+      if(now-X.lastSum<12000)return;X.lastSum=now;
+      const r=await fetchT('https://site.web.api.espn.com/apis/site/v2/sports/cricket/'+X.lg+'/summary?event='+X.ev,{},6000);
+      const d=await r.json();const ros=d.rosters||[];
+      let side=-1;const bnm=__xsNorm(batEngName);
+      for(let i=0;i<ros.length;i++){const tn=__xsNorm((ros[i].team||{}).displayName);if(tn&&bnm&&(bnm.includes(tn)||tn.includes(bnm))){side=i;break;}}
+      if(side<0)return;
+      if(X.innIdx!==innIdx||X.batSide!==side){X.seen=null;X.innIdx=innIdx;X.batSide=side;}
+      const outs=[];
+      for(const p of (ros[side].roster||[])){
+        let card='',stext='';
+        (function walk(o){
+          if(Array.isArray(o)){for(const v of o)walk(v);}
+          else if(o&&typeof o==='object'){
+            if(o.name==='dismissalCard'&&typeof o.value==='string')card=o.value;
+            if(typeof o.shortText==='string'&&/,\s*OUT\s*$/i.test(o.shortText))stext=o.shortText;
+            for(const k in o)walk(o[k]);
+          }
+        })(p);
+        if(stext)outs.push({n:(p.athlete||{}).displayName||'',card:String(card).toLowerCase(),st:stext});
+      }
+      if(X.seen===null){X.seen=new Set(outs.map(o=>o.n));return;}
+      const fresh=outs.filter(o=>o.n&&!X.seen.has(o.n));
+      outs.forEach(o=>X.seen.add(o.n));
+      if(fresh.length!==1)return;
+      const o=fresh[0];const type=__xsCard[o.card]||'';
+      if(!type){X.pend=0;return;}
+      let bowler='';const m=String(o.st).match(/^(.+?)\s+to\s+/i);if(m)bowler=m[1].trim();
+      const line=(type==='রান আউট!')?('রিপ্লেতে নিশ্চিত — রান আউট! ফিরে গেলেন '+o.n+'।'):('রিপ্লেতে নিশ্চিত — '+type+(bowler?(' '+bowler+'-এর বলে'):'')+' ফিরে গেলেন '+o.n+'।');
+      X.pend=0;
+      if(!hostMicActive&&!isSpeakingNow&&!syncBusy){
+        lastSpeakTime=Date.now();isSpeakingNow=true;
+        document.getElementById('commText').textContent='🎬 '+line;
+        rememberSpoken(line);
+        void speakBangla(line).finally(function(){if(!syncBusy)isSpeakingNow=false;});
+      }
+    }catch(e){}}
     function factualCricketLine(spec, bowler, score, overs, batterInfo = null) {
       // Only use a known Bangla spelling; unknown names remain visible on screen.
       const name = spokenPlayerName(bowler);
@@ -7994,6 +8055,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
 
         document.getElementById('uiTeamBadge').textContent = abbr.slice(0,4);
         recolorCricketJerseys(batEng, bowlEng, batObj.dc || batObj.uc || '', bowlObj.dc || bowlObj.uc || '');
+        try{__xsMap();}catch(_e){}
 
         if (!hasPlay && !selectedMatch.confirmedPlay && !['finished','stumps'].includes(selectedMatch.state)) {
           selectedMatch.state='upcoming';
@@ -8073,6 +8135,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           if(verifiedRoster)prefetchVerifiedSquad(polledMatch,verifiedRoster,sv.fo || polledMatch.fo,[p1Fk,p2Fk,bwFk]);
         }
         updateCricketMetrics({runs:rNum,overs:curInn.ovRaw,status:sv.B,active:!isInactive,inningsIndex:activeIndex});
+        try{void __xsCheck(activeIndex,batEng);}catch(_e){}
         void preparePlayerNames([p1Name,p2Name,bwName]);
 
         // Parse bowler: sv.c = "21.12.0.2" -> runs.balls.maidens.wickets
@@ -8172,6 +8235,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
             const play = isLastB && /^[0-6]$/.test(tok) && bObj.bf ? ()=>replayObservedDelivery(polledMatch.mf,visualRuns,spec.shot) : null;
             rememberSpoken(line);
             submitBroadcastEvent({matchUid:polledMatch.uid,snapshot,text:line,play,effect:{outcome:spec.outcome}});
+            if(spec.outcome==='W')try{window.__xs.pend=Date.now();}catch(_e){}
           }
         } else {
           if(lastBall)lastCrexBallSig=ballSig;
