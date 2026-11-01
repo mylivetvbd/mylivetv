@@ -361,6 +361,7 @@ html,body{background:#000!important}
     <button class="hud-btn" style="background:#0d9488;border-color:#5eead4;" onclick="openVoiceModal()">🎙️ কণ্ঠস্বর HD</button>
     <button class="hud-btn" id="soundBtn" onclick="toggleMute()">🔊 সাউন্ড</button>
     <button class="hud-btn" style="background:#059669;border-color:#6ee7b7;" onclick="toggleTrueFullscreen()">⛶ ফুলস্ক্রিন</button>
+    <button class="hud-btn" id="hd2Btn" style="background:#4f46e5;border-color:#a5b4fc;" onclick="window.__hd2Toggle&&window.__hd2Toggle()">✨ কণ্ঠ ২.০: অফ</button>
     <button class="hud-btn" style="background:#ea580c;border-color:#fdba74;" onclick="enterCleanBroadcast()">🙈 বাটন লুকান</button>
   </div>
 
@@ -8052,10 +8053,42 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     for(var i=0;i<D.length;i++) t=t.replace(D[i][0],D[i][1]);
     return t;
   };
+/* spokenFix core — সংখ্যা→বাংলা কথা + উচ্চারণ-অভিধান (শুধু মুখের জন্য, স্ক্রিন অপরিবর্তিত) */
+window.__bnW=['শূন্য','এক','দুই','তিন','চার','পাঁচ','ছয়','সাত','আট','নয়','দশ','এগারো','বারো','তেরো','চৌদ্দ','পনেরো','ষোলো','সতেরো','আঠারো','উনিশ','বিশ','একুশ','বাইশ','তেইশ','চব্বিশ','পঁচিশ','ছাব্বিশ','সাতাশ','আটাশ','ঊনত্রিশ','ত্রিশ','একত্রিশ','বত্রিশ','তেত্রিশ','চৌত্রিশ','পঁয়ত্রিশ','ছত্রিশ','সাঁইত্রিশ','আটত্রিশ','ঊনচল্লিশ','চল্লিশ','একচল্লিশ','বিয়াল্লিশ','তেতাল্লিশ','চুয়াল্লিশ','পঁয়তাল্লিশ','ছেচল্লিশ','সাতচল্লিশ','আটচল্লিশ','ঊনপঞ্চাশ','পঞ্চাশ','একান্ন','বাহান্ন','তিপ্পান্ন','চুয়ান্ন','পঞ্চান্ন','ছাপ্পান্ন','সাতান্ন','আটান্ন','ঊনষাট','ষাট','একষট্টি','বাষট্টি','তেষট্টি','চৌষট্টি','পঁয়ষট্টি','ছেষট্টি','সাতষট্টি','আটষট্টি','ঊনসত্তর','সত্তর','একাত্তর','বাহাত্তর','তিয়াত্তর','চুয়াত্তর','পঁচাত্তর','ছিয়াত্তর','সাতাত্তর','আটাত্তর','ঊনআশি','আশি','একাশি','বিরাশি','তিরাশি','চুরাশি','পঁচাশি','ছিয়াশি','সাতাশি','আটাশি','ঊননব্বই','নব্বই','একানব্বই','বিরানব্বই','তিরানব্বই','চুরানব্বই','পঁচানব্বই','ছিয়ানব্বই','সাতানব্বই','আটানব্বই','নিরানব্বই'];
+window.__num2bn=function(n){n=Math.floor(Math.abs(Number(n)||0));if(n<100)return window.__bnW[n];var p='';var c=Math.floor(n/10000000);n%=10000000;var l=Math.floor(n/100000);n%=100000;var h=Math.floor(n/1000);n%=1000;var s=Math.floor(n/100);var r=n%100;if(c)p+=window.__num2bn(c)+' কোটি ';if(l)p+=window.__bnW[l]+' লাখ ';if(h)p+=window.__bnW[h]+' হাজার ';if(s)p+=window.__bnW[s]+'শো ';if(r||p==='')p+=window.__bnW[r];return p.trim();};
+window.__bnDigits=function(x){return String(x).replace(/[০-৯]/g,function(d){return String('০১২৩৪৫৬৭৮৯'.indexOf(d));});};
+window.__digWords=function(x){var s=window.__bnDigits(x),o=[],i;for(i=0;i<s.length;i++)o.push(window.__bnW[+s[i]]);return o.join(' ');};
+window.__pronDict=[['হল','হলো'],['গেল','গেলো'],['এল','এলো'],['দিল','দিলো'],['নিল','নিলো'],['পেল','পেলো'],['করল','করলো'],['বলল','বললো'],['খেলল','খেললো'],['মারল','মারলো'],['ধরল','ধরলো'],['ছাড়ল','ছাড়লো'],['লাগল','লাগলো'],['উঠল','উঠলো'],['পড়ল','পড়লো'],['নামল','নামলো'],['থামল','থামলো'],['জিতল','জিতলো'],['হারল','হারলো'],['ফিরল','ফিরলো'],['ঢুকল','ঢুকলো'],['ছুটল','ছুটলো'],['ভাঙল','ভাঙলো'],['আটকাল','আটকালো'],['বাঁচাল','বাঁচালো'],['ঠেকাল','ঠেকালো'],['পাঠাল','পাঠালো'],['ফেরাল','ফেরালো'],['সামলাল','সামলালো'],['হারাল','হারালো'],['রাখল','রাখলো'],['দাঁড়াল','দাঁড়ালো'],['ফেলল','ফেললো'],['বসল','বসলো'],['কাটল','কাটলো'],['টানল','টানলো'],['ঘুরল','ঘুরলো'],['দেখাল','দেখালো'],['চালাল','চালালো'],['কমল','কমলো'],['বাড়ল','বাড়লো']];
+window.__spokenFix=function(t){
+  try{
+    t=String(t||'');
+    var N=function(x){return parseInt(window.__bnDigits(x),10);};
+    var W=function(x){var n=N(x);return (isNaN(n)||String(n).length>9)?window.__digWords(x):window.__num2bn(n);};
+    t=t.replace(/([০-৯0-9]+)\.([০-৫0-5])(\s*ওভার)/g,function(_,a,b){return W(a)+' ওভার '+W(b)+' বল';});
+    t=t.replace(/([০-৯0-9]+)\s*\/\s*([০-৯0-9]+)/g,function(_,a,b){return W(a)+' রানে '+W(b)+' উইকেট';});
+    t=t.replace(/([০-৯0-9]+)\.([০-৯0-9]+)/g,function(_,a,b){return W(a)+' দশমিক '+window.__digWords(b);});
+    t=t.replace(/([০-৯0-9]+)\s*[-–]\s*([০-৯0-9]+)/g,function(_,a,b){return W(a)+' '+W(b);});
+    t=t.replace(/[০-৯0-9]+/g,function(m){return W(m);});
+    var i,p;
+    for(i=0;i<window.__pronDict.length;i++){p=window.__pronDict[i];t=t.replace(new RegExp('(^|[^\\u0980-\\u09FF])'+p[0]+'(?=$|[^\\u0980-\\u09FF])','g'),'$1'+p[1]);}
+    t=t.replace(/\s+/g,' ').trim();
+  }catch(e){}
+  return t;
+};
+
+window.__hd2=localStorage.getItem('hd2')==='1';
+window.__hd2Voice=function(){try{var vs=(window.speechSynthesis?speechSynthesis.getVoices():[])||[];return vs.filter(function(v){return /bn[-_]|bangla|bengali/i.test(v.lang+' '+v.name);}).filter(function(v){return /natural|neural|online/i.test(v.name);})[0]||null;}catch(e){return null;}};
+window.__hd2Toggle=function(){window.__hd2=!window.__hd2;localStorage.setItem('hd2',window.__hd2?'1':'0');var b=document.getElementById('hd2Btn');if(b)b.textContent='✨ কণ্ঠ ২.০: '+(window.__hd2?'অন':'অফ');if(window.__hd2&&!window.__hd2Voice()){try{alert('এই ব্রাউজারে উন্নত বাংলা কণ্ঠ পাওয়া যায়নি। ইউটিউব লাইভের সময় Microsoft Edge-এ খুললে উন্নত কণ্ঠ পাবে। আপাতত আগের কণ্ঠেই চলবে।');}catch(e){}}};
+(function(){try{var b=document.getElementById('hd2Btn');if(b)b.textContent='✨ কণ্ঠ ২.০: '+(window.__hd2?'অন':'অফ');if(window.speechSynthesis)speechSynthesis.getVoices();}catch(e){}})();
   (function wrapSpeak(){
     if(typeof window.speakBangla==='function' && !window.__bnWrapped){
       var o=window.speakBangla;
-      window.speakBangla=function(t){ try{ t=window.__bnFix(t); }catch(e){} return o(t); };
+      window.speakBangla=function(t,fp){
+        try{ t=window.__bnFix(t); }catch(e){}
+        try{ t=window.__spokenFix(t); }catch(e){}
+        if(window.__hd2){var v=window.__hd2Voice();if(v){return new Promise(function(res){var done=false;var fin=function(){if(!done){done=true;res(true);}};try{var u=new SpeechSynthesisUtterance(t);u.voice=v;u.lang=v.lang||'bn-BD';u.rate=1.02;u.pitch=1;u.onend=fin;u.onerror=function(){if(!done){done=true;Promise.resolve(o(t,fp)).then(res);}};setTimeout(fin,45000);speechSynthesis.speak(u);}catch(e){fin();}});}}
+        return o(t,fp);
+      };
       window.__bnWrapped=true;
     } else if(!window.__bnWrapped) setTimeout(wrapSpeak,700);
   })();
