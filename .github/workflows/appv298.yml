@@ -1,0 +1,32 @@
+name: appv298
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch apk
+        run: |
+          set -e
+          curl -sL --retry 3 -o a.txt https://d.uguu.se/umZVnTFH.txt
+          echo "bec0faadadea4123d7b92de5005c3f86  a.txt" | md5sum -c -
+          base64 -di a.txt > MyLiveTV-v2.9.8.apk
+          echo "bab2117d7fa0460e438caabf370c40f4  MyLiveTV-v2.9.8.apk" | md5sum -c -
+          rm a.txt
+      - name: site apk + version.json
+        run: |
+          set -e
+          cp MyLiveTV-v2.9.8.apk docs/MyLiveTV.apk
+          echo "ewogICJ2ZXJzaW9uQ29kZSI6IDI3LAogICJ2ZXJzaW9uTmFtZSI6ICIyLjkuOCIsCiAgImFwayI6ICJodHRwczovL2dpdGh1Yi5jb20vbXlsaXZldHZiZC9teWxpdmV0di9yZWxlYXNlcy9kb3dubG9hZC92Mi45LjgvTXlMaXZlVFYtdjIuOS44LmFwayIsCiAgIm5vdGVzIjogIvCflrzvuI8g4Kab4KeL4KafIOCmnOCmvuCmqOCmvuCmsuCmvuCmr+CmvCAo4Kau4Ka/4Kao4Ka/4Kau4Ka+4KaH4KacKSDgprjgp43gpp/gp4HgpqHgpr/gppPgprAg4Kab4Kas4Ka/LeCmleCmpeCmviDgpqngppbgpqgg4Kaa4Ka+4Kay4KeBIOCmpeCmvuCmleCnhyDigKIg8J+TpCDgpqzgpqjgp43gpqfgp4HgppXgp4cg4KaF4KeN4Kav4Ka+4KaqIOCmquCmvuCmoOCmvuCmkyDigJQg4KaH4Kao4KeN4Kaf4Ka+4Kaw4Kao4KeH4KafIOCmm+CmvuCmoeCmvOCmvuCmhyIKfQo=" | base64 -di > version.json
+          git config user.name mylivetvbd
+          git config user.email mylivetvbd@users.noreply.github.com
+          git add docs/MyLiveTV.apk version.json
+          git diff --cached --quiet || git commit -m "release v2.9.8 (code 27): keep studio alive in PiP"
+          git push || (git pull --rebase --autostash && git push)
+      - name: github release
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          gh release view v2.9.8 >/dev/null 2>&1 || gh release create v2.9.8 --title "v2.9.8" --notes "Keep studio rendering and TTS alive in PiP" MyLiveTV-v2.9.8.apk
+          gh release view v2.9.8 --json assets -q '.assets[].name' | grep -q MyLiveTV-v2.9.8.apk || gh release upload v2.9.8 MyLiveTV-v2.9.8.apk --clobber
+          echo ALL-DONE
