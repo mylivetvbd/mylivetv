@@ -1,0 +1,23 @@
+name: studiofix39
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          curl -sfL "https://h.uguu.se/RoamSMUe.txt" -o /tmp/s39.txt
+          echo "d851cc8d566ae9cbfb81c697b9078807  /tmp/s39.txt" | md5sum -c -
+          base64 -di /tmp/s39.txt > docs/studio.html
+          echo "8f1663f234f4e05b2f97bc0947e9c049  docs/studio.html" | md5sum -c -
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio patch35b: HT detection + empty pitch during halftime"
+          git push || (git pull --rebase --autostash && git push)
