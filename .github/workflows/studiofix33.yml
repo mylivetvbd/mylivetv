@@ -1,0 +1,23 @@
+name: studiofix33
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          curl -sfL "https://d.uguu.se/tvtQzxtt.txt" -o /tmp/s33.txt
+          echo "42ff43591269124df2c1b3526c3e003e  /tmp/s33.txt" | md5sum -c -
+          base64 -di /tmp/s33.txt > docs/studio.html
+          echo "5d772e4e397b50d506f03e6349288548  docs/studio.html" | md5sum -c -
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio patch30: robust substitution parse, no unknown-identity line, event dedup"
+          git push || (git pull --rebase --autostash && git push)
