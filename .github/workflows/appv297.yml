@@ -1,0 +1,33 @@
+name: appv297
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch apk
+        run: |
+          set -e
+          curl -sL --retry 3 -o a.txt https://n.uguu.se/hwEStsoN.txt
+          echo "5f38af8413b49f2ee90be263f61023cd  a.txt" | md5sum -c -
+          base64 -di a.txt > MyLiveTV-v2.9.7.apk
+          echo "c3a5b87228b128ca1d613795350c9166  MyLiveTV-v2.9.7.apk" | md5sum -c -
+          rm a.txt
+      - name: site apk + version.json
+        run: |
+          set -e
+          cp MyLiveTV-v2.9.7.apk docs/MyLiveTV.apk
+          echo "ewogICJ2ZXJzaW9uQ29kZSI6IDI2LAogICJ2ZXJzaW9uTmFtZSI6ICIyLjkuNyIsCiAgImFwayI6ICJodHRwczovL2dpdGh1Yi5jb20vbXlsaXZldHZiZC9teWxpdmV0di9yZWxlYXNlcy9kb3dubG9hZC92Mi45LjcvTXlMaXZlVFYtdjIuOS43LmFwayIsCiAgIm5vdGVzIjogIvCflrzvuI8gM0Qg4Ka44KeN4Kaf4KeB4Kah4Ka/4KaTIOCmj+CmluCmqCDgppvgp4vgpp8g4Kac4Ka+4Kao4Ka+4Kay4Ka+4Kav4Ka84KaTIOCmmuCmsuCnhyAo4Kau4Ka/4Kao4Ka/4Kau4Ka+4KaH4KacIOCmleCmsOCngeCmqCEpIOKAoiDwn5OkIOCmqOCmpOCngeCmqDog4Kas4Kao4KeN4Kan4KeB4KaV4KeHIOCmheCnjeCmr+CmvuCmqiDgpqrgpr7gpqDgpr7gppMg4oCUIOCmh+CmqOCnjeCmn+CmvuCmsOCmqOCnh+CmnyDgppvgpr7gpqHgprzgpr7gpociCn0K" | base64 -di > version.json
+          echo "aa9e63983b6d00b1f32aacb41371ebba  version.json" | md5sum -c - || true
+          git config user.name mylivetvbd
+          git config user.email mylivetvbd@users.noreply.github.com
+          git add docs/MyLiveTV.apk version.json
+          git diff --cached --quiet || git commit -m "release v2.9.7 (code 26): studio PiP + share-app button"
+          git push || (git pull --rebase --autostash && git push)
+      - name: github release
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          gh release view v2.9.7 >/dev/null 2>&1 || gh release create v2.9.7 --title "v2.9.7" --notes "Studio PiP + share-app button" MyLiveTV-v2.9.7.apk
+          gh release view v2.9.7 --json assets -q '.assets[].name' | grep -q MyLiveTV-v2.9.7.apk || gh release upload v2.9.7 MyLiveTV-v2.9.7.apk --clobber
+          echo ALL-DONE
