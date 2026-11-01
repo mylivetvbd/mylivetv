@@ -1,0 +1,23 @@
+name: studiofix32
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          curl -sfL "https://d.uguu.se/GtiHfXFU.txt" -o /tmp/s32.txt
+          echo "5500a327b2b3176b5b837a55ec6fc2b4  /tmp/s32.txt" | md5sum -c -
+          base64 -di /tmp/s32.txt > docs/studio.html
+          echo "a665d4862d4e5f6e204cb2017545862f  docs/studio.html" | md5sum -c -
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio patch29b: fast name-commentary + ambience + event pauses, no jersey in speech"
+          git push || (git pull --rebase --autostash && git push)
