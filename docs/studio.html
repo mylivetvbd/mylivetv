@@ -304,9 +304,10 @@ html,body{background:#000!important}
 #cricketMetrics{gap:26px!important;font-size:28px!important}
 .live-pill{font-size:24px!important}
 .hud-btn{font-size:18px!important;padding:8px 14px!important}
-.spot-role{font-size:23px!important}
-.spot-name{font-size:34px!important}
-.spot-stat{font-size:25px!important}
+.player-spotlight{max-width:560px!important;height:auto!important;max-height:none!important;align-items:flex-start!important}
+.spot-role{font-size:22px!important;line-height:1.25!important}
+.spot-name{font-size:30px!important;line-height:1.22!important;overflow-wrap:anywhere;word-break:normal}
+.spot-stat{font-size:22px!important;line-height:1.25!important;overflow-wrap:anywhere}
 .comm-text{font-size:38px!important;line-height:1.45!important}
 .team-badge{font-size:26px!important;width:46px!important;height:46px!important}
 .score-main-num{font-size:56px!important}
@@ -7670,6 +7671,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         '?':['বলের ফল স্পষ্ট পাওয়া যায়নি।']
       };
       let line = pickFresh('safe_ball_'+spec.outcome,variants[spec.outcome] || variants['?']);
+      if(spec.outcome==='W'&&spec.howBn){line=spec.howBn+' '+line;}
       const batter = batterInfo && spokenPlayerName(batterInfo.name);
       const numeric = /^[0-6]$/.test(spec.outcome);
       if (batter && numeric) {
@@ -8151,6 +8153,14 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           for(let bi=startI; bi<newObjs.length; bi++){
             const bObj=newObjs[bi]; const tok=String(bObj.u||''); const isLastB=(bi===newObjs.length-1);
             const spec=buildCrexShotSpec(tok);spec.shot=verifiedShotMetadata(bObj);
+            try{if(spec.outcome==='W'){var _cm=String(bObj.commentary||'');var _how=
+              /run\s*out/i.test(_cm)?'রান আউট!':
+              /stump/i.test(_cm)?'স্টাম্পড!':
+              /lbw|leg\s*before/i.test(_cm)?'এলবিডব্লিউ!':
+              /hit\s*wicket/i.test(_cm)?'হিট উইকেট!':
+              /caught|c&b/i.test(_cm)?'ক্যাচ আউট!':
+              /bowled/i.test(_cm)?'বোল্ড!':'';
+              if(_how)spec.howBn=_how;}}catch(_e){}
             const ballBowler=bObj.bf ? (crexPlayerCache[bObj.bf]||'') : '';
             const bInfo=(isLastB && newCnt===1)?batterInfo:null;
             const line=factualCricketLine(spec,ballBowler,spkScore(rNum,wNum),ov.spk,bInfo);
