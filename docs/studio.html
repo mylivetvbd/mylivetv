@@ -7441,14 +7441,14 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         while(epoch===syncEpoch && syncQueue.length) {
           const ev=syncQueue.shift();if(!selectedMatch || selectedMatch.uid!==ev.matchUid)continue;
           if(ev.ts&&(Date.now()-ev.ts)>25000&&syncQueue.length)continue; /* বাসি লাইন বাদ, নতুনটা বলো */
-          stopAllSpeech();restoreBroadcastHud(ev.snapshot);
+          if(!ev.silent)stopAllSpeech();restoreBroadcastHud(ev.snapshot);
           let evSay=ev.text;
           if(ev.aiP){try{const aiR=await Promise.race([ev.aiP,new Promise(function(rs){setTimeout(function(){rs(null);},3200);})]);if(aiR&&epoch===syncEpoch){evSay=aiR;rememberSpoken(aiR);}}catch(_e){}}
-          document.getElementById('commText').textContent=evSay;
+          if(!ev.silent)document.getElementById('commText').textContent=evSay;
           showEventGraphic(ev.effect);
-          lastSpeakTime=Date.now();isSpeakingNow=true;
+          if(!ev.silent){lastSpeakTime=Date.now();isSpeakingNow=true;}
           const motion=ev.play ? ev.play() : Promise.resolve();
-          const voice=hostMicActive ? Promise.resolve() : speakBangla(evSay);
+          const voice=(ev.silent||hostMicActive) ? Promise.resolve() : speakBangla(evSay);
           await Promise.all([Promise.resolve(motion),Promise.resolve(voice)]);
           if(epoch!==syncEpoch)return;
           isSpeakingNow=false;
@@ -7706,6 +7706,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           প্রতিটি বল/ওয়াইড আলাদা `id` ⇒ পুনরাবৃত্তি অসম্ভব। উইকেটে ধরন (ক্যাচ/বোল্ড/এলবিডব্লিউ…) যোগ হয়। */
 window.__bnCom={on:true,lag:0,ok:false,lastData:0,spoke:false};
 window.__bnOn=function(){return window.__bnCom.on===true&&window.__bnCom.ok===true;};
+window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>30000;}; /* ৩০সে নতুন CREX বল নেই ⇒ ফাঁক */
 (function(){
   var SEEN={}, Q=[], busy=false, lastFetch=0, primed={}, WD_CACHE={};
   var BND='০১২৩৪৫৬৭৮৯';
@@ -7734,9 +7735,10 @@ window.__bnOn=function(){return window.__bnCom.on===true&&window.__bnCom.ok===tr
     var head = who ? (how ? who+' — '+how+'।' : who+'।') : (how?how+'।':'');
     return (head?head+' ':'')+body;
   }
+  var pumpT=0;
   function pump(){
     if(busy||!Q.length)return;
-    if(hostMicActive||isSpeakingNow||syncBusy)return;
+    if(hostMicActive||isSpeakingNow||syncBusy){ if(!pumpT)pumpT=setTimeout(function(){pumpT=0;pump();},1500); return; }
     var line=Q.shift(); busy=true;
     try{
       lastSpeakTime=Date.now(); isSpeakingNow=true;
@@ -8221,7 +8223,7 @@ setInterval(function(){
           selectedMatch.state='upcoming';
           showCricketWaiting(selectedMatch);
           const count=upcomingCountdown(selectedMatch);
-          if (!(window.__bnOn&&window.__bnOn()) && !hostMicActive && !isSpeakingNow && Date.now()-lastSpeakTime>22000) {
+          if (!(window.__bnOn&&window.__bnOn()&&!window.__bnStale()) && !hostMicActive && !isSpeakingNow && Date.now()-lastSpeakTime>22000) {
             lastSpeakTime=Date.now(); isSpeakingNow=true; analysisStep++;
             const safeHome=Object.keys(TEAM_MAP).some(k=>String(batEng).toLowerCase().includes(k.toLowerCase())) ? batBn : 'প্রথম দল';
             const safeAway=Object.keys(TEAM_MAP).some(k=>String(bowlEng).toLowerCase().includes(k.toLowerCase())) ? bowlBn : 'দ্বিতীয় দল';
@@ -8395,15 +8397,14 @@ setInterval(function(){
             const n=Number(tok), visualRuns=(n>=1&&n<=3&&!bInfo)?0:(Number.isFinite(n)?n:0);
             const play = isLastB && /^[0-6]$/.test(tok) && bObj.bf ? ()=>replayObservedDelivery(polledMatch.mf,visualRuns,spec.shot) : null;
             rememberSpoken(line);
-            if(window.__bnCom&&window.__bnCom.on){
-              /* বাংলা কমেন্টারি নিজেই বলবে ⇒ পুরোনো সংক্ষিপ্ত লাইন বন্ধ (পুনরাবৃত্তি রোধ) */
-            } else submitBroadcastEvent({matchUid:polledMatch.uid,snapshot,text:line,play,effect:{outcome:spec.outcome}});
+            submitBroadcastEvent({matchUid:polledMatch.uid,snapshot,text:line,play,effect:{outcome:spec.outcome},
+              silent:(window.__bnOn?window.__bnOn():false)}); /* বাংলা কমেন্টারি চালু ⇒ কথা নয়, শুধু কার্ড/রিপ্লে */
             if(spec.outcome==='W')try{window.__xs.pend=Date.now();}catch(_e){}
           }
         } else {
           if(lastBall)lastCrexBallSig=ballSig;
           holdNewerHud(previousHud);
-          if (!(window.__bnOn&&window.__bnOn()) && !hostMicActive && !isSpeakingNow && !syncBusy && (Date.now() - lastSpeakTime > 12000)) {
+          if (!(window.__bnOn&&window.__bnOn()&&!window.__bnStale()) && !hostMicActive && !isSpeakingNow && !syncBusy && (Date.now() - lastSpeakTime > 12000)) {
           lastSpeakTime = Date.now(); isSpeakingNow = true;
           const spkSc = spkScore(rNum, wNum);
           analysisStep++;
