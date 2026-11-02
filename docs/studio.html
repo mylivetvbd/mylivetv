@@ -7724,7 +7724,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           প্রতিটি বল/ওয়াইড আলাদা `id` ⇒ পুনরাবৃত্তি অসম্ভব। উইকেটে ধরন (ক্যাচ/বোল্ড/এলবিডব্লিউ…) যোগ হয়। */
 window.__bnCom={on:true,lag:0,ok:false,lastData:0,spoke:false};
 window.__bnOn=function(){return window.__bnCom.on===true&&window.__bnCom.ok===true;};
-window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>30000;}; /* ৩০সে নতুন CREX বল নেই ⇒ ফাঁক */
+window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120000;}; /* ৩০সে নতুন CREX বল নেই ⇒ ফাঁক */
 (function(){
   var SEEN={}, Q=[], busy=false, lastFetch=0, primed={}, WD_CACHE={};
   var BND='০১২৩৪৫৬৭৮৯';
@@ -7760,6 +7760,8 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
     if(!Q.length)return;
     if(hostMicActive||isSpeakingNow){ if(!pumpT)pumpT=setTimeout(function(){pumpT=0;pump();},800); return; }
     var it=Q.shift(); busy=true; busySince=Date.now(); var line=(it&&it.l!=null)?it.l:String(it);
+    line=(function(t,oc){ var cap=/^(4|6|W|WD|NB)$/i.test(String(oc||''))?260:200; t=String(t||''); if(t.length<=cap)return t;
+      var head=t.slice(0,cap); var m=head.match(/^[\s\S]*[।!?]/); return (m&&m[0].length>=60)?m[0]:head.replace(/[,;:\s]+\S*$/,'')+'।'; })(line, it&&it.m&&it.m.oc);
     try{
       lastSpeakTime=Date.now(); isSpeakingNow=true;
       try{var _m=(it&&it.m)||null; if(_m){ if(_m.sc!=null)window.__oneHud(_m.sc,_m.ov); if(_m.oc!=null)window.__oneCard(_m.oc);} }catch(_e){}
@@ -7780,7 +7782,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
   var FL={};                                   /* SV ব্যাকআপ যেখানে পৌঁছেছে — তার নিচে নামবে না */
   window.__bnFloor=function(mf,ov){ var b=bidx(ov); if(b>=0&&(!FL[mf]||b>FL[mf])) FL[mf]=b; };
   var gapT=0;                                  /* গ্যাপ-বট: CREX নীরব হলে বিশ্লেষণ-কথা */
-  function armGap(){ if(gapT)clearTimeout(gapT); gapT=setTimeout(fireGap,12000); }
+  function armGap(){ if(gapT)clearTimeout(gapT); gapT=setTimeout(fireGap,20000); }
   function fireGap(){
     gapT=0;
     try{
@@ -7833,7 +7835,6 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
     balls.forEach(function(x){ var kk=mf+'#'+x.k; if(SEEN[kk])return; SEEN[kk]=1; fresh.push(x); });
     if(!fresh.length)return;
     fresh=fresh.filter(function(x){ var kk2=mf+'|'+(x.inn||1), cur=bidx(x.o); if(cur<0)return true;
-      if(FL[mf]!=null && cur<=FL[mf])return false;                                  /* SV ব্যাকআপ এগিয়ে গেছে ⇒ পুরোনো বল বাদ */
       if(LB[kk2]!=null && cur<=LB[kk2])return false; LB[kk2]=cur; return true; });   /* কখনো পিছিয়ে যাবে না */
     if(!fresh.length)return;
     if(fresh.length>2) fresh=fresh.slice(-2);   /* বাসি বল বাদ ⇒ দেরি জমে না */
@@ -8320,7 +8321,6 @@ setInterval(function(){
         if(!crexFresh){                       /* স্কোর CREX কমেন্টারি ফিড থেকেই; SV শুধু ৩০সে+ নীরবতার ফাঁক পূরণে */
           document.getElementById('uiScore').textContent = `${bn(rNum)}/${bn(wNum)}`;
           document.getElementById('uiOvers').textContent = bn(ov.disp);
-          try{ window.__bnFloor&&window.__bnFloor(polledMatch.mf, ov.disp); }catch(_e){}
         }
 
         // Compute live chase equation if 2nd innings in limited overs!
