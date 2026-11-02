@@ -7441,7 +7441,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         while(epoch===syncEpoch && syncQueue.length) {
           const ev=syncQueue.shift();if(!selectedMatch || selectedMatch.uid!==ev.matchUid)continue;
           if(ev.ts&&(Date.now()-ev.ts)>25000&&syncQueue.length)continue; /* বাসি লাইন বাদ, নতুনটা বলো */
-          if(!ev.silent)stopAllSpeech();restoreBroadcastHud(ev.snapshot);
+          if(!ev.silent){stopAllSpeech();restoreBroadcastHud(ev.snapshot);} /* silent: HUD পুরোনো স্কোরে ফেরে না */
           let evSay=ev.text;
           if(ev.aiP){try{const aiR=await Promise.race([ev.aiP,new Promise(function(rs){setTimeout(function(){rs(null);},3200);})]);if(aiR&&epoch===syncEpoch){evSay=aiR;rememberSpoken(aiR);}}catch(_e){}}
           if(!ev.silent)document.getElementById('commText').textContent=evSay;
@@ -7738,18 +7738,18 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
   var pumpT=0;
   function pump(){
     if(busy||!Q.length)return;
-    if(hostMicActive||isSpeakingNow||syncBusy){ if(!pumpT)pumpT=setTimeout(function(){pumpT=0;pump();},1500); return; }
+    if(hostMicActive||isSpeakingNow){ if(!pumpT)pumpT=setTimeout(function(){pumpT=0;pump();},800); return; }
     var line=Q.shift(); busy=true;
     try{
       lastSpeakTime=Date.now(); isSpeakingNow=true;
       var el=document.getElementById('commText'); if(el)el.textContent='📣 '+line;
       rememberSpoken(line);
-      speakBangla(line).finally(function(){busy=false; if(!syncBusy)isSpeakingNow=false; setTimeout(pump,350);});
+      speakBangla(line).finally(function(){busy=false; isSpeakingNow=false; setTimeout(pump,350);});
     }catch(e){busy=false; isSpeakingNow=false;}
   }
   function speak(line){
     if(!line||window.__bnCom.on!==true)return;
-    if(hostMicActive||syncBusy)return;
+    if(hostMicActive)return;
     Q.push(line); if(Q.length>4)Q.shift();
     pump();
   }
@@ -7778,7 +7778,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
       return {o:o,b:String(x.b),s:String(x.s||''),c1:x.c1,c2:x.c2,inn:x.inning,_wd:wdFor(o),k:keyOf(x)};
     });
     if(!balls.length)return;
-    balls.reverse();                        /* ফিড নতুন→পুরোনো; পুরোনো আগে বলা হবে */
+    balls.sort(function(x,y){ var d=(parseFloat(x.o)||0)-(parseFloat(y.o)||0); return d; }); /* পুরোনো বল আগে */
     var first=!primed[mf];
     if(first){
       primed[mf]=1;
@@ -7791,6 +7791,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
     var fresh=[];
     balls.forEach(function(x){ var kk=mf+'#'+x.k; if(SEEN[kk])return; SEEN[kk]=1; fresh.push(x); });
     if(!fresh.length)return;
+    if(fresh.length>2) fresh=fresh.slice(-2);   /* বাসি বল বাদ ⇒ দেরি জমে না */
     window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();
     fresh.forEach(function(x){
       var go=function(){ var l=lineOf(x); if(l){window.__bnCom.spoke=true;speak(l);} };
@@ -7803,7 +7804,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
   window.__bnComTick=function(match,sv){
     try{
       if(!window.__bnCom.on||!match||!match.mf)return;
-      if(Date.now()-lastFetch<5000)return;          /* ৫ সেকেন্ডে সর্বোচ্চ ১ বার — ফিড হালকা রাখতে */
+      if(Date.now()-lastFetch<2500)return;          /* ২.৫ সেকেন্ডে সর্বোচ্চ ১ বার — দেরি কমানো */
       lastFetch=Date.now();
       fetchT('https://content.crickapi.com/commentary/v2/getBallFeeds',
         {method:'POST',headers:{'Content-Type':'application/json'},
