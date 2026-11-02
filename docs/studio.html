@@ -7812,9 +7812,103 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       .then(function(a){ if(Array.isArray(a)){noteWickets(a);} cb&&cb(); })
       .catch(function(){ cb&&cb(); });
   }
+  /* ---- bncom11: HUD-এর প্রতিটি ঘর CREX রেকর্ড থেকে ---- */
+  var HUD={s:'',overs:'',tokens:[],p1:'',p2:'',s1:'',s2:'',bowler:'',bd:'',team:'',ts:0};
+  window.__crexHud=HUD;
+  function hudAbsorb(arr){
+    try{
+      var newestB=null,newestO=null;
+      arr.forEach(function(x){
+        if(!x)return;
+        if(x.type==='b'){
+          if(!newestB||(+x.id||0)>(+newestB.id||0))newestB=x;
+        }else if(x.type==='o'){
+          if(!newestO||(+x.id||0)>(+newestO.id||0))newestO=x;
+        }
+      });
+      if(newestB&&newestB.s)HUD.s=String(newestB.s);
+      if(newestO){
+        if(newestO.s)HUD.s=String(newestO.s);
+        if(newestO.overs!=null)HUD.overs=String(newestO.overs);
+        else if(newestO.tsl){var mm=String(newestO.tsl).match(/\(([0-9.]+)\)/); if(mm)HUD.overs=mm[1];}
+        if(newestO.p1)HUD.p1=String(newestO.p1);
+        if(newestO.p2)HUD.p2=String(newestO.p2);
+        if(newestO.s1)HUD.s1=String(newestO.s1);
+        if(newestO.s2)HUD.s2=String(newestO.s2);
+        if(newestO.bowler)HUD.bowler=String(newestO.bowler);
+        if(newestO.bd)HUD.bd=String(newestO.bd);
+        if(newestO.team)HUD.team=String(newestO.team);
+        if(newestO.rb)HUD.rbowl=String(newestO.rb);
+      }
+      /* এই ওভারের ডট — একই ওভারের বল-রেকর্ডগুলি (শেষ ৬টি) */
+      if(newestB){
+        var ovKey=String(newestB.o||'').split('.')[0];
+        var toks=arr.filter(function(y){return y&&y.type==='b'&&String(y.o||'').split('.')[0]===ovKey;})
+          .sort(function(a,b){return (+a.id||0)-(+b.id||0);})
+          .map(function(y){return String(y.b||'');});
+        if(toks.length)HUD.tokens=toks;
+        HUD.ovRaw=String(newestB.o||HUD.ovRaw||'');
+        /* চলতি ওভার/বল-ই সংখ্যাটা সবচেয়ে নতুন (৬.৩ ইত্যাদি) */
+        if(/^\d+\.\d+$/.test(String(newestB.o||'')))HUD.overs=String(newestB.o);
+      }
+      if(HUD.s||HUD.tokens.length){HUD.ts=Date.now(); window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();}
+    }catch(e){}
+  }
+  window.__crexHudFresh=function(){return !!(window.__crexHud&&(Date.now()-(window.__crexHud.ts||0))<90000);};
+  window.__crexHudApply=function(ctx){
+    try{
+      if(ctx)window.__crexCtx=ctx;
+      var C=window.__crexCtx||{}, H=window.__crexHud; if(!H||!H.ts)return false;
+      var D=function(x){return String(x==null?'':x).replace(/[0-9]/g,function(d){return '০১২৩৪৫৬৭৮৯'[+d];});};
+      var set=function(id,v){var e=document.getElementById(id); if(e)e.textContent=v;};
+      var ms=String(H.s||'').match(/^\s*(\d+)\s*\/\s*(\d+)/);
+      var runs=ms?+ms[1]:null, wkts=ms?+ms[2]:null;
+      if(ms)set('uiScore',D(ms[1])+'/'+D(ms[2]));
+      if(H.overs)set('uiOvers',D(H.overs));
+      var dots=document.getElementById('uiOverDots');
+      if(dots&&H.tokens&&H.tokens.length){
+        dots.innerHTML='<span style="font-size:20px;color:#cbd5e1;font-weight:800;">এই ওভার:</span>';
+        H.tokens.slice(-6).forEach(function(t){
+          var sp=document.createElement('span'), up=String(t).toUpperCase();
+          var isW=(up==='W'), isX=/^(WD|NB)$/.test(up);
+          sp.className='odot'+(up==='4'?' d4':up==='6'?' d6':isW?' dW':'');
+          sp.textContent=isW?'W':(isX?up.charAt(0):D(t));
+          dots.appendChild(sp);
+        });
+      }
+      if(H.p1){set('uiBat0Name','🏏 '+H.p1); }
+      if(H.s1){var m1=String(H.s1).match(/^(\d+)\s*\(\s*(\d+)/); if(m1)set('uiBat0Runs',D(m1[1])+' ('+D(m1[2])+')');}
+      if(H.p2){set('uiBat1Name','• '+H.p2);}
+      if(H.s2){var m2=String(H.s2).match(/^(\d+)\s*\(\s*(\d+)/); if(m2)set('uiBat1Runs',D(m2[1])+' ('+D(m2[2])+')');}
+      if(H.bowler){
+        var f=String(H.bd||'').match(/^(\d+)\s*-\s*(\d+)\s*\(([0-9.]+)\)/);
+        var fig=f?(D(f[1])+'/'+D(f[2])+' • '+D(f[3])+' ওভার'):String(H.bd||'');
+        set('uiBowler','⚾ '+H.bowler+(fig?' ('+fig+')':''));
+      }
+      /* রান রেট + সমীকরণ — সবই CREX সংখ্যা থেকে */
+      var rr='';
+      if(runs!=null&&H.overs){
+        var op=String(H.overs).split('.'), balls=(parseInt(op[0],10)||0)*6+(parseInt(op[1],10)||0);
+        if(balls>0)rr=(runs/(balls/6)).toFixed(2);
+      }
+      if(rr){
+        var bat=C.batBn||H.team||'', bowl=C.bowlBn||'';
+        var eq=(bat?(bat+(bowl?' বনাম '+bowl:'')):'')+(bat?' • ':'')+'রান রেট '+D(rr);
+        if(C.prevInn&&C.prevInn.runs!=null&&runs!=null){
+          var tgt=C.prevInn.runs+1, need=tgt-runs;
+          if(need>0)eq+=' • টার্গেট '+D(tgt)+' • জয়ের জন্য '+D(need)+' রান দরকার';
+        }
+        set('uiEquation',eq);
+        set('spotStat',(C.batBn&&H.tokens.length)?eq:'');
+      }
+      return true;
+    }catch(e){return false;}
+  };
   function handle(arr,mf){
     if(!Array.isArray(arr)||!arr.length)return;
     noteWickets(arr);
+    hudAbsorb(arr);
+    setTimeout(function(){try{window.__crexHudApply();}catch(e){}},0);
     var balls=arr.filter(function(x){return x&&x.type==='b'&&x.c2;}).map(function(x){
       var o=String(x.o);
       return {o:o,b:String(x.b),s:String(x.s||''),c1:x.c1,c2:x.c2,inn:x.inning,_wd:wdFor(o),k:keyOf(x)};
@@ -8171,6 +8265,7 @@ setInterval(function(){
       [striker3D,nonStriker3D,bowler3D,keeper3D,...fielders3D].forEach(p=>p.visible=visible);
     }
     function showEntityValidationPending(match) {
+      try{ if(window.__crexHudFresh&&window.__crexHudFresh())return; }catch(_e){}  /* CREX-HUD সজীব ⇒ স্কোর "—" নয় */
       resetBroadcastQueue();cricketActionSerial++;animPhase='idle';ball3D.visible=false;previousCrexSnapshot=null;lastCrexBallSig='';
       clearCricketVisuals();
       setCricketPlayersVisible(false);
@@ -8318,9 +8413,13 @@ setInterval(function(){
         const rNum = curInn.runs, wNum = curInn.wkts;
         const ov = normOvers(curInn.ovRaw);
         const crexFresh=(typeof window.__bnOn==='function')&&window.__bnOn()&&!(window.__bnStale&&window.__bnStale());
-        if(!crexFresh){                       /* স্কোর CREX কমেন্টারি ফিড থেকেই; SV শুধু ৩০সে+ নীরবতার ফাঁক পূরণে */
-          document.getElementById('uiScore').textContent = `${bn(rNum)}/${bn(wNum)}`;
-          document.getElementById('uiOvers').textContent = bn(ov.disp);
+        const CXHUD=(typeof window.__crexHudFresh==='function')&&window.__crexHudFresh();
+        if(!crexFresh&&!CXHUD){              /* স্কোর CREX রেকর্ড থেকেই; SV শুধু ফাঁক পূরণে */
+          /* এক ঘড়ি: কথা/কার্ড বাকি থাকলে স্কোর এক ধাপ পিছিয়ে থাকে */
+          if(!(window.__oneHold&&window.__oneHold())){
+            document.getElementById('uiScore').textContent = `${bn(rNum)}/${bn(wNum)}`;
+            document.getElementById('uiOvers').textContent = bn(ov.disp);
+          }
         }
 
         // Compute live chase equation if 2nd innings in limited overs!
@@ -8385,7 +8484,7 @@ setInterval(function(){
           document.getElementById('uiBowler').textContent = `⚾ ${bwName} (${bn(bwOvDisp)} ওভার • ${bn(bwFig)}) • ${bowlBn}`;
         }
 
-        // Current Over Dots from CREX rb (recent overs array)!
+        // Current Over Dots — SV-র rb (ব্যাকআপ); CREX-HUD থাকলে সেটাই চূড়ান্ত
         const dots = document.getElementById('uiOverDots');
         dots.innerHTML = '<span style="font-size:20px;color:#cbd5e1;font-weight:800;">এই ওভার:</span>';
         const rbArr = Array.isArray(sv.rb) ? sv.rb : [];
@@ -8400,6 +8499,7 @@ setInterval(function(){
           dots.appendChild(sp);
         });
 
+        try{ window.__crexHudApply({batBn:batBn,bowlBn:bowlBn,prevInn:prevInn}); }catch(_e){}
         const lastBall = curRb && Array.isArray(curRb.b) ? curRb.b[curRb.b.length - 1] : null;
         const latestTok = lastBall ? String(lastBall.u ?? '') : '';
         if(selectedMatch!==polledMatch)return;
@@ -8428,7 +8528,7 @@ setInterval(function(){
         const strikerNow = (bs2.star && p2Name) ? p2Name : (p1Name || 'ব্যাটার');
         const eqClean = eqText;
 
-        if (crexInningValue(sv, activeIndex) && lastBall && ballSig !== lastCrexBallSig && (newCnt>=1 || bigTok)) {
+        if (!CXHUD && crexInningValue(sv, activeIndex) && lastBall && ballSig !== lastCrexBallSig && (newCnt>=1 || bigTok)) {
           lastCrexBallSig=ballSig;
           const newObjs = newCnt>=1 ? curRb.b.slice(curRb.b.length-newCnt) : [lastBall];
           const startI = Math.max(0, newObjs.length-3);
@@ -8846,17 +8946,113 @@ window.__spokenFix=function(t){
   return t;
 };
 
+/* ═══════ bncom11: উচ্চারণ-মেশিন — অভিধান + বানান ঠিক রাখা ═══════ */
+/* নীতি: বাংলা কণ্ঠে সব লেখা বাংলা হরফেই যাবে (মিশ্র ইংরেজি অক্ষর পড়া যায় না),
+   আর যে শব্দে বাংলা বানান উচ্চারণ নষ্ট করে সেটি অভিধানে হাতে ঠিক করা আছে। */
+window.__sayAs={
+  'wicket':'উইকেট','wickets':'উইকেট','over':'ওভার','overs':'ওভার',
+  'run':'রান','runs':'রান','ball':'বল','balls':'বল','bat':'ব্যাট','batsman':'ব্যাটসম্যান',
+  'batting':'ব্যাটিং','bowling':'বোলিং','bowler':'বোলার','boundary':'বাউন্ডারি',
+  'four':'চার','six':'ছয়','cover':'কভার','covers':'কভার','mid':'মিড','point':'পয়েন্ট',
+  'slip':'স্লিপ','gully':'গুল্লি','yorker':'ইয়র্কার','bouncer':'বাউন্সার','length':'লেংথ',
+  'wide':'ওয়াইড','lbw':'এলবিডব্লিউ','drs':'ডিআরএস','review':'রিভিউ','umpire':'আম্পায়ার',
+  'appeal':'আপিল','innings':'ইনিংস','partnership':'পার্টনারশিপ','economy':'ইকোনমি',
+  'maiden':'মেডেন','spell':'স্পেল','crease':'ক্রিজ','stumps':'স্টাম্পস','stumped':'স্টাম্পড',
+  'powerplay':'পাওয়ারপ্লে','target':'টার্গেট','fifty':'ফিফটি','century':'সেঞ্চুরি',
+  'captain':'ক্যাপ্টেন','series':'সিরিজ','test':'টেস্ট','odi':'ওডিআই',
+  't20':'টি-টোয়েন্টি','t10':'টি-টেন','vs':'বনাম','need':'প্রয়োজন','needs':'প্রয়োজন',
+  'from':'থেকে','off':'বলে','out':'আউট',
+  'ipl':'আইপিএল','psl':'পিএসএল','bpl':'বিপিএল','bbl':'বিবিএল','cpl':'সিপিএল','wpl':'ডব্লিউপিএল',
+  'icc':'আইসিসি','bcci':'বিসিসিআই','pcb':'পিসিবি','ecb':'ইসিবি','uae':'ইউএই','t20i':'টি-টোয়েন্টি',
+  'sa':'দক্ষিণ আফ্রিকা','sl':'শ্রীলঙ্কা','wi':'ওয়েস্ট ইন্ডিজ','nz':'নিউজিল্যান্ড'
+};
+/* ল্যাটিন → বাংলা হরফ (নতুন নামের জন্যও; অক্ষর ধরে ধরে পড়া বন্ধ) */
+window.__bnTranslit=function(w){
+  var s=String(w||'').toLowerCase(), o='', i=0;
+  var R=[['tion','শন'],['sion','শন'],['sch','শ'],['sh','শ'],['ch','চ'],['ck','ক'],['ph','ফ'],
+    ['th','থ'],['kh','খ'],['gh','ঘ'],['bh','ভ'],['dh','ধ'],['jh','ঝ'],['ng','ং'],['qu','ক'],
+    ['iya','িয়া'],['aya','ায়া'],['ee','ী'],['oo','ু'],['ea','ি'],['ou','াউ'],['ai','াই'],
+    ['ay','য়'],['ey','ি'],['oi','য়ি'],['oa','ো'],
+    ['ss','স'],['ll','ল'],['tt','ট'],['pp','প'],['mm','ম'],['nn','ন'],['dd','ড'],['rr','র'],
+    ['bb','ব'],['gg','গ'],['ff','ফ'],['kk','ক'],['zz','জ'],
+    ['a','া'],['e','ে'],['i','ি'],['o','ো'],['u','ু'],['y','ি'],
+    ['b','ব'],['c','ক'],['d','ড'],['f','ফ'],['g','গ'],['h','হ'],['j','জ'],['k','ক'],['l','ল'],
+    ['m','ম'],['n','ন'],['p','প'],['q','ক'],['r','র'],['s','স'],['t','ট'],['v','ভ'],['w','ওয়'],
+    ['x','ক্স'],['z','জ']];
+  var HEAD={a:'আ',e:'এ',i:'ই',o:'ও',u:'উ'};
+  var MATRA={'া':1,'ি':1,'ী':1,'ু':1,'ূ':1,'ে':1,'ৈ':1,'ো':1,'ৌ':1};
+  while(i<s.length){
+    var hit=null;
+    for(var k=0;k<R.length;k++){
+      var a=R[k][0];
+      if(s.substr(i,a.length)===a){
+        if(a==='c'&&/[eiy]/.test(s.charAt(i+1))){o+='স';}
+        else if(i===0&&HEAD[a]){o+=HEAD[a];}
+        else if(MATRA[R[k][1]]&&/ং$/.test(o)){/* অনুস্বারের পর মাত্রা বসে না */}
+        else {o+=R[k][1];}
+        hit=1;i+=a.length;break;
+      }
+    }
+    if(!hit){i++;}
+  }
+  if(o.length>3&&o.charAt(o.length-1)==='ে')o=o.slice(0,-1);   /* শেষের নীরব e */
+  return o;
+};
+/* ইংরেজি ফাংশন-শব্দ: ঢালাই করলে অর্থ পাল্টায় ("at"→"আট"), তাই অভিধানেই ঠিক */
+window.__bnStop={
+  'a':'','an':'','the':'','at':'','in':'','on':'','to':'','is':'','was':'','were':'','be':'',
+  'of':'এর','by':'দ্বারা','he':'সে','she':'সে','his':'তার','her':'তার','they':'তারা','we':'আমরা',
+  'you':'আপনি','i':'আমি','it':'এটা','and':'এবং','but':'কিন্তু','with':'সঙ্গে','for':'জন্য',
+  'not':'না','no':'না','as':'হিসেবে','so':'তাই','if':'যদি','after':'পরে','before':'আগে',
+  'when':'যখন','then':'তখন','now':'এখন','again':'আবার','all':'সব','this':'এই','that':'ওই',
+  'these':'এই','those':'ওই','rrr':'প্রয়োজনীয় রান রেট','rr':'রান রেট','b':'বোল্ড','c':'কট'
+};
+window.__bnPre=function(t){
+  try{
+    t=String(t||'');
+    /* (১) বাক্যাংশ-অভিধান আগে (West Indies ইত্যাদি) */
+    try{ if(window.__bnFix) t=window.__bnFix(t); }catch(e){}
+    /* (২ক) ইংরেজি ফাংশন-শব্দ */
+    t=t.replace(/\b[A-Za-z]+\b/g,function(w){
+      var k=w.toLowerCase();
+      return (window.__bnStop[k]!==undefined)?window.__bnStop[k]:w;
+    });
+    t=t.replace(/\s+/g,' ');
+    /* (২) পরিভাষা — সংখ্যা বদলানোর আগে */
+    t=t.replace(/[A-Za-z][A-Za-z0-9'’\-]*/g,function(w){
+      var v=window.__sayAs[w.toLowerCase()]; return v?v:w;
+    });
+    /* (৩) একক আগে, সংখ্যা পরে */
+    t=t.replace(/(\d+(?:\.\d+)?)\s*(?:km\s*\/\s*h(?:r|our)?|kph)/gi,'$1 কিলোমিটার প্রতি ঘণ্টা');
+    /* (৪) 34*(18) / 12(9) */
+    t=t.replace(/(\d+)\s*\*\s*\(\s*(\d+)\s*\)/g,'$1 রানে অপরাজিত $2 বলে');
+    t=t.replace(/(\d+)\s*\(\s*(\d+)\s*\)/g,'$1 রানে $2 বলে');
+    /* (৫) 68/3 */
+    t=t.replace(/(\d+)\s*\/\s*(\d+)/g,'$1 রানে $2 উইকেট');
+    /* (৬) যে-কোনো অবশিষ্ট ইংরেজি শব্দ → বাংলা হরফ (অক্ষর-পড়া বন্ধ) */
+    t=t.replace(/[A-Za-z][A-Za-z'’\-]*/g,function(w){ try{return window.__bnTranslit(w);}catch(e){return w;} });
+    return t;
+  }catch(e){ return t; }
+};
+window.__pronInfo=function(s){
+  var a=window.__spellFix(window.__spokenFix((window.__bnPre||function(x){return x;})(String(s||''))));
+  return {spoken:a};
+};
+
+/* ---- bncom12: মুখের লেখার বানান-মেরামত (পড়ার ঠিক আগে শেষ ধাপ) ---- */
 window.__spellFix=function(t){
   try{
     t=String(t||'');
-    t=t.replace(/<[^>]*>/g,' ');                 /* অবশিষ্ট HTML ট্যাগ */
+    t=t.replace(/<[^>]*>/g,' ');
     t=t.replace(/([০-৯0-9]+)\s*কিমি\s*\/\s*ঘণ্টা/g,'$1 কিলোমিটার প্রতি ঘণ্টা');
     t=t.replace(/কিমি\s*\/\s*ঘণ্টা/g,'কিলোমিটার প্রতি ঘণ্টা');
     t=t.replace(/এলবিডব্লিউ/g,'এল বি ডব্লিউ');
+    t=t.replace(/ওডিআই/g,'ও ডি আই');
+    t=t.replace(/ডিআরএস/g,'ডি আর এস');
     t=t.replace(/ফুলিশ|ফুলিস/g,'ফুল লেংথ');
     t=t.replace(/আরাউন্ড দ্য উইকেট/g,'রাউন্ড দ্য উইকেট');
-    t=t.replace(/\s*\/\s*/g,' ');
-    t=t.replace(/[()\[\]"']/g,' ');
+    t=t.replace(/\s*\/\s*/g,' ');            /* বাকি স্ল্যাশ মুখে পড়া যায় না */
+    t=t.replace(/[()[\]{}"']/g,' ');
     t=t.replace(/\s+/g,' ').trim();
   }catch(e){}
   return t;
@@ -9190,6 +9386,7 @@ window.__hd2Toggle=function(){window.__hd2=!window.__hd2;localStorage.setItem('h
     if(typeof window.speakBangla==='function' && !window.__bnWrapped){
       var o=window.speakBangla;
       window.speakBangla=function(t,fp){
+        try{ t=window.__bnPre(t); }catch(e){}
         try{ t=window.__bnFix(t); }catch(e){}
         try{ t=window.__spokenFix(t); }catch(e){}
         try{ t=window.__spellFix(t); }catch(e){}
@@ -9206,6 +9403,7 @@ window.__hd2Toggle=function(){window.__hd2=!window.__hd2;localStorage.setItem('h
       if(window.__mlvTtsShim && !window.__bnWrapped2){
         var o2=window.speakBangla;
         window.speakBangla=function(t,fp){
+          try{t=window.__bnPre(t);}catch(e){}
           try{t=window.__bnFix(t);}catch(e){}
           try{t=window.__spokenFix(t);}catch(e){}
           try{t=window.__spellFix(t);}catch(e){}
