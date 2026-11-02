@@ -17789,3 +17789,42 @@ http://213.91.179.28:8000/play/a041
 http://45.184.109.10/live/69393EAE6ADBC65A68F942022362A202/37.m3u8
 #EXTINF:-1 tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/India_News_UP.png" group-title="📰 নিউজ (গ্লোবাল) 2",India News Uttar Pradesh (576p)
 https://fta.ektv.in/live/304/master.m3u8
+
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/960px-Cartoon_Network_2010_logo.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Cartoon Network CEE
+http://193.33.39.108:9007/play/a00l
+#EXTINF:-1 tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/Wah_Punjabi.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Wah Punjabi (720p)
+https://yuppnimrestreammum.akamaized.net/181224/smil:wahpunjabi.smil/playlist.m3u8?hdnts=st=1735898689~exp=1835898688~acl=*~hmac=f5fe24724fe05481e3841f9eb5ab8efdee0a3dd83645ae9dcf45703f525bab7b
+#EXTINF:-1 tvg-logo="https://i.imgur.com/9MrzLb1.png" group-title="🧒 কিডস (গ্লোবাল)",Cartoonito CEE
+http://193.33.39.108:9019/play/a00t
+#EXTINF:-1 tvg-logo="https://i.imgur.com/xx5RQdi.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Vision Beats (720p)
+http://a-edge.bliscdn.com/Visionbeats/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/Peo1QiZ.png" group-title="🎬 মুভি (গ্লোবাল) 2",AXN Black (United States)
+http://85.14.32.26:8800/udp/239.100.10.17:5000
+#EXTINF:-1 tvg-logo="https://i.imgur.com/exRpVmL.png" group-title="📰 নিউজ (গ্লোবাল) 2",Ind 24 (720p)
+https://livestream.jswk.online/ind24/live/index.m3u8
+#EXTINF:-1 tvg-logo="https://assets.antenaplay.ro/2023/08/16/u0AuO3YCe1bdz3xSHgeK.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Romantic FM (576i)
+https://stream1.antenaplay.ro/zurtv/rfmprem/chunklist.m3u8
+#EXTINF:-1 tvg-logo="https://radiozu.ro/img/logo-zu.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Radio ZU (720p)
+https://stream1.antenaplay.ro/zurtv/zurtv/chunklist.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Canal%2B_Action_2024.svg/1920px-Canal%2B_Action_2024.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",Canal+ Action Europe Magyar
+http://193.33.39.108:9016/play/a02n
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Cinemax_2016.svg/960px-Cinemax_2016.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",Cinemax Central Europe
+http://193.33.39.108:9023/play/a01b
+#EXTINF:-1 tvg-logo="https://i.imgur.com/CbQlSFX.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Jazz TV (1080p) [Not 24/7]
+https://stream.nasatv.com.mk/jazztv/hls/jazztv_live.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/HuIsALV.png" group-title="📰 নিউজ (গ্লোবাল) 2",Super Express TV (1080p)
+https://prx-y5cf8.mediatool.tv/playout/sepl-abr67/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/wRP9XA7.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Viasat History (Hungary)
+http://193.33.39.108:9007/play/a00p
+#EXTINF:-1 tvg-logo="https://i.imgur.com/E84jnP8.png" group-title="🧒 কিডস (গ্লোবাল)",Nickelodeon (Bulgaria)
+http://213.91.179.28:8000/play/a056
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Cinemax_2_%282016%29.png/960px-Cinemax_2_%282016%29.png" group-title="🎬 মুভি (গ্লোবাল) 2",Cinemax 2 Central Europe
+http://193.33.39.108:9009/play/a024
+#EXTINF:-1 tvg-logo="https://antena3constanta.ro/wp-content/uploads/2025/08/ant3-logonn.jpg" group-title="📰 নিউজ (গ্লোবাল) 2",Antena 3 Constanta (576p)
+https://streaming.eforie.city/memfs/7223115a-4f22-4e2c-86f5-354552acab7f.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/krp3kgv.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",NogoumFMTV (672p) [Not 24/7]
+https://nogoumtv.nrpstream.com/hls/stream.m3u8
+#EXTINF:-1 tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/India_News_Rajasthan.png" group-title="📰 নিউজ (গ্লোবাল) 2",India News Rajasthan (576p)
+https://fta.ektv.in/live/601/master.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/1uoP10V.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Finest TV (288p) [Not 24/7]
+https://media.finest.tv/hls/live.m3u8
