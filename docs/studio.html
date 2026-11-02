@@ -12,6 +12,10 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#040812" />
+  <!-- bncom17: ছবির সার্ভারের সাথে আগেই সংযোগ (DNS+TLS) ⇒ ম্যাচ শুরুতেই ছবি দ্রুত -->
+  <link rel="preconnect" href="https://cricketvectors.akamaized.net" crossorigin />
+  <link rel="dns-prefetch" href="https://cricketvectors.akamaized.net" />
+  <link rel="preconnect" href="https://api.goscorer.com" crossorigin />
   <link rel="manifest" href='data:application/manifest+json,{"name":"মাঠের হুল্লোড় LIVE","short_name":"মাঠের হুল্লোড়","start_url":".","display":"fullscreen","background_color":"#040812","theme_color":"#040812"}' />
   <title>মাঠের হুল্লোড় LIVE — ক্রিকেট ও ফুটবল 3D স্টুডিও</title>
   <style>
@@ -6942,6 +6946,8 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         .replace(/([ািীুূেৈোৌ])-এ(?=[\s।,!?]|$)/g, '$1তে')
         .replace(/-এ(?=[\s।,!?]|$)/g, 'ে')
         .replace(/%/g, ' শতাংশ ')
+        /* bncom17: উচ্চারণ ঠিক — বদল/বদলে/বদলের ⇒ বদোল/বদোলে/বদোলের ("বদল" শব্দটা ভুল শোনা যায়) */
+        .replace(/বদলের/g, 'বদোলের').replace(/বদলে/g, 'বদোলে').replace(/বদল(?!ি)/g, 'বদোল')
         .replace(/\s+/g, ' ')
         .trim();
       return bn(t);
@@ -7042,10 +7048,33 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       window.__gfxInfo = function () { return { lag: window.__gfxLag, waiting: !!G.pending, flushed: G.flushed }; };
     })();
 
+    /* bncom17: একই কথা দুইবার নয় — শেষ ৯০ সেকেন্ডে হুবহু একই বাক্য হলে চুপ */
+    const saidRecent = [];
+    function speechKey(t){ return String(t||'').replace(/[\s।,!?•*#_\-–—]/g,'').replace(/[০-৯]/g,function(d){return '০১২৩৪৫৬৭৮৯'.indexOf(d);}).slice(0,150); }
+    function speechAlreadySaid(key){
+      const now=Date.now();
+      while(saidRecent.length && now-saidRecent[0].at>30000) saidRecent.shift();   /* ৩০ সে-র মধ্যে হুবহু একই বাক্য ⇒ চুপ */
+      for(let i=0;i<saidRecent.length;i++) if(saidRecent[i].k===key) return true;
+      return false;
+    }
+    /* অ্যাপের TTS-সেতু/HD-ভয়েসের র‍্যাপার থেকেও ডাকা হয় ⇒ একই লাইন দুইবার নয় */
+    window.__speechGate=function(raw){
+      try{
+        const cs=(typeof cleanForSpeech==='function')?cleanForSpeech(raw):String(raw||'');
+        const k=speechKey(cs); if(!k)return false;
+        /* একই ডাকের ভেতরে দুই র‍্যাপারই গার্ড ডাকে ⇒ ২৫০ms-এর ভেতরের পুনরাবৃত্তি একই ডাক ধরা হয় */
+        const last=saidRecent[saidRecent.length-1];
+        if(last && last.k===k && (Date.now()-last.at)<250) return false;
+        if(speechAlreadySaid(k))return true;
+        saidRecent.push({k:k,at:Date.now()}); if(saidRecent.length>40)saidRecent.shift();
+        return false;
+      }catch(e){ return false; }
+    };
     function speakBangla(text, forcePlay = false) {
       if ((!soundOn || hostMicActive) && !forcePlay) return Promise.resolve();
       const cleanSpeech = cleanForSpeech(text);
       if (!cleanSpeech) return Promise.resolve();
+      if(window.__speechGate && window.__speechGate(text)) { try{ isSpeakingNow=false; }catch(e){} return Promise.resolve(); }   /* একই কথা আবার নয় */
       stopAllSpeech();
       const desktop=isDesktopForSpeech();
       const token=currentSpeechToken;
@@ -7632,6 +7661,27 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       setTimeout(() => document.body.classList.add('broadcast-clean'), 3000);
 
       if (selectedMatch.sport === 'cricket') {
+        /* bncom17: পোল/যাচাইয়ের আগেই দুই দলের পুরো স্কোয়াডের ছবি + জার্সি নামানো শুরু */
+        window.__artWarm=function(match){
+          try{
+            if(!match||match.sport!=='cricket')return;
+            if(window.__artWarmFor===match.uid)return;
+            window.__artWarmFor=match.uid;
+            const urls=[];
+            (match.t1f&&match.fo)?urls.push('https://cricketvectors.akamaized.net/jersey/'+cricketKitVariant(match.fo)+'/org/'+encodeURIComponent(safeCricketAssetKey(match.t1f))+'.png'):0;
+            (match.t2f&&match.fo)?urls.push('https://cricketvectors.akamaized.net/jersey/'+cricketKitVariant(match.fo)+'/org/'+encodeURIComponent(safeCricketAssetKey(match.t2f))+'.png'):0;
+            fetchCrexRoster(match).then(function(roster){
+              try{
+                if(!roster||!roster.squads)return;
+                const all=[];roster.squads.forEach(function(set){set.forEach(function(k){if(k)all.push(k);});});
+                all.slice(0,40).forEach(function(k){urls.push('https://cricketvectors.akamaized.net/players/org/'+encodeURIComponent(safeCricketAssetKey(k))+'.png');});
+                urls.forEach(function(u){const im=new Image();im.decoding='async';im.src=u;});
+              }catch(e){}
+            }).catch(function(){});
+            urls.forEach(function(u){const im=new Image();im.decoding='async';im.src=u;});
+          }catch(e){}
+        };
+        window.__artWarm(selectedMatch);
         showEntityValidationPending(selectedMatch);
         if (selectedMatch.state === 'upcoming') showCricketWaiting(selectedMatch);
         await pollCrexCricket();
@@ -8717,6 +8767,9 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     window.__imgSwap=function(img,url){
       try{
         const tok=(img.__swapTok=(img.__swapTok||0)+1);
+        /* bncom17: এই ঘরে আগে কোনো ছবিই নেই ⇒ প্রিলোডের অপেক্ষা না করে সাথে সাথে বসাই */
+        const hasOld = img.getAttribute('src') && img.naturalWidth > 0 && !(img.getAttribute('src')||'').startsWith('data:');
+        if(!hasOld){ img.src=url; img.style.visibility='visible'; img.style.display=''; return; }
         const pre=new Image();
         pre.onload=function(){ if(img.__swapTok!==tok)return; try{ if(img.getAttribute('data-ipf'))return; img.src=url;img.style.visibility='visible';img.style.display=''; }catch(e){} };
         pre.onerror=function(){ if(img.__swapTok!==tok)return; try{ if(img.getAttribute('data-ipf'))return; img.src=url; }catch(e){} };
@@ -10020,6 +10073,7 @@ window.__hd2Toggle=function(){window.__hd2=!window.__hd2;localStorage.setItem('h
         try{ t=window.__bnFix(t); }catch(e){}
         try{ t=window.__spokenFix(t); }catch(e){}
         try{ t=window.__spellFix(t); }catch(e){}
+        try{ if(window.__speechGate && window.__speechGate(t)) return Promise.resolve(); }catch(e){}   /* bncom17 */
         if(window.__hd2){var v=window.__hd2Voice();if(v){return new Promise(function(res){var done=false;var fin=function(){if(!done){done=true;res(true);}};try{var u=new SpeechSynthesisUtterance(t);u.voice=v;u.lang=v.lang||'bn-BD';u.rate=1.02;u.pitch=1;u.onend=fin;u.onerror=function(){if(!done){done=true;Promise.resolve(o(t,fp)).then(res);}};setTimeout(fin,45000);speechSynthesis.speak(u);}catch(e){fin();}});}}
         return o(t,fp);
       };
@@ -10037,6 +10091,7 @@ window.__hd2Toggle=function(){window.__hd2=!window.__hd2;localStorage.setItem('h
           try{t=window.__bnFix(t);}catch(e){}
           try{t=window.__spokenFix(t);}catch(e){}
           try{t=window.__spellFix(t);}catch(e){}
+          try{ if(window.__speechGate && window.__speechGate(t)) return Promise.resolve(); }catch(e){}   /* bncom17 */
           return o2(t,fp);
         };
         window.__bnWrapped2=true;
