@@ -8806,6 +8806,74 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       document.getElementById('commText').textContent='দল ও খেলোয়াড়ের তথ্য নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত।';
     }
 
+    /* ==== bncom16: খেলা শেষ ⇒ ৫ মিনিট পর নিজেই পরের লাইভ খেলা (হট ক্রিকেট → ক্রিকেট → ফুটবল → অন্য) ==== */
+    const AUTO_NEXT_DELAY = 5 * 60 * 1000;
+    window.__autoNext = {armed:false, uid:'', at:0, busy:false, tries:0};
+    function autoNextCardText(){
+      try{
+        const r = window.__resultInfo || {};
+        const wn = r.team ? (teamBn(r.team) || r.team) : '';
+        const margin = (r.n && r.how) ? (bn(r.n) + ' ' + r.how) : '';
+        window.__mscShow({win:true, tag:'ম্যাচ শেষ', title:(wn ? wn + ' জিতেছে' : 'খেলা শেষ'),
+          sub:(margin ? margin + ' • ' : '') + '৫ মিনিট পর পরের লাইভ খেলা শুরু হবে'});
+      }catch(e){}
+    }
+    function autoNextArm(isFinished, match){
+      const A = window.__autoNext;
+      if(!isFinished){ if(A.armed){ A.armed=false; A.uid=''; A.at=0; A.tries=0; } return; }
+      if(!match || !match.uid) return;
+      if(A.armed && A.uid === match.uid) return;
+      A.armed = true; A.uid = match.uid; A.at = Date.now() + AUTO_NEXT_DELAY; A.tries = 0;
+      autoNextCardText();
+    }
+    async function autoNextPick(excludeUid){
+      const res = await Promise.all([
+        loadCrexAllCricket().catch(function(){ return []; }),
+        loadAllWorldFootball().catch(function(){ return []; })
+      ]);
+      const cr = (res[0] || []).filter(function(m){ return m && m.state === 'live' && m.uid !== excludeUid; });
+      const fb = (res[1] || []).filter(function(m){ return m && m.state === 'live' && m.uid !== excludeUid; });
+      cr.sort(function(a,b){ return (b.hotScore||0) - (a.hotScore||0); });   /* সবচেয়ে হট ক্রিকেট আগে */
+      /* কোনো লাইভই না থাকলে: চালু থাকা (stumps) ক্রিকেট — ফাঁকা স্টুডিওর চেয়ে ভালো */
+      const st = (res[0] || []).filter(function(m){ return m && m.state === 'stumps' && m.uid !== excludeUid; });
+      st.sort(function(a,b){ return (b.hotScore||0) - (a.hotScore||0); });
+      return {pick:(cr[0] || fb[0] || st[0] || null), hot:cr[0] ? cr[0] : null, liveCricket:cr.length, liveFootball:fb.length, stumps:st.length};
+    }
+    async function autoNextSwitch(){
+      const A = window.__autoNext;
+      if(!A || A.busy) return null;
+      A.busy = true;
+      try{
+        let r = null;
+        const forced = window.__autoNextForce || null;
+        if(forced){ window.__autoNextForce = null; r = {pick:forced}; }
+        else { try{ r = await autoNextPick(A.uid); }catch(e){ r = null; } }
+        if(!r || !r.pick){ A.at = Date.now() + AUTO_NEXT_DELAY; A.tries++; return null; }   /* না পেলে আবার ৫ মিনিট পর */
+        A.armed = false;
+        const pick = r.pick;
+        try{ window.__mscHide(); }catch(e){}
+        try{ window.__cardsHold = false; }catch(e){}
+        try{ allHubMatches = [pick]; }catch(e){}
+        try{ window.__hubFiltered = [pick]; }catch(e){}
+        try{ const c=document.getElementById('commText'); if(c) c.textContent = 'পরের লাইভ খেলা শুরু হচ্ছে: ' + (pick.title||''); }catch(e){}
+        try{ const b=document.getElementById('liveBadgeTxt'); if(b) b.textContent='LIVE'; }catch(e){}
+        await selectHubMatch(0);
+        return pick;
+      } finally { A.busy = false; }
+    }
+    setInterval(function(){
+      try{
+        const A = window.__autoNext;
+        if(A && A.armed && !A.busy && Date.now() >= A.at) void autoNextSwitch();
+      }catch(e){}
+    }, 5000);
+    try{
+      window.__autoNextPick = autoNextPick;
+      window.__autoNextSwitch = autoNextSwitch;
+      window.__autoNextArm = autoNextArm;
+      window.__autoNextDelay = AUTO_NEXT_DELAY;
+      window.__loadCrexAllCricketTest = loadCrexAllCricket;   /* টেস্ট-হুক */
+    }catch(e){}
     // Real-time CREX getSV3 Compact Decoder & Poller (5-second ultra-fast ball-by-ball!)
     async function pollCrexCricket() {
       try{window.__lastPollAt=Date.now();}catch(_e){}
@@ -8992,6 +9060,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
             window.__matchPhaseUi('play',{});
           }
         }catch(_e){}
+        try{ autoNextArm(isFinished, polledMatch); }catch(_e){}
         const rosterForPictures=crexRosterCache.get(polledMatch.mf);
         if(identity && identity.playersVerified && !isInactive && rosterForPictures) {
           const verifiedRoster=decodeCrexRoster(rosterForPictures.data);
