@@ -7675,6 +7675,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
                 if(!roster||!roster.squads)return;
                 const all=[];roster.squads.forEach(function(set){set.forEach(function(k){if(k)all.push(k);});});
                 all.slice(0,40).forEach(function(k){urls.push('https://cricketvectors.akamaized.net/players/org/'+encodeURIComponent(safeCricketAssetKey(k))+'.png');});
+                try{ if(window.__ipfWarm) window.__ipfWarm(all, match.t1f); }catch(_e){}   /* bncom18: যাদের ছবি নেই তাদের মুখ আগেই ঠিক */
                 urls.forEach(function(u){const im=new Image();im.decoding='async';im.src=u;});
               }catch(e){}
             }).catch(function(){});
@@ -8493,88 +8494,169 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     return '#' + [c(r), c(g), c(b)].map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join('');
   }
 
-  /* --- মুখ আঁকা --- */
-  function ipfSvg(pid, region) {
-    var r = ipfRng(ipfHash('ipf·' + pid));
-    var pal = IPF_SKIN[region] || IPF_SKIN.mixed;
-    var skin = pal[Math.floor(r() * pal.length)];
-    var skinDark = ipfMix(skin, 0.82), skinShade = ipfMix(skin, 0.7), skinLight = ipfMix(skin, 1.12);
-    var dark = region === 'afro' || region === 'desi';
-    var hairPal = (region === 'euro' && r() < 0.35) ? IPF_HAIR_LIGHT : IPF_HAIR;
-    var hair = hairPal[Math.floor(r() * hairPal.length)];
-    var style = ['short', 'buzz', 'curly', 'part', 'bald', 'long'][Math.floor(r() * 6)];
-    if (dark && style === 'long') style = 'curly';
-    var beard = ['none', 'none', 'stubble', 'full', 'goatee', 'moustache'][Math.floor(r() * 6)];
-    if (region === 'euro' && beard === 'full' && r() < 0.4) beard = 'stubble';
-    var eyeC = ['#2b1d14', '#1b1310', '#3a2a1c', '#141c22'][Math.floor(r() * 4)];
-    var faceW = 0.94 + r() * 0.12, jawW = 0.9 + r() * 0.2;
-    var uid = 'f' + ipfHash(pid).toString(36);
+  /* নতুন ইঞ্জিনের নিজস্ব হেল্পার (নাম সংঘর্ষ এড়াতে আলাদা নাম) */
+  var IPF2_SKIN = {
+    afro: ['#4b3223', '#573b28', '#5f4029', '#66452c', '#6d4a30', '#432c1e'],
+    desi: ['#8b5c37', '#94643c', '#9c6b40', '#a67345', '#b07c4b', '#7d5230'],
+    gulf: ['#9a6b45', '#a4754c', '#ac7d52', '#b4857f', '#8d6140', '#bb8d5f'],
+    east: ['#d3a87c', '#dcb289', '#e3bb94', '#cca277', '#eec39c', '#c99a6f'],
+    latin: ['#8d5f3a', '#9a6a42', '#a6754b', '#7e5333', '#b5814f', '#946037'],
+    euro: ['#cd9f77', '#d7ab84', '#ddb28c', '#c4956d', '#e6c19c', '#d2a37c'],
+    mixed: ['#7d5739', '#8b6242', '#96694a', '#a1734f', '#6d4b31', '#b08258', '#c49b74']
+  };
+  var IPF2_HAIR = ['#141110', '#1b1614', '#241b13', '#2d2118', '#3a2a1c', '#4a3524'];
+  var IPF2_HAIRL = ['#7a5b3a', '#8f6d47', '#5d4530'];
+  function ipf2hash(s) { var h = 0x811c9dc5; s = String(s || ''); for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0; } return h >>> 0; }
+  function ipf2rng(seed) { var a = seed >>> 0; return function () { a += 0x6D2B79F5; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function ipf2shade(hex, f) {
+    var n = parseInt(hex.slice(1, 7), 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
+    function c(v) { v = Math.round(f < 1 ? v * f : v + (255 - v) * (f - 1)); return Math.max(0, Math.min(255, v)); }
+    return '#' + [c(r), c(g), c(b)].map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join('');
+  }
 
-    var browY = 46.5, eyeY = 56.5, mouthY = 87;
+  /* --- মুখ আঁকা (bncom18: আধা-বাস্তব পোর্ট্রেট ইঞ্জিন) --- */
+  function ipfSvg(pid, region) {
+    var R = ipf2rng(ipf2hash('ipf2·' + pid));
+    var pal = IPF2_SKIN[region] || IPF2_SKIN.mixed;
+    var skin = pal[Math.floor(R() * pal.length)];
+    var deep = ipf2shade(skin, 0.74), mid = ipf2shade(skin, 0.86), soft = ipf2shade(skin, 1.09), glow = ipf2shade(skin, 1.16);
+    var lipBase = region === 'afro' ? '#6d3a34' : region === 'euro' ? '#b06a63' : '#8e4b44';
+    var hairLight = (region === 'euro' || region === 'mixed') && R() < 0.28;
+    var hair = (hairLight ? IPF2_HAIRL : IPF2_HAIR)[Math.floor(R() * (hairLight ? IPF2_HAIRL : IPF2_HAIR).length)];
+    var hairHi = ipf2shade(hair, 1.45), hairLo = ipf2shade(hair, 0.7);
+    var style = ['short', 'buzz', 'curly', 'side', 'swept', 'bald'][Math.floor(R() * 6)];
+    var beard = ['none', 'none', 'stubble', 'short', 'goatee'][Math.floor(R() * 5)];
+    var iris = ['#3a2416', '#2a1a10', '#4a2f1b', '#20303c'][Math.floor(R() * 4)];
+    var u = 'p' + ipf2hash(pid).toString(36);
+    var eyeY = 61.5, eyeL = 47.5, eyeR = 72.5, browY = 51.5, noseY = 78, mouthY = 90.5;
+
     var s = [];
     s.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150" width="120" height="150">');
-    s.push('<defs><linearGradient id="' + uid + 's" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + skinLight + '"/><stop offset=".62" stop-color="' + skin + '"/><stop offset="1" stop-color="' + skinDark + '"/></linearGradient>');
-    s.push('<clipPath id="' + uid + 'c"><path d="M60,15 C86,15 100,35 100,61 C100,77 96,89 89,97 C81,105 71,110 60,110 C49,110 39,105 31,97 C24,89 20,77 20,61 C20,35 34,15 60,15 Z"/></clipPath></defs>');
-    /* গলা + কলার */
-    s.push('<path d="M40,94 h40 v22 c0,11 -8,20 -20,24 c-12,-4 -20,-13 -20,-24 Z" fill="' + skinDark + '"/>');
-    s.push('<path d="M40,94 h40 v13 c-11,7 -29,7 -40,0 Z" fill="' + skinShade + '" opacity=".45"/>');
-    s.push('<path d="M33,131 C44,141 76,141 87,131 L100,150 H20 Z" fill="#16202c"/>');
-    s.push('<path d="M60,133 l7,8 -7,9 -7,-9 Z" fill="#22303f"/>');
-    /* কান */
-    s.push('<ellipse cx="21" cy="63" rx="5.8" ry="9.4" fill="' + skin + '"/><ellipse cx="21" cy="63" rx="2.9" ry="5.2" fill="' + skinShade + '" opacity=".7"/>');
-    s.push('<ellipse cx="99" cy="63" rx="5.8" ry="9.4" fill="' + skinDark + '"/><ellipse cx="99" cy="63" rx="2.9" ry="5.2" fill="' + skinShade + '" opacity=".55"/>');
-    /* মুখ */
-    s.push('<path d="M60,15 C86,15 100,35 100,61 C100,77 96,89 89,97 C81,105 71,110 60,110 C49,110 39,105 31,97 C24,89 20,77 20,61 C20,35 34,15 60,15 Z" fill="url(#' + uid + 's)"/>');
-    s.push('<g clip-path="url(#' + uid + 'c)"><ellipse cx="60" cy="72" rx="36" ry="28" fill="' + skinShade + '" opacity=".14"/><ellipse cx="38" cy="70" rx="9" ry="14" fill="' + skinLight + '" opacity=".18"/></g>');
-    /* চুল */
-    var hairShapes = {
-      short: '<path d="M20,62 C20,31 36,13 60,13 C84,13 100,31 100,62 C97,46 87,40 81,41 C77,33 70,31 60,31 C50,31 43,33 39,41 C33,40 23,46 20,62 Z" fill="' + hair + '"/><path d="M21,45 C23,58 22,65 23,71 L28.5,71 C27.5,62 27.5,52 28.5,46 Z" fill="' + hair + '"/><path d="M99,45 C97,58 98,65 97,71 L91.5,71 C92.5,62 92.5,52 91.5,46 Z" fill="' + hair + '"/>',
-      buzz: '<path d="M21,60 C21,32 37,15 60,15 C83,15 99,32 99,60 C96,47 83,42 60,42 C37,42 24,47 21,60 Z" fill="' + hair + '" opacity=".95"/><path d="M22,47 C23,57 23,63 24,68 L27,68 C26,60 26,53 27,48 Z" fill="' + hair + '" opacity=".7"/><path d="M98,47 C97,57 97,63 96,68 L93,68 C94,60 94,53 93,48 Z" fill="' + hair + '" opacity=".7"/>',
-      curly: '<g fill="' + hair + '"><circle cx="60" cy="27" r="13.5"/><circle cx="42" cy="31" r="12"/><circle cx="78" cy="31" r="12"/><circle cx="31" cy="42" r="10.5"/><circle cx="89" cy="42" r="10.5"/><circle cx="26" cy="54" r="9"/><circle cx="94" cy="54" r="9"/><path d="M21,58 C21,31 37,15 60,15 C83,15 99,31 99,58 C96,45 82,39 60,39 C38,39 24,45 21,58 Z"/></g>',
-      part: '<path d="M20,60 C20,31 36,13 60,13 C84,13 100,31 100,60 C98,44 88,38 72,38 C55,38 34,44 20,60 Z" fill="' + hair + '"/><path d="M21,46 C23,58 22,65 23,70 L28,70 C27,60 27,52 28,47 Z" fill="' + hair + '"/><path d="M99,46 C97,58 98,65 97,70 L92,70 C93,60 93,52 92,47 Z" fill="' + hair + '"/><path d="M64,17 C79,22 90,32 94,46 C88,33 77,25 62,22 Z" fill="' + skinLight + '" opacity=".1"/>',
-      bald: '<path d="M20,62 C20,40 30,26 42,21 C33,30 28,46 27,62 Z" fill="' + hair + '" opacity=".55"/><path d="M100,62 C100,40 90,26 78,21 C87,30 92,46 93,62 Z" fill="' + hair + '" opacity=".55"/><path d="M22,54 C24,38 32,26 44,20 C36,30 31,44 30,56 Z" fill="' + hair + '" opacity=".35"/>',
-      long: '<path d="M17,62 C17,31 35,12 60,12 C85,12 103,31 103,62 L103,88 C99,76 97,62 95,49 C91,36 78,32 60,32 C42,32 29,36 25,49 C23,62 21,76 17,88 Z" fill="' + hair + '"/>'
+    s.push('<defs>');
+    s.push('<linearGradient id="' + u + 'sk" x1="0.18" y1="0.05" x2="0.86" y2="1"><stop offset="0" stop-color="' + glow + '"/><stop offset=".42" stop-color="' + soft + '"/><stop offset=".78" stop-color="' + skin + '"/><stop offset="1" stop-color="' + mid + '"/></linearGradient>');
+    s.push('<linearGradient id="' + u + 'hr" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0" stop-color="' + hairHi + '"/><stop offset=".45" stop-color="' + hair + '"/><stop offset="1" stop-color="' + hairLo + '"/></linearGradient>');
+    s.push('<linearGradient id="' + u + 'sh" x1="0" y1="0" x2="1" y2="0.6"><stop offset="0" stop-color="#2b3a4d"/><stop offset=".5" stop-color="#1c2735"/><stop offset="1" stop-color="#141c26"/></linearGradient>');
+    s.push('<radialGradient id="' + u + 'ir" cx="0.42" cy="0.36" r="0.72"><stop offset="0" stop-color="' + ipf2shade(iris, 1.5) + '"/><stop offset=".55" stop-color="' + iris + '"/><stop offset="1" stop-color="#0c0805"/></radialGradient>');
+    s.push('<filter id="' + u + 'b" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.1"/></filter>');
+    s.push('<filter id="' + u + 'b2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.1"/></filter>');
+    s.push('<clipPath id="' + u + 'fc"><path d="M60,13 C80,13 97,27 99,49 C100,61 98,73 94,84 C91,94 84,104 74,109 C68,112 52,112 46,109 C36,104 29,94 25,83 C21,72 20,60 21,49 C23,27 40,13 60,13 Z"/></clipPath>');
+    s.push('</defs>');
+
+    /* ---- কাঁধ ও জার্সি ---- */
+    s.push('<path d="M8,150 C12,128 30,118 46,113 L74,113 C90,118 108,128 112,150 Z" fill="url(#' + u + 'sh)"/>');
+    s.push('<path d="M60,113 C56,120 55,132 56,150 L64,150 C65,132 64,120 60,113 Z" fill="#0e151d" opacity=".55" filter="url(#' + u + 'b2)"/>');
+    s.push('<path d="M44,114 C50,126 54,136 55,150" stroke="#0d141c" stroke-width="2.4" fill="none" opacity=".5" filter="url(#' + u + 'b2)"/>');
+    s.push('<path d="M76,114 C70,126 66,136 65,150" stroke="#0d141c" stroke-width="2.4" fill="none" opacity=".5" filter="url(#' + u + 'b2)"/>');
+    /* কলার */
+    s.push('<path d="M46,113 C51,124 55,130 60,132 C65,130 69,124 74,113" fill="#e8eef5" opacity=".92"/>');
+    s.push('<path d="M46,113 C51,124 55,130 60,132 C65,130 69,124 74,113" fill="none" stroke="#9fb0c2" stroke-width="1" opacity=".8"/>');
+    s.push('<path d="M60,132 L60,150" stroke="#8fa1b4" stroke-width="1" opacity=".6"/>');
+
+    /* ---- গলা ---- */
+    s.push('<path d="M45,96 L75,96 L74,113 C70,119 64,122 60,122 C56,122 50,119 46,113 Z" fill="url(#' + u + 'sk)"/>');
+    s.push('<path d="M45,96 L75,96 L74,105 C66,112 54,112 46,105 Z" fill="' + mid + '" opacity=".85"/>');
+    s.push('<path d="M52,112 C56,116 64,116 68,112" stroke="' + deep + '" stroke-width="2" fill="none" opacity=".35" filter="url(#' + u + 'b2)"/>');
+
+    /* ---- কান ---- */
+    s.push('<path d="M21.5,55 C18.4,54 16.6,58 17,63 C17.5,68 19.6,72.2 22,73.5 C23.6,69 23.2,61 21.5,55 Z" fill="' + skin + '"/>');
+    s.push('<path d="M19.6,59 C18.8,61.5 19.2,66 20.6,69" stroke="' + deep + '" stroke-width="1.2" fill="none" opacity=".5"/>');
+    s.push('<path d="M98.5,55 C101.6,54 103.4,58 103,63 C102.5,68 100.4,72.2 98,73.5 C96.4,69 96.8,61 98.5,55 Z" fill="' + mid + '"/>');
+    s.push('<path d="M100.4,59 C101.2,61.5 100.8,66 100.6,69" stroke="' + deep + '" stroke-width="1.2" fill="none" opacity=".4"/>');
+
+    /* ---- মুখ ---- */
+    s.push('<path d="M60,13 C80,13 97,27 99,49 C100,61 98,73 94,84 C91,94 84,104 74,109 C68,112 52,112 46,109 C36,104 29,94 25,83 C21,72 20,60 21,49 C23,27 40,13 60,13 Z" fill="url(#' + u + 'sk)"/>');
+    /* ছায়া: কপালের পাশ, গাল, চোয়াল */
+    s.push('<g clip-path="url(#' + u + 'fc)">');
+    s.push('<ellipse cx="34" cy="74" rx="13" ry="20" fill="' + deep + '" opacity=".22" filter="url(#' + u + 'b)"/>');
+    s.push('<ellipse cx="88" cy="72" rx="12" ry="20" fill="' + deep + '" opacity=".26" filter="url(#' + u + 'b)"/>');
+    s.push('<ellipse cx="60" cy="104" rx="18" ry="8" fill="' + deep + '" opacity=".22" filter="url(#' + u + 'b)"/>');
+    s.push('<ellipse cx="47" cy="69" rx="9" ry="7" fill="' + glow + '" opacity=".30" filter="url(#' + u + 'b)"/>');
+    s.push('<ellipse cx="74" cy="69" rx="9" ry="7" fill="' + glow + '" opacity=".26" filter="url(#' + u + 'b)"/>');
+    /* ভুরু-মাঝের হালকা ছায়া */
+    s.push('<ellipse cx="60" cy="43" rx="16" ry="7" fill="' + soft + '" opacity=".35" filter="url(#' + u + 'b)"/>');
+    s.push('</g>');
+
+    /* চুলের নিচে কপালের ছায়া (গভীরতা) */
+    s.push('<g clip-path="url(#' + u + 'fc)"><ellipse cx="60" cy="34" rx="34" ry="12" fill="' + deep + '" opacity=".26" filter="url(#' + u + 'b)"/></g>');
+    /* ---- চুল ---- */
+    var hairBase = {
+      short: '<path d="M20,53 C20,29 34,13 60,13 C86,13 100,29 100,53 C99,41 92,34 80,32 C74,25 68,23 60,23 C52,23 46,25 40,32 C28,34 21,41 20,53 Z"/><path d="M20.2,52 C20.6,62 21.6,70 23,77 C24.4,77 25.6,76 26.6,74.5 C25,68 24,60 24,53 Z"/><path d="M99.8,52 C99.4,62 98.4,70 97,77 C95.6,77 94.4,76 93.4,74.5 C95,68 96,60 96,53 Z"/>',
+      buzz: '<path d="M20.5,52 C20.5,30 34,15 60,15 C86,15 99.5,30 99.5,52 C98,40 91,34 79,32 C73,26 67,24 60,24 C53,24 47,26 41,32 C29,34 22,40 20.5,52 Z" opacity=".94"/><path d="M20.6,52 C21,60 21.8,66 22.8,71 C23.8,71 24.6,70.3 25.2,69.4 C23.8,64 23.4,57 23.4,53 Z" opacity=".75"/><path d="M99.4,52 C99,60 98.2,66 97.2,71 C96.2,71 95.4,70.3 94.8,69.4 C96.2,64 96.6,57 96.6,53 Z" opacity=".75"/>',
+      curly: '<g><circle cx="60" cy="24" r="12"/><circle cx="45" cy="27" r="10.5"/><circle cx="75" cy="27" r="10.5"/><circle cx="34" cy="35" r="9"/><circle cx="86" cy="35" r="9"/><circle cx="27" cy="45" r="7.5"/><circle cx="93" cy="45" r="7.5"/><path d="M21,50 C21,30 34,15 60,15 C86,15 99,30 99,50 C97,38 88,32 78,32 C72,26 66,24 60,24 C54,24 48,26 42,32 C32,32 23,38 21,50 Z"/></g>',
+      side: '<path d="M20,52 C20,29 34,13 60,13 C86,13 100,29 100,52 C98,38 90,32 76,31 C62,29 42,33 30,45 C26,47 22,48 20,52 Z"/><path d="M20.3,52 C20.8,61 21.6,68 22.6,74 C23.8,74 24.8,73.2 25.6,72 C24.2,66 23.6,58 23.6,53 Z"/>',
+      swept: '<path d="M20,51 C20,28 34,13 60,13 C86,13 100,28 100,51 C97,36 86,29 68,29 C52,29 36,37 25,47 Z"/><path d="M20.6,52 C21.4,60 22,66 23,72 C24,72 24.8,71.2 25.4,70 C24.2,64 23.6,57 23.6,53 Z"/>',
+      bald: '<path d="M20.5,52 C21,41 24,32 30,26 C25,36 24,45 24,54 Z"/><path d="M99.5,52 C99,41 96,32 90,26 C95,36 96,45 96,54 Z"/>'
     };
-    s.push(hairShapes[style] || hairShapes.short);
-    /* দাড়ি (ঠোঁটের আগে) */
-    if (beard === 'full') {
-      s.push('<path d="M26,60 C26,86 40,106 60,106 C80,106 94,86 94,60 C94,74 88,78 82,81 C76,77 68,75 60,75 C52,75 44,77 38,81 C32,78 26,74 26,60 Z" fill="' + hair + '"/>');
-      s.push('<path d="M38,81 C45,76 52,74 60,74 C68,74 75,76 82,81 C78,90 70,97 60,99 C50,97 42,90 38,81 Z" fill="' + ipfMix(hair, 1.18) + '" opacity=".35"/>');
-    } else if (beard === 'stubble') {
-      s.push('<g clip-path="url(#' + uid + 'c)"><ellipse cx="60" cy="90" rx="31" ry="23" fill="' + hair + '" opacity=".17"/></g>');
+    s.push('<g fill="url(#' + u + 'hr)">' + (hairBase[style] || hairBase.short) + '</g>');
+    /* ---- ভুরু ---- */
+    s.push('<path d="M39.5,' + (browY - 0.6) + ' C43,' + (browY - 2.6) + ' 50,' + (browY - 2.8) + ' 54.5,' + (browY + 0.8) + ' C50,' + (browY + 0.2) + ' 43,' + (browY + 1.2) + ' 39.5,' + (browY + 1.8) + ' Z" fill="' + hairLo + '" opacity=".95"/>');
+    s.push('<path d="M65.5,' + (browY + 0.8) + ' C70,' + (browY - 2.8) + ' 77,' + (browY - 2.6) + ' 80.5,' + (browY - 0.6) + ' C80.5,' + (browY + 1.8) + ' 76.9,' + (browY + 0.2) + ' 65.5,' + (browY + 0.8) + ' Z" fill="' + hairLo + '" opacity=".95"/>');
+
+    /* ---- চোখ ---- */
+    function eye(cx, mirror) {
+      var g = [];
+      g.push('<g>');
+      /* চোখের গর্তের ছায়া */
+      g.push('<ellipse cx="' + cx + '" cy="' + (eyeY - 0.5) + '" rx="9.2" ry="6.6" fill="' + deep + '" opacity=".18" filter="url(#' + u + 'b2)"/>');
+      /* সাদা অংশ (badan) */
+      g.push('<path d="M' + (cx - 7) + ',' + eyeY + ' C' + (cx - 4.2) + ',' + (eyeY - 3.9) + ' ' + (cx + 4.2) + ',' + (eyeY - 3.9) + ' ' + (cx + 7) + ',' + eyeY + ' C' + (cx + 4.2) + ',' + (eyeY + 3.5) + ' ' + (cx - 4.2) + ',' + (eyeY + 3.5) + ' ' + (cx - 7) + ',' + eyeY + ' Z" fill="#eee9e2"/>');
+      /* আইরিস */
+      g.push('<circle cx="' + (cx + 0.3 * mirror) + '" cy="' + (eyeY + 0.2) + '" r="3.9" fill="url(#' + u + 'ir)"/>');
+      g.push('<circle cx="' + (cx + 0.3 * mirror) + '" cy="' + (eyeY + 0.2) + '" r="1.7" fill="#0a0705"/>');
+      g.push('<circle cx="' + (cx + 1.5 * mirror) + '" cy="' + (eyeY - 1.2) + '" r="0.85" fill="#fff" opacity=".85"/>');
+      g.push('<circle cx="' + (cx - 1.2 * mirror) + '" cy="' + (eyeY + 1.6) + '" r=".6" fill="#fff" opacity=".35"/>');
+      /* উপরের পাতার ছায়া */
+      g.push('<path d="M' + (cx - 7.2) + ',' + eyeY + ' C' + (cx - 4.2) + ',' + (eyeY - 4.4) + ' ' + (cx + 4.2) + ',' + (eyeY - 4.4) + ' ' + (cx + 7.2) + ',' + eyeY + ' C' + (cx + 4.2) + ',' + (eyeY - 1.4) + ' ' + (cx - 4.2) + ',' + (eyeY - 1.4) + ' ' + (cx - 7.2) + ',' + eyeY + ' Z" fill="' + deep + '" opacity=".18"/>');
+      /* নিচের পাতার রেখা */
+      g.push('<path d="M' + (cx - 5.6) + ',' + (eyeY + 2.6) + ' C' + (cx - 3) + ',' + (eyeY + 4.2) + ' ' + (cx + 3) + ',' + (eyeY + 4.2) + ' ' + (cx + 5.6) + ',' + (eyeY + 2.6) + '" stroke="' + deep + '" stroke-width=".9" fill="none" opacity=".5"/>');
+      g.push('</g>');
+      return g.join('');
+    }
+    s.push(eye(eyeL, 1) + eye(eyeR, -1));
+    /* পলক */
+    var blinkDur = (4.8 + Math.floor(R() * 4)).toFixed(1), blinkBegin = '-' + (R() * 9).toFixed(1);
+    function lid(cx) {
+      return '<path d="M' + (cx - 7.4) + ',' + (eyeY + 0.6) + ' C' + (cx - 4.2) + ',' + (eyeY - 4.8) + ' ' + (cx + 4.2) + ',' + (eyeY - 4.8) + ' ' + (cx + 7.4) + ',' + (eyeY + 0.6) + ' C' + (cx + 4.2) + ',' + (eyeY + 1.3) + ' ' + (cx - 4.2) + ',' + (eyeY + 1.3) + ' ' + (cx - 7.4) + ',' + (eyeY + 0.6) + ' Z" fill="' + skin + '" opacity="0">' +
+        '<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.86;0.885;0.925;0.95;1" dur="' + blinkDur + 's" begin="' + blinkBegin + 's" repeatCount="indefinite"/></path>';
+    }
+    s.push(lid(eyeL) + lid(eyeR));
+    /* চোখের নিচের ছায়া */
+    s.push('<path d="M41,' + (eyeY + 5) + ' C45,' + (eyeY + 7) + ' 51,' + (eyeY + 7) + ' 54,' + (eyeY + 4.6) + '" stroke="' + deep + '" stroke-width="1.6" fill="none" opacity=".22" filter="url(#' + u + 'b2)"/>');
+    s.push('<path d="M66,' + (eyeY + 4.6) + ' C69,' + (eyeY + 7) + ' 75,' + (eyeY + 7) + ' 79,' + (eyeY + 5) + '" stroke="' + deep + '" stroke-width="1.6" fill="none" opacity=".22" filter="url(#' + u + 'b2)"/>');
+
+    /* ---- নাক ---- */
+    s.push('<ellipse cx="59" cy="66" rx="2.4" ry="6" fill="' + glow + '" opacity=".28" filter="url(#' + u + 'b2)"/>');
+    s.push('<path d="M60,60 C59.4,68 58.4,73 56.2,76.4 C57.6,78 62.4,78 63.8,76.4 C61.6,73 60.6,68 60,60 Z" fill="' + deep + '" opacity=".30" filter="url(#' + u + 'b2)"/>');
+    s.push('<ellipse cx="60" cy="' + (noseY - 1.5) + '" rx="3.4" ry="2.1" fill="' + soft + '" opacity=".55" filter="url(#' + u + 'b2)"/>');
+    s.push('<path d="M56.4,' + noseY + ' C57.6,' + (noseY + 1.6) + ' 62.4,' + (noseY + 1.6) + ' 63.6,' + noseY + '" stroke="' + deep + '" stroke-width="1.2" fill="none" opacity=".55"/>');
+    s.push('<ellipse cx="55.6" cy="' + (noseY + 0.2) + '" rx="1.5" ry="1" fill="' + deep + '" opacity=".45"/>');
+    s.push('<ellipse cx="64.4" cy="' + (noseY + 0.2) + '" rx="1.5" ry="1" fill="' + deep + '" opacity=".45"/>');
+
+    s.push('<g clip-path="url(#' + u + 'fc)"><ellipse cx="41" cy="' + (noseY - 2) + '" rx="7" ry="5" fill="' + glow + '" opacity=".22" filter="url(#' + u + 'b)"/><ellipse cx="79" cy="' + (noseY - 2) + '" rx="6" ry="5" fill="' + glow + '" opacity=".18" filter="url(#' + u + 'b)"/></g>');
+    /* ---- ঠোঁট ---- */
+    s.push('<path d="M49.5,' + mouthY + ' C53.5,' + (mouthY - 2.8) + ' 57,' + (mouthY - 1.4) + ' 60,' + (mouthY - 0.6) + ' C63,' + (mouthY - 1.4) + ' 66.5,' + (mouthY - 2.8) + ' 70.5,' + mouthY + ' C65,' + (mouthY + 1.6) + ' 55,' + (mouthY + 1.6) + ' 49.5,' + mouthY + ' Z" fill="' + ipf2shade(lipBase, 0.82) + '"/>');
+    s.push('<path d="M50.8,' + (mouthY + 0.6) + ' C55,' + (mouthY + 1.2) + ' 65,' + (mouthY + 1.2) + ' 69.2,' + (mouthY + 0.6) + ' C67.6,' + (mouthY + 5.4) + ' 63.4,' + (mouthY + 7) + ' 60,' + (mouthY + 7) + ' C56.6,' + (mouthY + 7) + ' 52.4,' + (mouthY + 5.4) + ' 50.8,' + (mouthY + 0.6) + ' Z" fill="' + lipBase + '"/>');
+    s.push('<path d="M51,' + (mouthY + 0.2) + ' C55,' + (mouthY + 1.2) + ' 65,' + (mouthY + 1.2) + ' 69,' + (mouthY + 0.2) + '" stroke="#43201a" stroke-width="0.9" fill="none" opacity=".55"/>');
+    s.push('<ellipse cx="60" cy="' + (mouthY + 3.4) + '" rx="4" ry="1.3" fill="#fff" opacity=".14" filter="url(#' + u + 'b2)"/>');
+
+    /* ---- দাড়ি ---- */
+    if (beard === 'short') {
+      s.push('<g clip-path="url(#' + u + 'fc)"><path d="M25,66 C25,92 38,112 60,112 C82,112 95,92 95,66 C95,84 88,88 82,90 C76,86 68,84 60,84 C52,84 44,86 38,90 C32,88 25,84 25,66 Z" fill="' + hair + '" opacity=".93"/><path d="M40,90 C46,86 53,84 60,84 C67,84 74,86 80,90 C76,100 69,106 60,108 C51,106 44,100 40,90 Z" fill="' + ipf2shade(hair, 1.2) + '" opacity=".35"/></g>');
+      s.push('<path d="M53,' + (mouthY - 2.6) + ' C56.4,' + (mouthY - 4) + ' 63.6,' + (mouthY - 4) + ' 67,' + (mouthY - 2.6) + ' C64,' + (mouthY - 1.6) + ' 56,' + (mouthY - 1.6) + ' 53,' + (mouthY - 2.6) + ' Z" fill="' + hair + '"/>');
     } else if (beard === 'goatee') {
-      s.push('<path d="M53,90 C56,87.5 64,87.5 67,90 C68,97 65,103 60,104 C55,103 52,97 53,90 Z" fill="' + hair + '" opacity=".95"/>');
+      s.push('<path d="M52.5,' + (mouthY + 7) + ' C55,' + (mouthY + 4) + ' 65,' + (mouthY + 4) + ' 67.5,' + (mouthY + 7) + ' C68,' + (mouthY + 14) + ' 65,' + (mouthY + 17) + ' 60,' + (mouthY + 18) + ' C55,' + (mouthY + 17) + ' 52,' + (mouthY + 14) + ' 52.5,' + (mouthY + 7) + ' Z" fill="' + hair + '" opacity=".9"/>');
+      s.push('<path d="M53,' + (mouthY - 2.6) + ' C56.4,' + (mouthY - 4) + ' 63.6,' + (mouthY - 4) + ' 67,' + (mouthY - 2.6) + ' C64,' + (mouthY - 1.6) + ' 56,' + (mouthY - 1.6) + ' 53,' + (mouthY - 2.6) + ' Z" fill="' + hair + '"/>');
+    } else if (beard === 'stubble') {
+      s.push('<g clip-path="url(#' + u + 'fc)"><ellipse cx="60" cy="96" rx="33" ry="22" fill="' + hair + '" opacity=".24" filter="url(#' + u + 'b)"/><path d="M52,' + (mouthY - 2) + ' C56,' + (mouthY - 3.6) + ' 64,' + (mouthY - 3.6) + ' 68,' + (mouthY - 2) + '" stroke="' + hair + '" stroke-width="2" opacity=".4" fill="none"/></g>');
     }
-    /* ভুরু */
-    s.push('<rect x="40.5" y="' + (browY - 1.7) + '" width="13.5" height="3.8" rx="1.9" fill="' + hair + '" transform="rotate(-5 47 47)"/>');
-    s.push('<rect x="66.5" y="' + (browY - 1.7) + '" width="13.5" height="3.8" rx="1.9" fill="' + hair + '" transform="rotate(5 73 47)"/>');
-    /* চোখ */
-    s.push('<g><ellipse cx="47" cy="' + eyeY + '" rx="6.3" ry="4.6" fill="#fbfaf7"/><circle cx="47.3" cy="' + (eyeY + 0.5) + '" r="3" fill="' + eyeC + '"/><circle cx="47.3" cy="' + (eyeY + 0.5) + '" r="1.4" fill="#0b0906"/><circle cx="48.5" cy="' + (eyeY - 1.5) + '" r="1.05" fill="#fff" opacity=".9"/></g>');
-    s.push('<g><ellipse cx="73" cy="' + eyeY + '" rx="6.3" ry="4.6" fill="#fbfaf7"/><circle cx="72.7" cy="' + (eyeY + 0.5) + '" r="3" fill="' + eyeC + '"/><circle cx="72.7" cy="' + (eyeY + 0.5) + '" r="1.4" fill="#0b0906"/><circle cx="73.9" cy="' + (eyeY - 1.5) + '" r="1.05" fill="#fff" opacity=".9"/></g>');
-    /* bncom15: চোখের পলক — SMIL, <img>-এর ভেতরেই চলে (স্ক্রিপ্ট লাগে না) */
-    var blinkDur = (4.6 + Math.floor(r() * 4)).toFixed(1), blinkBegin = '-' + (r() * 9).toFixed(1);
-    var lid = function (cx) {
-      return '<ellipse cx="' + cx + '" cy="' + eyeY + '" rx="7" ry="0" fill="' + skin + '">' +
-        '<animate attributeName="ry" values="0;0;5.1;5.1;0;0" keyTimes="0;0.885;0.905;0.93;0.95;1" dur="' + blinkDur + 's" begin="' + blinkBegin + 's" repeatCount="indefinite"/>' +
-        '</ellipse>';
-    };
-    s.push(lid(47) + lid(73));
-    s.push('<path d="M40.5,' + (eyeY - 5.4) + ' C44,54 50,54 53.5,' + (eyeY - 5.2) + '" stroke="' + skinShade + '" stroke-width="1.5" fill="none" opacity=".75"/>');
-    s.push('<path d="M66.5,' + (eyeY - 5.2) + ' C70,54 76,54 79.5,' + (eyeY - 5.4) + '" stroke="' + skinShade + '" stroke-width="1.5" fill="none" opacity=".75"/>');
-    /* নাক */
-    s.push('<path d="M60,59 C59.5,67 58.6,72 55.4,74.6 C57.6,76.4 62.4,76.4 64.6,74.6 C61.4,72 60.5,67 60,59 Z" fill="' + skinDark + '" opacity=".5"/>');
-    s.push('<path d="M55.2,74.9 C57.4,76.6 62.6,76.6 64.8,74.9" stroke="' + skinShade + '" stroke-width="1.05" fill="none" opacity=".75"/>');
-    /* গোঁফ + ঠোঁট */
-    if (beard === 'full' || beard === 'goatee' || beard === 'moustache') {
-      s.push('<path d="M53,82.6 C56.6,81 63.4,81 67,82.6 C64.6,85.4 55.4,85.4 53,82.6 Z" fill="' + hair + '"/>');
-    }
-    s.push('<path d="M52.5,' + mouthY + ' C56.3,' + (mouthY + 2) + ' 63.7,' + (mouthY + 2) + ' 67.5,' + mouthY + '" stroke="#8b4a3d" stroke-width="2.4" stroke-linecap="round" fill="none"/>');
-    s.push('<path d="M54,' + (mouthY + 3.2) + ' C57.6,' + (mouthY + 5.2) + ' 62.4,' + (mouthY + 5.2) + ' 66,' + (mouthY + 3.2) + '" stroke="' + skinShade + '" stroke-width="1.3" fill="none" opacity=".4"/>');
-    /* দাড়ির নিচের ছায়া */
-    s.push('<path d="M31,95 C36,106 47,111 60,111 C73,111 84,106 89,95" stroke="' + skinShade + '" stroke-width="2.2" fill="none" opacity=".22"/>');
+
+    /* ---- চোয়াল/গালের সূক্ষ্ম রেখা ---- */
+    s.push('<path d="M41,' + (noseY + 2) + ' C37,' + (noseY + 10) + ' 41,' + (mouthY + 6) + ' 48,' + (mouthY + 8) + '" stroke="' + deep + '" stroke-width="1.2" fill="none" opacity=".16" filter="url(#' + u + 'b2)"/>');
+    s.push('<path d="M79,' + (noseY + 2) + ' C83,' + (noseY + 10) + ' 79,' + (mouthY + 6) + ' 72,' + (mouthY + 8) + '" stroke="' + deep + '" stroke-width="1.2" fill="none" opacity=".14" filter="url(#' + u + 'b2)"/>');
     s.push('</svg>');
     return s.join('');
   }
+
 
   var ipfCache = (typeof Map === 'function') ? new Map() : null;
   function ipfRegionByName(name) {
@@ -8629,7 +8711,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     return ipfRefPx;
   }
   var ipfProbing = {}, ipfMADs = {};
-  function ipfProbe(pid, done) {
+  function ipfProbe(pid, done, soft) {
     if (ipfProbing[pid]) return;
     var ref = ipfRef();
     if (!ref) return;
@@ -8654,7 +8736,12 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       if (v >= 0) { ipfVerdict[pid] = v; ipfSaveVerdicts(); }
       try { done && done(v); } catch (e) {}
     };
-    img.onerror = function () { delete ipfProbing[pid]; ipfVerdict[pid] = 1; ipfSaveVerdicts(); try { done && done(1); } catch (e) {} };
+    img.onerror = function () {
+      delete ipfProbing[pid];
+      /* soft (আগাম-যাচাই): নেট-সমস্যায় 'ছবি নেই' ধরে নিই না — পরে দরকারে আবার দেখা হবে */
+      if (soft) { try { done && done(-1); } catch (e) {} return; }
+      ipfVerdict[pid] = 1; ipfSaveVerdicts(); try { done && done(1); } catch (e) {}
+    };
     img.src = url;
   }
 
@@ -8711,6 +8798,21 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
   window.__ipfOnError = ipfOnError;
   window.__ipfVerdictOf = ipfVerdictOf;
   window.__ipfProbe = ipfProbe;
+  /* bncom18: ম্যাচ বাছাইয়েই যাদের ছবি নেই তাদের আগেই ঠিক করে রাখি ⇒ কার্ড এঁকে ফেলার সময়ে দেরি নেই */
+  function ipfWarm(ids, teamKey) {
+    var warmCount = 0;
+    try {
+      (ids || []).forEach(function (raw) {
+        var pid = String(raw || '').trim();
+        if (!pid) return;
+        if (ipfVerdictOf(pid) !== -1) return;
+        if (warmCount++ >= 12) return;                    /* একবারে বেশি নয় — CDN-এ চাপ নয়, নীরব ব্যর্থতাও নয় */
+        ipfProbe(pid, null, true);   /* soft: নেট ব্যর্থতায় সিদ্ধান্ত ক্যাশ করা হয় না */
+        try { ipfFaceUri(pid, teamKey || ''); } catch (e) {}   /* মুখটা আগেই বানিয়ে ক্যাশে রাখি */
+      });
+    } catch (e) {}
+  }
+  window.__ipfWarm = ipfWarm;
   window.__ipfMAD = IPF_MAD;
   window.__ipfMADOf = function (p) { return ipfMADs[p]; };
 })();
