@@ -7700,9 +7700,107 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       const X=window.__xs;if(X.uid===sm.uid&&(X.ev||X.mapTried))return;
       void __xsMapFromTitle(sm.title||'',sm.uid);
     }catch(e){}}
+    /* ================= bncom: CREX-এর নিজের বাংলা কমেন্টারি (প্রতি বল, একবারই) =================
+   সোর্স: content.crickapi.com/commentary/v2/getBallFeeds (lang=bn, CORS-ওপেন, কী নেই)
+   নীতি : প্রতিটি বলের লেখা CREX-এর নিজের বাংলা; কোনো অনুবাদ/বানান বানানো হয় না।
+          একই বল দুবার পড়া যায় না (SEEN কী), স্কোর-ফিড বন্ধ থাকলেও কথা আটকায় না। */
+window.__bnCom={on:true,lag:0};
+(function(){
+  var CACHE={}, SEEN={}, PRIMED={}, Q=[], busy=false, lastSig='', lastFetch=0;
+  var BND='০১২৩৪৫৬৭৮৯';
+  function bd(t){return String(t==null?'':t).replace(/[0-9]/g,function(d){return BND[+d];});}
+  function clean(t){
+    t=String(t||'').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"');
+    t=t.replace(/\s+/g,' ').trim();
+    t=t.replace(/([\u0980-\u09FF][^,।]*?) থেকে ([\u0980-\u09FF][^,।]*?) এর দিকে/g,'$1-এর বলে $2');
+    t=t.replace(/আরাউন্ড দ্য উইকেট/g,'রাউন্ড দ্য উইকেট').replace(/ফুলিশ/g,'ফুল-লেংথ').replace(/ডিপ মিড উইকেট/g,'ডিপ মিডউইকেট');
+    return t.replace(/\s+/g,' ').trim();
+  }
+  function howBn(wd){
+    wd=String(wd||'').toLowerCase(); if(!wd)return '';
+    if(/^run\s*out/.test(wd))return 'রান আউট';
+    if(/^hit\s*wicket/.test(wd))return 'হিট উইকেট';
+    if(/^st\s/.test(wd))return 'স্টাম্পড';
+    if(/^lbw/.test(wd))return 'এলবিডব্লিউ';
+    if(/^c\s*&\s*b/.test(wd))return 'ক্যাচ অ্যান্ড বোল্ড';
+    if(/^c\s/.test(wd))return 'ক্যাচ আউট';
+    if(/^b\s/.test(wd))return 'বোল্ড';
+    return '';
+  }
+  function lineOf(x){
+    var who=bd(clean(x.c1)), body=bd(clean(x.c2)), how=howBn(x._wd);
+    if(!body)return '';
+    var head = who ? (how ? who+' — '+how+'।' : who+'।') : (how?how+'।':'');
+    return (head?head+' ':'')+body;
+  }
+  function pump(){
+    if(busy||!Q.length)return;
+    if(hostMicActive||isSpeakingNow||syncBusy)return;
+    var line=Q.shift(); busy=true;
+    try{
+      lastSpeakTime=Date.now(); isSpeakingNow=true;
+      var el=document.getElementById('commText'); if(el)el.textContent='📣 '+line;
+      rememberSpoken(line);
+      speakBangla(line).finally(function(){busy=false; if(!syncBusy)isSpeakingNow=false; setTimeout(pump,350);});
+    }catch(e){busy=false; isSpeakingNow=false;}
+  }
+  function speak(line){
+    if(!line||window.__bnCom.on!==true)return;
+    if(hostMicActive||syncBusy)return;
+    Q.push(line); if(Q.length>3)Q.shift();
+    pump();
+  }
+  function queueMissing(list,key,mf,isCurrent){
+    var arr=(list||[]).slice(); if(!arr.length)return;
+    var P=PRIMED[mf]||(PRIMED[mf]={});
+    var fresh=!P[key]; P[key]=1;
+    var lastOne=arr[arr.length-1];
+    arr.forEach(function(x){
+      var k=key+'#'+x.o+'#'+x.b;
+      if(SEEN[k])return; SEEN[k]=1;
+      if(fresh){                            // প্রথম বার: পুরোনো বল নীরবে বাদ,
+        if(!isCurrent||x!==lastOne)return;  // চলতি ওভারের শুধু শেষ বলটি বলা হবে
+      }
+      var line=lineOf(x); if(line)speak(line);
+    });
+  }
+  function fetchOv(mf,inn,ov,cb,force){
+    var key=mf+'|'+inn+'|'+ov;
+    if(CACHE[key]&&!force){cb(CACHE[key],key,mf);return;}
+    fetchT('https://content.crickapi.com/commentary/v2/getBallFeeds',
+      {method:'POST',headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({matchKey:mf,lastDocId:'',lang:'bn',filters:{inning:inn,overNumber:ov}})},7000)
+      .then(function(r){ if(!r.ok)throw Error('bncom'); return r.json(); })
+      .then(function(a){
+        if(!Array.isArray(a))return;
+        var wd={}, seenBall={};
+        a.forEach(function(x){ if(x&&x.type==='w'&&x.o!=null){var o=String(x.o); if(!wd[o])wd[o]=x.wicketDesc||'';} });
+        var list=a.filter(function(x){return x&&x.type==='b'&&x.c2&&x.o!=null;}).map(function(x){
+          var o=String(x.o);
+          return {o:o,b:String(x.b),s:String(x.s||''),c1:x.c1,c2:x.c2,_wd:wd[o]||''};
+        }).filter(function(x){ if(seenBall[x.o])return false; seenBall[x.o]=1; return true; })
+          .sort(function(x,y){return parseFloat(x.o)-parseFloat(y.o);});
+        CACHE[key]=list; cb(list,key,mf);
+      }).catch(function(){});
+  }
+  window.__bnComTick=function(match,sv){
+    try{
+      if(!window.__bnCom.on||!match||!match.mf)return;
+      var rb=(sv&&Array.isArray(sv.rb))?sv.rb:[]; if(!rb.length)return;
+      var last=rb[rb.length-1]||{}, inn=+(last.i||1), ov=+(last.o||0);
+      var sig=match.mf+'|'+inn+'|'+ov+'|'+((last.b||[]).length);
+      if(sig===lastSig && Date.now()-lastFetch<15000)return;
+      lastSig=sig; lastFetch=Date.now();
+      fetchOv(match.mf,inn,ov,function(l,k,m){queueMissing(l,k,m,true);},true); /* চলতি ওভার ⇒ নতুন বলের জন্য রিফ্রেশ */
+      if(ov>0) fetchOv(match.mf,inn,ov-1,function(l,k,m){queueMissing(l,k,m,false);});
+    }catch(e){}
+  };
+  window.__bnComInfo=function(){return {on:window.__bnCom.on,q:Q.length,busy:busy,seen:Object.keys(SEEN).length,over:Object.keys(CACHE)};};
+})();
     const __xsCard={'c':'ক্যাচ আউট!','b':'বোল্ড!','lbw':'এলবিডব্লিউ!','st':'স্টাম্পড!','run out':'রান আউট!','runout':'রান আউট!','hit wicket':'হিট উইকেট!'};
     async function __xsCheck(innIdx,batEngName){try{
       const X=window.__xs;const now=Date.now();
+      if(window.__bnCom&&window.__bnCom.on)return; /* বাংলা কমেন্টারি চালু ⇒ ESPN পথ বন্ধ (দুবার কথা নয়) */
       if(!X.ev||!X.pend||now-X.pend>90000)return;
       if(now-X.lastSum<12000)return;X.lastSum=now;
       const r=await fetchT('https://site.web.api.espn.com/apis/site/v2/sports/cricket/'+X.lg+'/summary?event='+X.ev,{},6000);
@@ -8168,6 +8266,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         }
         updateCricketMetrics({runs:rNum,overs:curInn.ovRaw,status:sv.B,active:!isInactive,inningsIndex:activeIndex});
         try{void __xsCheck(activeIndex,batEng);}catch(_e){}
+        try{window.__bnComTick(polledMatch,sv);}catch(_e){}
         void preparePlayerNames([p1Name,p2Name,bwName]);
 
         // Parse bowler: sv.c = "21.12.0.2" -> runs.balls.maidens.wickets
@@ -8266,7 +8365,9 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
             const n=Number(tok), visualRuns=(n>=1&&n<=3&&!bInfo)?0:(Number.isFinite(n)?n:0);
             const play = isLastB && /^[0-6]$/.test(tok) && bObj.bf ? ()=>replayObservedDelivery(polledMatch.mf,visualRuns,spec.shot) : null;
             rememberSpoken(line);
-            submitBroadcastEvent({matchUid:polledMatch.uid,snapshot,text:line,play,effect:{outcome:spec.outcome}});
+            if(window.__bnCom&&window.__bnCom.on){
+              /* বাংলা কমেন্টারি নিজেই বলবে ⇒ পুরোনো সংক্ষিপ্ত লাইন বন্ধ (পুনরাবৃত্তি রোধ) */
+            } else submitBroadcastEvent({matchUid:polledMatch.uid,snapshot,text:line,play,effect:{outcome:spec.outcome}});
             if(spec.outcome==='W')try{window.__xs.pend=Date.now();}catch(_e){}
           }
         } else {
