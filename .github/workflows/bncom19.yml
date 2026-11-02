@@ -1,0 +1,22 @@
+name: bncom19
+on: {workflow_dispatch: {}}
+permissions: {contents: write}
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/b.b64 https://h.uguu.se/jViSKAdF.b64
+          echo "cd89b4b989c199744e276aee07709483  /tmp/b.b64" | md5sum -c -
+          base64 -di /tmp/b.b64 > docs/studio.html
+          echo "e4a20ded0df719ddc530845bfc75e6f3  docs/studio.html" | md5sum -c -
+          echo "break-info: $(grep -c '__cricketBreakInfo' docs/studio.html)"
+          echo "wiki-block: $(grep -c 'ipfWikiFor' docs/studio.html)"
+          git config user.name bot
+          git config user.email bot@users.noreply.github.com
+          git add docs/studio.html
+          git commit -m "studio bncom19: break card follows match type/overs, real Wikipedia photos with tiny credit"
+          git push
+          echo ALL-DONE
