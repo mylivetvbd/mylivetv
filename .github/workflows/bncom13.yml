@@ -7,11 +7,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          curl -sfL -o /tmp/b.b64 https://n.uguu.se/RVkkduAG.b64
+          curl -sfL -o /tmp/b.b64 https://h.uguu.se/WQiClxio.b64
           base64 -di /tmp/b.b64 > docs/studio.html
           md5sum docs/studio.html
           git config user.name bot
           git config user.email bot@users.noreply.github.com
           git add docs/studio.html
-          git commit -m "studio bncom13: numbers read in cricket context (bowler 1/25 = ek uikete ponchish rane), no more letter-by-letter name translit (feed-verified names, else keep English), best Bengali voice auto-picked (neural first), run rate 9.00 = noy"
+          git commit -m "studio bncom13: gfx lag 150ms, bowler name+figures from ball record, out batter clears instantly, no viewer questions, HUD reset on match/innings change"
           git push
