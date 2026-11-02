@@ -7753,10 +7753,12 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
     return (head?head+' ':'')+body;
   }
   var pumpT=0;
+  var busySince=0;
   function pump(){
-    if(busy||!Q.length)return;
+    if(busy){ if(Date.now()-busySince>20000){busy=false;isSpeakingNow=false;setTimeout(pump,50);} else return; } /* TTS আটকে গেলে ছেড়ে দাও */
+    if(!Q.length)return;
     if(hostMicActive||isSpeakingNow){ if(!pumpT)pumpT=setTimeout(function(){pumpT=0;pump();},800); return; }
-    var it=Q.shift(); busy=true; var line=(it&&it.l!=null)?it.l:String(it);
+    var it=Q.shift(); busy=true; busySince=Date.now(); var line=(it&&it.l!=null)?it.l:String(it);
     try{
       lastSpeakTime=Date.now(); isSpeakingNow=true;
       try{var _m=(it&&it.m)||null; if(_m){ if(_m.sc!=null)window.__oneHud(_m.sc,_m.ov); if(_m.oc!=null)window.__oneCard(_m.oc);} }catch(_e){}
@@ -7767,11 +7769,14 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
   }
   function speak(line,meta){
     if(!line||window.__bnCom.on!==true)return;
+    if(window.__bnCom.end===1)return;              /* ম্যাচ শেষ ⇒ পুরোনো বলের কথা নয় */
     if(hostMicActive)return;
     Q.push({l:line,m:meta||null}); if(Q.length>4)Q.shift();
     pump();
   }
   function keyOf(x){ return x.id!=null ? ('i'+x.id) : ('o'+x.o+'_'+x.b); }
+  var LB={};                                   /* mf|inning → সর্বশেষ বলা বল */
+  function bidx(o){ var p=String(o||'').split('.'); var a=parseInt(p[0],10), b=parseInt(p[1],10); if(isNaN(a))return -1; if(isNaN(b))b=0; return a*6+b; }
   function wdFor(o){ return WD_CACHE[String(o)]||''; }
   function noteWickets(arr){
     (arr||[]).forEach(function(x){
@@ -7803,11 +7808,14 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
       var lastOne=balls[balls.length-1];
       balls.forEach(function(x){ SEEN[mf+'#'+x.k]=1; });
       window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();
-      if(lastOne){ var l0=lineOf(lastOne); if(l0){window.__bnCom.spoke=true;speak(l0,{oc:lastOne.b,sc:lastOne.s,ov:lastOne.o});} }
+      if(lastOne){ var l0=lineOf(lastOne); LB[mf+'|'+(lastOne.inn||1)]=bidx(lastOne.o); if(l0){window.__bnCom.spoke=true;speak(l0,{oc:lastOne.b,sc:lastOne.s,ov:lastOne.o});} }
       return;
     }
     var fresh=[];
     balls.forEach(function(x){ var kk=mf+'#'+x.k; if(SEEN[kk])return; SEEN[kk]=1; fresh.push(x); });
+    if(!fresh.length)return;
+    fresh=fresh.filter(function(x){ var kk2=mf+'|'+(x.inn||1), cur=bidx(x.o); if(cur<0)return true;
+      if(LB[kk2]!=null && cur<=LB[kk2])return false; LB[kk2]=cur; return true; });   /* কখনো পিছিয়ে যাবে না */
     if(!fresh.length)return;
     if(fresh.length>2) fresh=fresh.slice(-2);   /* বাসি বল বাদ ⇒ দেরি জমে না */
     window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();
@@ -7833,8 +7841,9 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
       if(window.__bnCom.lastData && Date.now()-window.__bnCom.lastData>120000) window.__bnCom.ok=false;
     }catch(e){}
   };
+  window.__bnComStop=function(){ Q.length=0; busy=false; isSpeakingNow=false; window.__bnCom.end=1; }; /* ম্যাচ শেষ: কথা বন্ধ, ok অপরিবর্তিত ⇒ পোস্ট-ম্যাচ বিশ্লেষণও চুপ */
   window.__bnComInfo=function(){return {on:window.__bnCom.on,ok:window.__bnCom.ok,q:Q.length,busy:busy,seen:Object.keys(SEEN).length};};
-  window.__oneHold=function(){return Q.length>0||busy;}; /* কথা বাকি থাকলে স্কোর সামনে যাবে না */
+  window.__oneHold=function(){return (Q.length>0||busy) && (Date.now()-(lastSpeakTime||0)<15000);}; /* কথা বাকি থাকলে স্কোর আটকায় — সর্বোচ্চ ১৫ সে */
 })();
 /* ---- ওয়াচডগ: স্কোর-পোল কখনো যেন থেমে না যায় (একই স্কোর ৯ সেকেন্ডের বেশি আটকে থাকলে রিস্টার্ট) ---- */
 setInterval(function(){
@@ -8320,7 +8329,7 @@ setInterval(function(){
         }
         updateCricketMetrics({runs:rNum,overs:curInn.ovRaw,status:sv.B,active:!isInactive,inningsIndex:activeIndex});
         try{void __xsCheck(activeIndex,batEng);}catch(_e){}
-        try{window.__bnComTick(polledMatch,sv);}catch(_e){}
+        try{ if(isFinished){ if(window.__bnComStop)window.__bnComStop(); } else { window.__bnCom.end=0; window.__bnComTick(polledMatch,sv); } }catch(_e){}
         void preparePlayerNames([p1Name,p2Name,bwName]);
 
         // Parse bowler: sv.c = "21.12.0.2" -> runs.balls.maidens.wickets
