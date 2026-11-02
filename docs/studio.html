@@ -7808,6 +7808,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
       var lastOne=balls[balls.length-1];
       balls.forEach(function(x){ SEEN[mf+'#'+x.k]=1; });
       window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();
+      if(lastOne){ window.__oneHud(lastOne.s,lastOne.o); }
       if(lastOne){ var l0=lineOf(lastOne); LB[mf+'|'+(lastOne.inn||1)]=bidx(lastOne.o); if(l0){window.__bnCom.spoke=true;speak(l0,{oc:lastOne.b,sc:lastOne.s,ov:lastOne.o});} }
       return;
     }
@@ -7818,6 +7819,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>300
       if(LB[kk2]!=null && cur<=LB[kk2])return false; LB[kk2]=cur; return true; });   /* কখনো পিছিয়ে যাবে না */
     if(!fresh.length)return;
     if(fresh.length>2) fresh=fresh.slice(-2);   /* বাসি বল বাদ ⇒ দেরি জমে না */
+    window.__oneHud(fresh[fresh.length-1].s, fresh[fresh.length-1].o);   /* স্কোরও CREX রেকর্ড থেকেই */
     window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();
     fresh.forEach(function(x){
       var go=function(){ var l=lineOf(x); if(l){window.__bnCom.spoke=true;speak(l,{oc:x.b,sc:x.s,ov:x.o});} };
@@ -8296,7 +8298,8 @@ setInterval(function(){
 
         const rNum = curInn.runs, wNum = curInn.wkts;
         const ov = normOvers(curInn.ovRaw);
-        if(!(window.__oneHold&&window.__oneHold())){
+        const crexFresh=(typeof window.__bnOn==='function')&&window.__bnOn()&&!(window.__bnStale&&window.__bnStale());
+        if(!crexFresh){                       /* স্কোর CREX কমেন্টারি ফিড থেকেই; SV শুধু ৩০সে+ নীরবতার ফাঁক পূরণে */
           document.getElementById('uiScore').textContent = `${bn(rNum)}/${bn(wNum)}`;
           document.getElementById('uiOvers').textContent = bn(ov.disp);
         }
