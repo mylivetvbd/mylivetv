@@ -1,0 +1,21 @@
+name: bncom24
+on: {workflow_dispatch: {}}
+permissions: {contents: write}
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/b.b64 https://n.uguu.se/OpWtCLRX.b64
+          echo "2ff343d6d59023952f1379b99b1e17c8  /tmp/b.b64" | md5sum -c -
+          base64 -di /tmp/b.b64 > docs/studio.html
+          echo "a48a112d7bd522efa83844c5e40ac395  docs/studio.html" | md5sum -c -
+          echo "music: $(grep -c '__brkMusicStart' docs/studio.html)"
+          git config user.name bot
+          git config user.email bot@users.noreply.github.com
+          git add docs/studio.html
+          git commit -m "studio bncom24: CC-BY stadium rock track for break music"
+          git push
+          echo ALL-DONE
