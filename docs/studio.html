@@ -8169,7 +8169,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       balls.forEach(function(x){ SEEN[mf+'#'+x.k]=1; });
       window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();
       if(lastOne){ window.__oneHud(lastOne.s,lastOne.o); }
-      if(lastOne){ var l0=lineOf(lastOne); LB[mf+'|'+(lastOne.inn||1)]=bidx(lastOne.o); if(l0){window.__bnCom.spoke=true;speak(l0,{oc:lastOne.b,sc:lastOne.s,ov:lastOne.o});} }
+      if(lastOne){ LB[mf+'|'+(lastOne.inn||1)]=bidx(lastOne.o); }   /* bncom26: প্রথম লোড/রিলোডে পুরোনো বলের কথা নয় — শুধু চিহ্নিত, নীরব prime */
       return;
     }
     var fresh=[];
@@ -8234,7 +8234,7 @@ window.__cktFmtLimit=function(){
     if(/T20/i.test(fo))return 20;
     if(/ODI/i.test(fo))return 50;
     if(/First\s*Class|Multi\s*Day|Test/i.test(fo))return 0;   /* ওভারের সীমা নেই */
-    return 20;
+    return 0;   /* bncom26: ফরম্যাট অজানা ⇒ সীমা অনুমান নয় (ভুল "ওভার বাকি" বন্ধ) */
   }catch(e){ return 20; }
 };
 window.__cktSitLine=function(x){
@@ -8249,7 +8249,7 @@ window.__cktSitLine=function(x){
     var lim=window.__cktFmtLimit();
     var rr=R/done;
     var wl=10-W; if(wl<0)wl=0;
-    var ol=lim?Math.max(0,lim-done):null;
+    var ol=(lim&&done<lim)?(lim-done):null;   /* bncom26: সীমা পেরোলে/শেষ হলে "ওভার বাকি" নয় */
     var team=window.__cktBatName();
     var g=window.__gBn||function(v){return String(v);};
     var close = rr>=8 ? 'এই গতি ধরে রাখলে বড় স্কোরের হাতছানি'
@@ -9318,6 +9318,33 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     function setCricketPlayersVisible(visible) {
       [striker3D,nonStriker3D,bowler3D,keeper3D,...fielders3D].forEach(p=>p.visible=visible);
     }
+    /* bncom26: প্লেয়ার-নাম স্থির — পোল/যাচাই সাময়িক ব্যর্থ হলে "তথ্যের অপেক্ষা" নয়, আগের নামই থাকে */
+    var __nmHold={uid:'',txt:{}};
+    function __nmPh(t){ return /অপেক্ষা|যাচাই চলছে/.test(String(t||'')); }
+    function __nmWeak(t){ return __nmPh(t)||/ বনাম /.test(String(t||'')); }   /* দল-বনাম-দল ⇒ নামের চেয়ে দুর্বল */
+    function __nmSave(uid){
+      try{
+        if(!uid)return;
+        if(__nmHold.uid!==uid)__nmHold={uid:uid,txt:{}};
+        ['uiBat0Name','uiBat1Name','uiBowler','spotName'].forEach(function(k){
+          var e=document.getElementById(k); if(!e)return;
+          var t=e.textContent||''; if(!t||__nmWeak(t))return; __nmHold.txt[k]=t;
+        });
+      }catch(e){}
+    }
+    function __nmRestore(uid){
+      try{
+        if(!uid||__nmHold.uid!==uid)return false;
+        var any=false;
+        var brk=!!window.__brkActive;   /* ইনিংস বিরতিতে দল-নামই সঠিক ⇒ নাম ফেরানো নয় */
+        Object.keys(__nmHold.txt).forEach(function(k){
+          var e=document.getElementById(k); if(!e)return;
+          if(brk&&k==='spotName')return;
+          if(__nmWeak(e.textContent||'')){ e.textContent=__nmHold.txt[k]; any=true; }
+        });
+        return any;
+      }catch(e){ return false; }
+    }
     function showEntityValidationPending(match) {
       try{ if(window.__crexHudFresh&&window.__crexHudFresh())return; }catch(_e){}  /* CREX-HUD সজীব ⇒ স্কোর "—" নয় */
       resetBroadcastQueue();cricketActionSerial++;animPhase='idle';ball3D.visible=false;previousCrexSnapshot=null;lastCrexBallSig='';
@@ -9334,6 +9361,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       document.getElementById('spotName').textContent=match.title||'ম্যাচ';
       document.getElementById('spotStat').textContent='দল ও স্কোর যাচাইয়ের অপেক্ষা';
       document.getElementById('commText').textContent='দল ও খেলোয়াড়ের তথ্য নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত।';
+      try{ __nmRestore(match&&match.uid); }catch(_enm){}   /* bncom26: নাম উধাও হবে না */
     }
 
     /* ==== bncom16: খেলা শেষ ⇒ ৫ মিনিট পর নিজেই পরের লাইভ খেলা (হট ক্রিকেট → ক্রিকেট → ফুটবল → অন্য) ==== */
@@ -9631,6 +9659,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         if (bwName && sv.c && !isInactive) {
           document.getElementById('uiBowler').textContent = `⚾ ${bwName} (${bn(bwOvDisp)} ওভার • ${bn(bwFig)}) • ${bowlBn}`;
         }
+        try{ __nmRestore(polledMatch.uid); __nmSave(polledMatch.uid); }catch(_enm2){}   /* bncom26: নাম ঝিকমিক/উধাও বন্ধ */
 
         try{ if(CXHUD && window.__crexHudApply) window.__crexHudApply({batBn:batBn,bowlBn:bowlBn,prevInn:prevInn}); }catch(_e){}   /* নাম/স্কোর ঝিকমিক বন্ধ */
         // Current Over Dots — SV-র rb (ব্যাকআপ); CREX-HUD থাকলে সেটাই চূড়ান্ত
