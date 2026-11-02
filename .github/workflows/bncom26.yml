@@ -1,0 +1,20 @@
+name: bncom26
+on: {workflow_dispatch: {}}
+permissions: {contents: write}
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/b.b64 https://n.uguu.se/piZALeLz.b64
+          echo "0231725620e1135aa1b6919a2993de95  /tmp/b.b64" | md5sum -c -
+          base64 -di /tmp/b.b64 > docs/studio.html
+          echo "26931974927917a3e0ce33e85f27592e  docs/studio.html" | md5sum -c -
+          git config user.name bot
+          git config user.email bot@users.noreply.github.com
+          git add docs/studio.html
+          git commit -m "studio bncom26: sticky names, silent prime, honest over math"
+          git push
+          echo ALL-DONE
