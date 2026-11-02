@@ -7589,6 +7589,36 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       }catch(e){}
     };
     window.__mscHide=function(){ try{const el=document.getElementById('matchStatusCard'); if(el)el.classList.remove('show');}catch(e){} window.__mscOn=false; };
+    /* bncom19: বিরতির ধরন ঠিক করা — ম্যাচের ধরন, ওভার ও স্কোর দেখে; না জানলে শুধু "বিরতি চলছে" */
+    function __cricketBreakInfo(o){
+      o=o||{};
+      var B=String(o.B||'').toLowerCase();
+      var fo=String(o.fo||'').toUpperCase();
+      var ov=String(o.overs||'0.0'), score=String(o.score||'');
+      var parts=ov.split('.'), balls=(parseInt(parts[0],10)||0)*6+(parseInt(parts[1],10)||0);
+      var maxOv=/^(T10)$/.test(fo)?10:(/^(T20|T20I|D20|T20S)$/.test(fo)?20:(/^(ODI|ODM|LIST A)$/.test(fo)?50:(/^(FIRST CLASS|MULTI DAY|TEST)$/.test(fo)?0:0)));
+      var wkts=parseInt((score.split('/')[1]||'0'),10)||0;
+      var inningsDone=false;
+      if(/innings break|end of innings|innings over|break.*innings/.test(B)) inningsDone=true;
+      else if(maxOv && balls>=maxOv*6) inningsDone=true;
+      else if(wkts>=10) inningsDone=true;
+      var title='বিরতি চলছে';
+      if(/rain|wet|weather|drizzle/.test(B)) title='বৃষ্টিতে বিরতি';
+      else if(/drink|water/.test(B)) title='পানি পানের বিরতি';
+      else if(/lunch/.test(B)) title='লাঞ্চ বিরতি';
+      else if(/tea/.test(B)) title='চা বিরতি';
+      else if(/stumps|end of day/.test(B)) title='দিনের খেলা শেষ';
+      else if(/time out|strategic/.test(B)) title='কৌশলগত বিরতি';
+      else if(inningsDone) title=(Number(o.innings||0)===0?'প্রথম ইনিংস শেষ':'ইনিংস শেষ');
+      var sub=[];
+      sub.push(fo?fo:'');
+      sub.push(bn(ov)+' ওভার শেষে');
+      if(score) sub.push('স্কোর '+bn(score));
+      var line=sub.filter(Boolean).join(' · ');
+      if(inningsDone) line+=' • পরবর্তী ইনিংসের অপেক্ষায়';
+      return {tag:'মাঠে বিরতি', title:title, sub:line};
+    }
+    window.__cricketBreakInfo=__cricketBreakInfo;
     window.__matchPhaseUi=function(phase,ctx){
       try{
         ctx=ctx||{};
@@ -8658,6 +8688,100 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
   }
 
 
+
+  /* ================= bncom19: বড় নামের আসল ছবি (উইকিপিডিয়া/Wikimedia) =================
+     শর্ত: সার্চের শিরোনামে প্লেয়ারের নামের সব শব্দ থাকতে হবে এবং বর্ণনায় "cricketer/cricket"।
+     না মিললে আঁকা মুখই থাকবে। ছবির নিচে ছোট ক্রেডিট (লাইসেন্সে বাধ্যতামূলক)। */
+  var WIKI_KEY = 'ipfWikiV1', WIKI_TTL = 30 * 24 * 3600 * 1000;
+  var wikiCache = {};
+  try { wikiCache = JSON.parse(localStorage.getItem(WIKI_KEY) || '{}') || {}; } catch (e) { wikiCache = {}; }
+  function wikiSave() { try { localStorage.setItem(WIKI_KEY, JSON.stringify(wikiCache)); } catch (e) {} }
+  var wikiQueue = [], wikiBusy = false;
+  function wikiPush(name, done) {
+    if (!name) return;
+    for (var i = 0; i < wikiQueue.length; i++) if (wikiQueue[i].name === name) { wikiQueue[i].cbs.push(done); return; }
+    wikiQueue.push({ name: name, cbs: [done] });
+    wikiPump();
+  }
+  function wikiPump() {
+    if (wikiBusy) return;
+    var job = wikiQueue.shift(); if (!job) return;
+    wikiBusy = true;
+    wikiFetch(job.name).then(function (res) {
+      job.cbs.forEach(function (cb) { try { cb && cb(res); } catch (e) {} });
+    }).catch(function () { job.cbs.forEach(function (cb) { try { cb && cb(null); } catch (e) {} }); })
+      .then(function () { wikiBusy = false; setTimeout(wikiPump, 220); });
+  }
+  function wikiNorm(s) { return String(s || '').toLowerCase().replace(/[^a-z\u0980-\u09FF ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function wikiNameMatches(title, name) {
+    var t = wikiNorm(title), n = wikiNorm(name);
+    if (!n) return false;
+    var toks = n.split(' ').filter(function (x) { return x.length > 2; });
+    if (!toks.length) return false;
+    for (var i = 0; i < toks.length; i++) if (t.indexOf(toks[i]) < 0) return false;
+    return true;
+  }
+  function wikiFetch(name) {
+    var c = wikiCache[name];
+    if (c && (Date.now() - (c.at || 0)) < WIKI_TTL) return Promise.resolve(c.ok ? c : null);
+    var search = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
+      encodeURIComponent(name + ' cricketer') + '&srlimit=1&format=json&origin=*';
+    return fetch(search, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+      var hit = (j && j.query && j.query.search && j.query.search[0]) || null;
+      if (!hit) throw new Error('no-hit');
+      if (!wikiNameMatches(hit.title, name)) throw new Error('name-mismatch');
+      return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(hit.title.replace(/ /g, '_')))
+        .then(function (r) { return r.json(); }).then(function (sm) {
+          var desc = String(sm.description || sm.extract || '');
+          if (!/cricketer|cricket/i.test(desc)) throw new Error('not-cricketer');
+          var img = (sm.thumbnail && sm.thumbnail.source) || '';
+          if (!img) throw new Error('no-image');
+          var file = decodeURIComponent((sm.originalimage && sm.originalimage.source) || img).split('/').pop().split('?')[0];
+          return wikiLicense(file).then(function (lic) {
+            var out = { ok: true, at: Date.now(), img: img, title: hit.title, credit: lic };
+            wikiCache[name] = out; wikiSave(); return out;
+          });
+        });
+    }).catch(function (e) {
+      wikiCache[name] = { ok: false, at: Date.now() }; wikiSave(); return null;
+    });
+  }
+  function wikiLicense(file) {
+    var u = 'https://commons.wikimedia.org/w/api.php?action=query&titles=' + encodeURIComponent('File:' + file) +
+      '&prop=imageinfo&iiprop=extmetadata&format=json&origin=*';
+    return fetch(u, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+      var pages = (j && j.query && j.query.pages) || {}, md = null;
+      for (var k in pages) { if (pages.hasOwnProperty(k)) { md = (pages[k].imageinfo && pages[k].imageinfo[0] && pages[k].imageinfo[0].extmetadata) || null; } }
+      if (!md) return 'ছবি: উইকিপিডিয়া';
+      var strip = function (v) { return String(v || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(); };
+      var artist = strip((md.Artist || {}).value).slice(0, 26);
+      var lic = strip((md.LicenseShortName || {}).value).slice(0, 18);
+      return ('ছবি: ' + (artist ? artist + ' · ' : '') + (lic ? lic : 'Wikimedia')).slice(0, 58);
+    }).catch(function () { return 'ছবি: উইকিপিডিয়া'; });
+  }
+  /* কার্ডে বসানো: ছবি + নিচে খুব ছোট ক্রেডিট (রানটাইমে, কার্ডের কোড না বদলিয়ে) */
+  function wikiPaint(img, res, pid) {
+    try {
+      if (!res || !res.ok) return false;
+      if (img.getAttribute('data-pid') !== pid) return false;
+      img.setAttribute('data-wiki', res.title || '');
+      img.src = res.img;
+      img.style.display = ''; img.style.visibility = 'visible';
+      var card = img.closest ? img.closest('.live-player-illustration') : null;
+      if (card && res.credit) {
+        var cr = card.querySelector('.ipf-credit');
+        if (!cr) { cr = document.createElement('div'); cr.className = 'ipf-credit'; card.appendChild(cr); }
+        cr.textContent = res.credit;
+        cr.style.cssText = 'position:absolute;right:4px;bottom:2px;z-index:4;font-size:6.5px;line-height:1;color:#e9f2ff;opacity:.62;pointer-events:none;text-shadow:0 1px 2px #000';
+      }
+      return true;
+    } catch (e) { return false; }
+  }
+  function ipfWikiFor(img, pid, name) {
+    if (!name || !img) return;
+    wikiPush(name, function (res) { try { wikiPaint(img, res, pid); } catch (e) {} });
+  }
+
   var ipfCache = (typeof Map === 'function') ? new Map() : null;
   function ipfRegionByName(name) {
     var n = String(name || '');
@@ -8755,6 +8879,14 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       if (img.getAttribute('src') !== uri) img.setAttribute('src', uri);
     } catch (e) {}
   }
+  function ipfNameOfCard(img){
+    try{
+      var card=img.closest?img.closest('.live-player-illustration'):null;
+      var sp=card&&card.querySelector('.live-player-name > span');
+      var t=sp?String(sp.textContent||'').trim():'';
+      return t;
+    }catch(e){ return ''; }
+  }
   function ipfBind(img, pid, teamKey) {
     try {
       var prev = img.getAttribute('data-pid');
@@ -8762,9 +8894,26 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       img.setAttribute('data-pid', pid);
       img.setAttribute('data-team', teamKey || '');
       var v = ipfVerdictOf(pid);
-      if (v === 1) ipfPaint(img, pid, teamKey);
+      if (v === 1) {
+        ipfPaint(img, pid, teamKey);
+        /* bncom19: বড় নাম হলে উইকিপিডিয়ার আসল ছবি — নাম প্লেটে লেখা হওয়ার পরেও একবার দেখি */
+        var cname = ipfNameOfCard(img);
+        if (cname) ipfWikiFor(img, pid, cname);
+        else setTimeout(function () {
+          try {
+            if (img.getAttribute('data-pid') !== pid) return;
+            var n2 = ipfNameOfCard(img);
+            if (n2) ipfWikiFor(img, pid, n2);
+          } catch (e) {}
+        }, 900);
+        return;
+      }
       else if (v === -1) ipfProbe(pid, function (res) {
-        if (res === 1 && img.getAttribute('data-pid') === pid) ipfPaint(img, pid, teamKey);
+        if (res === 1 && img.getAttribute('data-pid') === pid) {
+          ipfPaint(img, pid, teamKey);
+          var cn = ipfNameOfCard(img);
+          if (cn) ipfWikiFor(img, pid, cn);
+        }
       });
     } catch (e) {}
   }
@@ -8813,6 +8962,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     } catch (e) {}
   }
   window.__ipfWarm = ipfWarm;
+  window.__ipfWikiLookup=wikiFetch;   /* টেস্ট-হুক: নাম দিয়ে উইকি-ছবি যাচাই */
   window.__ipfMAD = IPF_MAD;
   window.__ipfMADOf = function (p) { return ipfMADs[p]; };
 })();
@@ -9210,7 +9360,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
             const wn=r.team?(teamBn(r.team)||r.team):'';
             window.__matchPhaseUi('finished',{winName:wn,margin:(r.n&&r.how)?(bn(r.n)+' '+r.how):'',status:statusBn(sv.B||'')});
           } else if(isInactive){
-            window.__matchPhaseUi('break',{title:(activeIndex===0?'প্রথম ইনিংস শেষ':'ইনিংস বিরতি'),sub:'মাঠে বিরতি চলছে • পরবর্তী ইনিংসের অপেক্ষায়'});
+            window.__matchPhaseUi('break', window.__cricketBreakInfo({B:sv.B, fo:sv.fo||polledMatch.fo, innings:activeIndex, overs:curInn.ovRaw, score:curInn.dispScore}));
           } else {
             window.__matchPhaseUi('play',{});
           }
