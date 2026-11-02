@@ -6983,6 +6983,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
             player.onended=()=>{clearTimeout(timer);if(neuralAudio===player)neuralAudio=null;player=null;URL.revokeObjectURL(url);if(neuralUrl===url)neuralUrl=null;url=null;next();};
             player.onerror=()=>finish(true);timer=setTimeout(()=>finish(true),60000);
             await player.play();
+            try{window.__gfxFlush&&window.__gfxFlush();}catch(e){}
           }catch(e){if(!done)finish(token===currentSpeechToken);}
         }
         next();
@@ -6995,7 +6996,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       function banner(msg){var d=document.getElementById('noVoiceBn');if(!d){d=document.createElement('div');d.id='noVoiceBn';d.style.cssText='position:fixed;top:8px;right:8px;z-index:99999;background:#7f1d1d;color:#fecaca;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;font-family:sans-serif;';document.body.appendChild(d);}d.textContent=msg;clearTimeout(d.__t);d.__t=setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},15000);}
       function findBn(){loadBnVoices();return availableBnVoices.find(v=>/^bn[-_]IN$/i.test(v.lang)&&/bashkar/i.test(v.name+' '+v.voiceURI))||availableBnVoices.find(v=>/pradeep/i.test(v.name+' '+v.voiceURI))||availableBnVoices.find(v=>/^bn[-_]IN$/i.test(v.lang))||availableBnVoices.find(v=>/^bn[-_]BD$/i.test(v.lang))||availableBnVoices[0]||null;}
       function chunksOf(t){const out=[];let cur='';const words=String(t).replace(/\s+/g,' ').trim().split(' ');for(let i=0;i<words.length;i++){let w=words[i];while(w.length>180){out.push(w.slice(0,180));w=w.slice(180);}if(!w)continue;if((cur?cur.length+1:0)+w.length>180){if(cur)out.push(cur);cur=w;}else{cur=cur?cur+' '+w:w;}}if(cur)out.push(cur);return out;}
-      function speakLocal(voice){return new Promise(function(resolve){let done=false,timer,started=false;const finish=function(ok){if(done)return;done=true;clearTimeout(timer);if(token===currentSpeechToken){speechFinish=null;if(mic)mic.classList.remove('talking');}resolve(ok);};speechFinish=function(){finish(true);};try{const u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang||'bn-IN';u.rate=.95;u.pitch=1;u.volume=1;u.onstart=function(){if(done)return;started=true;clearTimeout(timer);timer=setTimeout(function(){if(token===currentSpeechToken)engine.cancel();finish(true);},45000);};u.onend=function(){finish(started);};u.onerror=function(){finish(false);};timer=setTimeout(function(){if(token===currentSpeechToken)engine.cancel();finish(false);},8000);voiceStatus('\u09ac\u09be\u0982\u09b2\u09be \u0995\u09a3\u09cd\u09a0: '+voice.name);if(mic)mic.classList.add('talking');if(engine.paused)engine.resume();engine.speak(u);}catch(e){finish(false);}});}
+      function speakLocal(voice){return new Promise(function(resolve){let done=false,timer,started=false;const finish=function(ok){if(done)return;done=true;clearTimeout(timer);if(token===currentSpeechToken){speechFinish=null;if(mic)mic.classList.remove('talking');}resolve(ok);};speechFinish=function(){finish(true);};try{const u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang||'bn-IN';u.rate=.95;u.pitch=1;u.volume=1;u.onstart=function(){if(done)return;started=true;try{window.__gfxFlush&&window.__gfxFlush();}catch(e){}clearTimeout(timer);timer=setTimeout(function(){if(token===currentSpeechToken)engine.cancel();finish(true);},45000);};u.onend=function(){finish(started);};u.onerror=function(){finish(false);};timer=setTimeout(function(){if(token===currentSpeechToken)engine.cancel();finish(false);},8000);voiceStatus('\u09ac\u09be\u0982\u09b2\u09be \u0995\u09a3\u09cd\u09a0: '+voice.name);if(mic)mic.classList.add('talking');if(engine.paused)engine.resume();engine.speak(u);}catch(e){finish(false);}});}
       async function speakOnline(){const parts=chunksOf(text);if(!parts.length)return true;let okAny=false;voiceStatus('\u0985\u09a8\u09b2\u09be\u0987\u09a8 \u09ac\u09be\u0982\u09b2\u09be \u0995\u09a3\u09cd\u09a0 \u099a\u09b2\u099b\u09c7');if(mic)mic.classList.add('talking');for(let i=0;i<parts.length;i++){if(token!==currentSpeechToken)break;const played=await new Promise(function(res){const a=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q='+encodeURIComponent(parts[i]));let done=false,tm;const fin=function(v){if(done)return;done=true;clearTimeout(tm);try{a.pause();}catch(e){}res(v);};speechFinish=function(){fin(true);};a.onended=function(){fin(true);};a.onerror=function(){fin(false);};tm=setTimeout(function(){fin(false);},30000);a.play().catch(function(){fin(false);});});if(played){okAny=true;}else{break;}}
         if(token===currentSpeechToken){speechFinish=null;if(mic)mic.classList.remove('talking');}return okAny;}
       const g=await speakOnline();
@@ -7005,6 +7006,27 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       if(v&&engine){const ok=await speakLocal(v);if(ok||token!==currentSpeechToken)return;}
       if(token===currentSpeechToken){voiceStatus('\u09ac\u09be\u0982\u09b2\u09be \u0995\u09a3\u09cd\u09a0 \u099a\u09be\u09b2\u09c1 \u0995\u09b0\u09be \u09af\u09be\u09af\u09bc\u09a8\u09bf\u0964');banner('\uD83D\uDD07 \u09ac\u09be\u0982\u09b2\u09be \u0995\u09a3\u09cd\u09a0 \u099a\u09be\u09b2\u09c1 \u09b9\u09af\u09bc\u09a8\u09bf \u2014 \u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09a6\u09c7\u0996\u09c7 \u09aa\u09c7\u099c\u099f\u09bf \u09b0\u09bf\u09ab\u09cd\u09b0\u09c7\u09b6 \u0995\u09b0\u09c1\u09a8');}
     }
+    // ══ gfxfix1: স্কোর-গ্রাফিক আর কণ্ঠ একসাথে (TV-স্টাইল) ══
+    // গ্রাফিক্স পেইন্ট আটকে রাখা হয়; কণ্ঠ **শুরু হওয়ার মুহূর্তে** ছেড়ে দেওয়া হয়।
+    // কোনো কারণে কণ্ঠ না এলে lag+900ms পরে নিজে থেকেই ছেড়ে দেয় (আটকে থাকবে না)।
+    window.__gfxLag = (typeof window.__gfxLag === 'number') ? window.__gfxLag : 1200;
+    (function () {
+      if (window.__gfxHold) return;
+      var G = { pending: null, t: null, flushed: 0 };
+      window.__gfxHold = function (fn) {
+        if (typeof fn !== 'function') return;
+        if (G.pending) { try { G.pending(); } catch (e) {} }   // আগেরটা বাতিল নয় — সাথে সাথে আঁকা
+        G.pending = fn; clearTimeout(G.t);
+        G.t = setTimeout(function () { window.__gfxFlush(); }, window.__gfxLag + 900);
+      };
+      window.__gfxFlush = function () {
+        clearTimeout(G.t);
+        var f = G.pending; G.pending = null;
+        if (f) { try { f(); G.flushed++; } catch (e) {} }
+      };
+      window.__gfxInfo = function () { return { lag: window.__gfxLag, waiting: !!G.pending, flushed: G.flushed }; };
+    })();
+
     function speakBangla(text, forcePlay = false) {
       if ((!soundOn || hostMicActive) && !forcePlay) return Promise.resolve();
       const cleanSpeech = cleanForSpeech(text);
@@ -7032,6 +7054,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           try{
             const u=new SpeechSynthesisUtterance(cleanSpeech);u.lang=chosen?(chosen.lang||'bn-IN'):'bn-IN';if(chosen)u.voice=chosen;
             u.rate=0.95;u.pitch=1;u.volume=1;u.onend=finish;
+            u.onstart=function(){try{window.__gfxFlush&&window.__gfxFlush();}catch(e){}};
             u.onerror=()=>{if(token===currentSpeechToken)voiceStatus('ফোনের বাংলা কণ্ঠ চালানো যায়নি। ফোনের Text-to-speech সেটিংসে বাংলা ভয়েস চালু করুন।');finish();};
             timer=setTimeout(()=>{if(token===currentSpeechToken){window.speechSynthesis.cancel();voiceStatus('কণ্ঠ থেমে গেছে। ফোনের টেক্সট-টু-স্পিচ সেটিংস পরীক্ষা করুন।');}finish();},45000);
             window.speechSynthesis.speak(u);
@@ -7885,6 +7908,10 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       if(p)p.replaceChildren();if(m)m.replaceChildren();
     }
     function updateCricketVisuals(info) {
+      if (typeof window.__gfxHold === 'function') return window.__gfxHold(function () { try { __ucvImpl(info); } catch (e) {} });
+      return __ucvImpl(info);
+    }
+    function __ucvImpl(info) {
       const host=document.getElementById('playerOverlay');if(!host)return;
       if(!info.safe){host.replaceChildren();return;}
       const format=cricketKitVariant(info.format), players=[
@@ -7941,6 +7968,10 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       return {rate,need,lead,trail};
     }
     function updateCricketMetrics(data) {
+      if (typeof window.__gfxHold === 'function') return window.__gfxHold(function () { try { __ucmImpl(data); } catch (e) {} });
+      return __ucmImpl(data);
+    }
+    function __ucmImpl(data) {
       const host=document.getElementById('cricketMetrics');if(!host)return;
       const x=computeCricketMetrics(data);host.replaceChildren();
       if(!x.rate)return;
