@@ -8053,13 +8053,13 @@ setInterval(function(){
   try{
     if(!selectedMatch||selectedMatch.sport!=='cricket')return;
     if(document.hidden)return;
-    if(Date.now()-(window.__lastPollAt||0)>4000){
+    if(Date.now()-(window.__lastPollAt||0)>3000){
       try{clearTimeout(pollTimer);}catch(_e){}
       try{pollCrexCricket();}catch(_e){}
       window.__pollRestarts=(window.__pollRestarts||0)+1;
     }
   }catch(_e){}
-},1500);
+},1000);
     const __xsCard={'c':'ক্যাচ আউট!','b':'বোল্ড!','lbw':'এলবিডব্লিউ!','st':'স্টাম্পড!','run out':'রান আউট!','runout':'রান আউট!','hit wicket':'হিট উইকেট!'};
     async function __xsCheck(innIdx,batEngName){try{
       const X=window.__xs;const now=Date.now();
@@ -8326,6 +8326,269 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     /* bncom13b: (১) প্রতিবার নতুন <img> নয় — একই DOM ঘর বারবার ব্যবহার, তাই ছবি সাথে সাথে;
        (২) বোলার-কার্ডে মাথার ছবি বসে না (CREX-এর কিছু key-তে হেলমেট-প্লেসহোল্ডার আসে, বোলারের মাথায় হেলমেট ভুল)। */
     const ucvSlots=[];
+/* ============ bncom14c: ছবি নেই এমন প্লেয়ারের ইলাস্ট্রেটেড মুখ (জাতিসত্তা-ভিত্তিক) ============ */
+/* নিয়ম: শুধু তখনই বসে যখন CREX-এর players/org/<id>.png হয় ৪০৪, নয়তো হেলমেট-প্লেসহোল্ডার।
+   আসল ছবি থাকলে কিছুই বদলায় না। মুখটা প্লেয়ার-আইডির হ্যাশ দিয়ে তৈরি ⇒ একই প্লেয়ারের মুখ সবসময় একই। */
+(function () {
+  'use strict';
+
+  /* --- জাতি/অঞ্চল ভাগ: টিমের ইংরেজি নাম দেখে --- */
+  var IPF_REGIONS = [
+    ['afro', /west\s*ind(ies)?|windies|caribbe|jamaica|trinidad|tobago|guyana|barbad|leeward|windward|antigua|grenada|dominica|st\.?\s*(lucia|kitts|vincent)|saint\s*(lucia|kitts|vincent)|kenya|uganda|nigeria|ghana|zimbabwe|namibia|cameroon|bermuda|cayman|bahamas|sierra|liberia|somali|ethiop|sudan|senegal|mali|tanzania|malawi|botswana|rwanda|angola|mozambiq|zambia|togo|benin|guinea|gambia|congo|ivory|trinbago|antigua|suriname|haiti|anguilla|montserrat|nevis|turks/i],
+    ['desi', /india|pakistan|bangladesh|sri\s*lanka|lanka|nepal|bhutan|maldives|afghan/i],
+    ['gulf', /emirat|u\.?a\.?e|ajman|sharjah|dubai|abu\s*dhabi|qatar|kuwait|bahrain|saudi|oman|iraq|iran|jordan|lebanon|syria|yemen|palestin|egypt|libya|tunisia|algeria|morocc/i],
+    ['east', /china|japan|korea|thailand|malaysia|singapore|indonesia|philippin|vietnam|hong\s*kong|taiwan|myanmar|burma|cambodia|laos|mongol|brunei/i],
+    ['latin', /brazil|argentin|peru|mexico|chile|colombia|venezuela|panama|costa\s*rica|uruguay|ecuador|bolivia|paraguay|guatemala|honduras|nicaragua|salvador|cuba|dominican|puerto\s*rico/i],
+    ['euro', /england|english|australia|new\s*zealand|ireland|scotland|wales|netherland|holland|german|italy|italia|jersey|guernsey|denmark|norway|sweden|usa|united\s*states|canada|portugal|spain|france|austria|belgium|switzer|greece|poland|romania|hungar|malta|cyprus|israel|russia|ukraine|czech|slovak|finland|iceland|luxembourg|bulgaria|serbia|croatia|slovenia|estonia|latvia|lithuania|albania|macedonia|moldova|georgia|armenia|belarus|kazakh/i]
+  ];
+
+  /* --- চামড়ার রঙের প্যালেট (প্রতি অঞ্চলে কয়েকটা টোন) --- */
+  var IPF_SKIN = {
+    afro: ['#4a3020', '#573a26', '#63432c', '#6f4c33', '#7c5639', '#3f291c'],
+    desi: ['#8a5a33', '#96643a', '#a3703f', '#b07c48', '#7c5029', '#bd8a55'],
+    gulf: ['#9a6b41', '#a8784a', '#b0804f', '#8d6039', '#bb8b5b'],
+    east: ['#d6ab7d', '#dfb98c', '#e8c79b', '#cba073', '#f0d3ad'],
+    latin: ['#8f5f38', '#a06c41', '#b07c4c', '#7d5130', '#c08c5c'],
+    euro: ['#c99a72', '#d8ab84', '#e3bb95', '#eecba7', '#bf8f68', '#f2d5b4'],
+    mixed: ['#7d5738', '#8f6440', '#a1794c', '#b58a5c', '#5c3f28', '#c9a077', '#d8ab84', '#6b4a2e']
+  };
+  var IPF_HAIR = ['#12100e', '#1c1613', '#241a12', '#2e2117', '#3a2a1c', '#493322', '#5d4330', '#2a201a'];
+  var IPF_HAIR_LIGHT = ['#8a6a45', '#a8865c', '#6a4f34'];
+
+  function ipfHash(s) {
+    var h = 0x811c9dc5, i;
+    s = String(s || '');
+    for (i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0; }
+    return h >>> 0;
+  }
+  function ipfRng(seed) {
+    var a = seed >>> 0;
+    return function () {
+      a += 0x6D2B79F5; var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function ipfMix(hex, f) { /* f<1 ⇒ গাঢ়, f>1 ⇒ হালকা */
+    var n = parseInt(hex.slice(1), 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
+    function c(v) { v = Math.round(f < 1 ? v * f : v + (255 - v) * (f - 1)); return Math.max(0, Math.min(255, v)); }
+    return '#' + [c(r), c(g), c(b)].map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join('');
+  }
+
+  /* --- মুখ আঁকা --- */
+  function ipfSvg(pid, region) {
+    var r = ipfRng(ipfHash('ipf·' + pid));
+    var pal = IPF_SKIN[region] || IPF_SKIN.mixed;
+    var skin = pal[Math.floor(r() * pal.length)];
+    var skinDark = ipfMix(skin, 0.82), skinShade = ipfMix(skin, 0.7), skinLight = ipfMix(skin, 1.12);
+    var dark = region === 'afro' || region === 'desi';
+    var hairPal = (region === 'euro' && r() < 0.35) ? IPF_HAIR_LIGHT : IPF_HAIR;
+    var hair = hairPal[Math.floor(r() * hairPal.length)];
+    var style = ['short', 'buzz', 'curly', 'part', 'bald', 'long'][Math.floor(r() * 6)];
+    if (dark && style === 'long') style = 'curly';
+    var beard = ['none', 'none', 'stubble', 'full', 'goatee', 'moustache'][Math.floor(r() * 6)];
+    if (region === 'euro' && beard === 'full' && r() < 0.4) beard = 'stubble';
+    var eyeC = ['#2b1d14', '#1b1310', '#3a2a1c', '#141c22'][Math.floor(r() * 4)];
+    var faceW = 0.94 + r() * 0.12, jawW = 0.9 + r() * 0.2;
+    var uid = 'f' + ipfHash(pid).toString(36);
+
+    var browY = 46.5, eyeY = 56.5, mouthY = 87;
+    var s = [];
+    s.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150" width="120" height="150">');
+    s.push('<defs><linearGradient id="' + uid + 's" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + skinLight + '"/><stop offset=".62" stop-color="' + skin + '"/><stop offset="1" stop-color="' + skinDark + '"/></linearGradient>');
+    s.push('<clipPath id="' + uid + 'c"><path d="M60,15 C86,15 100,35 100,61 C100,77 96,89 89,97 C81,105 71,110 60,110 C49,110 39,105 31,97 C24,89 20,77 20,61 C20,35 34,15 60,15 Z"/></clipPath></defs>');
+    /* গলা + কলার */
+    s.push('<path d="M40,94 h40 v22 c0,11 -8,20 -20,24 c-12,-4 -20,-13 -20,-24 Z" fill="' + skinDark + '"/>');
+    s.push('<path d="M40,94 h40 v13 c-11,7 -29,7 -40,0 Z" fill="' + skinShade + '" opacity=".45"/>');
+    s.push('<path d="M33,131 C44,141 76,141 87,131 L100,150 H20 Z" fill="#16202c"/>');
+    s.push('<path d="M60,133 l7,8 -7,9 -7,-9 Z" fill="#22303f"/>');
+    /* কান */
+    s.push('<ellipse cx="21" cy="63" rx="5.8" ry="9.4" fill="' + skin + '"/><ellipse cx="21" cy="63" rx="2.9" ry="5.2" fill="' + skinShade + '" opacity=".7"/>');
+    s.push('<ellipse cx="99" cy="63" rx="5.8" ry="9.4" fill="' + skinDark + '"/><ellipse cx="99" cy="63" rx="2.9" ry="5.2" fill="' + skinShade + '" opacity=".55"/>');
+    /* মুখ */
+    s.push('<path d="M60,15 C86,15 100,35 100,61 C100,77 96,89 89,97 C81,105 71,110 60,110 C49,110 39,105 31,97 C24,89 20,77 20,61 C20,35 34,15 60,15 Z" fill="url(#' + uid + 's)"/>');
+    s.push('<g clip-path="url(#' + uid + 'c)"><ellipse cx="60" cy="72" rx="36" ry="28" fill="' + skinShade + '" opacity=".14"/><ellipse cx="38" cy="70" rx="9" ry="14" fill="' + skinLight + '" opacity=".18"/></g>');
+    /* চুল */
+    var hairShapes = {
+      short: '<path d="M20,62 C20,31 36,13 60,13 C84,13 100,31 100,62 C97,46 87,40 81,41 C77,33 70,31 60,31 C50,31 43,33 39,41 C33,40 23,46 20,62 Z" fill="' + hair + '"/><path d="M21,45 C23,58 22,65 23,71 L28.5,71 C27.5,62 27.5,52 28.5,46 Z" fill="' + hair + '"/><path d="M99,45 C97,58 98,65 97,71 L91.5,71 C92.5,62 92.5,52 91.5,46 Z" fill="' + hair + '"/>',
+      buzz: '<path d="M21,60 C21,32 37,15 60,15 C83,15 99,32 99,60 C96,47 83,42 60,42 C37,42 24,47 21,60 Z" fill="' + hair + '" opacity=".95"/><path d="M22,47 C23,57 23,63 24,68 L27,68 C26,60 26,53 27,48 Z" fill="' + hair + '" opacity=".7"/><path d="M98,47 C97,57 97,63 96,68 L93,68 C94,60 94,53 93,48 Z" fill="' + hair + '" opacity=".7"/>',
+      curly: '<g fill="' + hair + '"><circle cx="60" cy="27" r="13.5"/><circle cx="42" cy="31" r="12"/><circle cx="78" cy="31" r="12"/><circle cx="31" cy="42" r="10.5"/><circle cx="89" cy="42" r="10.5"/><circle cx="26" cy="54" r="9"/><circle cx="94" cy="54" r="9"/><path d="M21,58 C21,31 37,15 60,15 C83,15 99,31 99,58 C96,45 82,39 60,39 C38,39 24,45 21,58 Z"/></g>',
+      part: '<path d="M20,60 C20,31 36,13 60,13 C84,13 100,31 100,60 C98,44 88,38 72,38 C55,38 34,44 20,60 Z" fill="' + hair + '"/><path d="M21,46 C23,58 22,65 23,70 L28,70 C27,60 27,52 28,47 Z" fill="' + hair + '"/><path d="M99,46 C97,58 98,65 97,70 L92,70 C93,60 93,52 92,47 Z" fill="' + hair + '"/><path d="M64,17 C79,22 90,32 94,46 C88,33 77,25 62,22 Z" fill="' + skinLight + '" opacity=".1"/>',
+      bald: '<path d="M20,62 C20,40 30,26 42,21 C33,30 28,46 27,62 Z" fill="' + hair + '" opacity=".55"/><path d="M100,62 C100,40 90,26 78,21 C87,30 92,46 93,62 Z" fill="' + hair + '" opacity=".55"/><path d="M22,54 C24,38 32,26 44,20 C36,30 31,44 30,56 Z" fill="' + hair + '" opacity=".35"/>',
+      long: '<path d="M17,62 C17,31 35,12 60,12 C85,12 103,31 103,62 L103,88 C99,76 97,62 95,49 C91,36 78,32 60,32 C42,32 29,36 25,49 C23,62 21,76 17,88 Z" fill="' + hair + '"/>'
+    };
+    s.push(hairShapes[style] || hairShapes.short);
+    /* দাড়ি (ঠোঁটের আগে) */
+    if (beard === 'full') {
+      s.push('<path d="M26,60 C26,86 40,106 60,106 C80,106 94,86 94,60 C94,74 88,78 82,81 C76,77 68,75 60,75 C52,75 44,77 38,81 C32,78 26,74 26,60 Z" fill="' + hair + '"/>');
+      s.push('<path d="M38,81 C45,76 52,74 60,74 C68,74 75,76 82,81 C78,90 70,97 60,99 C50,97 42,90 38,81 Z" fill="' + ipfMix(hair, 1.18) + '" opacity=".35"/>');
+    } else if (beard === 'stubble') {
+      s.push('<g clip-path="url(#' + uid + 'c)"><ellipse cx="60" cy="90" rx="31" ry="23" fill="' + hair + '" opacity=".17"/></g>');
+    } else if (beard === 'goatee') {
+      s.push('<path d="M53,90 C56,87.5 64,87.5 67,90 C68,97 65,103 60,104 C55,103 52,97 53,90 Z" fill="' + hair + '" opacity=".95"/>');
+    }
+    /* ভুরু */
+    s.push('<rect x="40.5" y="' + (browY - 1.7) + '" width="13.5" height="3.8" rx="1.9" fill="' + hair + '" transform="rotate(-5 47 47)"/>');
+    s.push('<rect x="66.5" y="' + (browY - 1.7) + '" width="13.5" height="3.8" rx="1.9" fill="' + hair + '" transform="rotate(5 73 47)"/>');
+    /* চোখ */
+    s.push('<g><ellipse cx="47" cy="' + eyeY + '" rx="6.3" ry="4.6" fill="#fbfaf7"/><circle cx="47.3" cy="' + (eyeY + 0.5) + '" r="3" fill="' + eyeC + '"/><circle cx="47.3" cy="' + (eyeY + 0.5) + '" r="1.4" fill="#0b0906"/><circle cx="48.5" cy="' + (eyeY - 1.5) + '" r="1.05" fill="#fff" opacity=".9"/></g>');
+    s.push('<g><ellipse cx="73" cy="' + eyeY + '" rx="6.3" ry="4.6" fill="#fbfaf7"/><circle cx="72.7" cy="' + (eyeY + 0.5) + '" r="3" fill="' + eyeC + '"/><circle cx="72.7" cy="' + (eyeY + 0.5) + '" r="1.4" fill="#0b0906"/><circle cx="73.9" cy="' + (eyeY - 1.5) + '" r="1.05" fill="#fff" opacity=".9"/></g>');
+    s.push('<path d="M40.5,' + (eyeY - 5.4) + ' C44,54 50,54 53.5,' + (eyeY - 5.2) + '" stroke="' + skinShade + '" stroke-width="1.5" fill="none" opacity=".75"/>');
+    s.push('<path d="M66.5,' + (eyeY - 5.2) + ' C70,54 76,54 79.5,' + (eyeY - 5.4) + '" stroke="' + skinShade + '" stroke-width="1.5" fill="none" opacity=".75"/>');
+    /* নাক */
+    s.push('<path d="M60,59 C59.5,67 58.6,72 55.4,74.6 C57.6,76.4 62.4,76.4 64.6,74.6 C61.4,72 60.5,67 60,59 Z" fill="' + skinDark + '" opacity=".5"/>');
+    s.push('<path d="M55.2,74.9 C57.4,76.6 62.6,76.6 64.8,74.9" stroke="' + skinShade + '" stroke-width="1.05" fill="none" opacity=".75"/>');
+    /* গোঁফ + ঠোঁট */
+    if (beard === 'full' || beard === 'goatee' || beard === 'moustache') {
+      s.push('<path d="M53,82.6 C56.6,81 63.4,81 67,82.6 C64.6,85.4 55.4,85.4 53,82.6 Z" fill="' + hair + '"/>');
+    }
+    s.push('<path d="M52.5,' + mouthY + ' C56.3,' + (mouthY + 2) + ' 63.7,' + (mouthY + 2) + ' 67.5,' + mouthY + '" stroke="#8b4a3d" stroke-width="2.4" stroke-linecap="round" fill="none"/>');
+    s.push('<path d="M54,' + (mouthY + 3.2) + ' C57.6,' + (mouthY + 5.2) + ' 62.4,' + (mouthY + 5.2) + ' 66,' + (mouthY + 3.2) + '" stroke="' + skinShade + '" stroke-width="1.3" fill="none" opacity=".4"/>');
+    /* দাড়ির নিচের ছায়া */
+    s.push('<path d="M31,95 C36,106 47,111 60,111 C73,111 84,106 89,95" stroke="' + skinShade + '" stroke-width="2.2" fill="none" opacity=".22"/>');
+    s.push('</svg>');
+    return s.join('');
+  }
+
+  var ipfCache = (typeof Map === 'function') ? new Map() : null;
+  function ipfRegionByName(name) {
+    var n = String(name || '');
+    if (!n) return 'mixed';
+    for (var i = 0; i < IPF_REGIONS.length; i++) { if (IPF_REGIONS[i][1].test(n)) return IPF_REGIONS[i][0]; }
+    return 'mixed';
+  }
+  function ipfRegionOf(teamKey) {
+    var name = '';
+    try { name = (window.__crexTeamName && window.__crexTeamName(teamKey)) || ''; } catch (e) {}
+    if (!name) name = String(teamKey || '');
+    return ipfRegionByName(name);
+  }
+  function ipfFaceUri(pid, teamKey) {
+    var region = ipfRegionOf(teamKey);
+    var key = pid + '|' + region;
+    if (ipfCache && ipfCache.has(key)) return ipfCache.get(key);
+    var uri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ipfSvg(pid, region));
+    if (ipfCache) ipfCache.set(key, uri);
+    return uri;
+  }
+
+  /* --- "ছবি নেই" শনাক্তকরণ --- */
+  var IPF_REF = 'AAAAAAAAAAAAAAAAAAAADQwPNT9HMEBNMkJPMUFOKTM5FhYWAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQcJKjlCMkJPMUFOMUFOMUFOMkJPLzxFBQUFAAAAAAAAAAAAAAAAAAAAAAAAAAAAGSAkMUFOMEBNLz9MLz9MMEBNMkJPMkJPDRISAAAAAAAAAAAAAAAAAAAAAAAABgYGIy82MEBNLz9MLz9MLz9MLz9MMUFOMkJPIykuAgICAAAAAAAAAAAAAAAAAAAABgYGKjQ8Lz9MLz9MLz9MLz9MLz9MLz9MMkJPMjpACQkJAAAAAAAAAAAAAAAAAAAAAwMDMDpCPT09TUxPPkNMOUNLTE5SQj9CNTAyLjY6DAwMAAAAAAAAAAAAAAAAAAAAAwMDLz5Gf1dCtoBhsX1fqnhbtX9hs31dclE+LTlFBQUFAAAAAAAAAAAAAAAAAAAAAwMDNEBMZ0w8h2ROdVpKi2hSel1MimdQU0E1KjVBAAAAAAAAAAAAAAAAAAAAAAAAAAAAKTE4alFDmG5WeVxLonRZfF9Nm29VT0M8IisvAAAAAAAAAAAAAAAAAAAAAAAAAAAABgYGTD84p3hafWBMpHdbfV5LpnZZPzQxBgYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFxQVdVhGfl9MtIBffV5NdVhGExEPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGRYXlGBCkWdPiWZPlGpUkWBBAgICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJBsXm2JDrHZWtH5eq3VVmWNDLCYkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKxoUmmRFrHZWtH5eq3VVmWNDMCMcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVD0ymWNDrHZWtH5eq3VVmWNDNyUXAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALSUelWFFrHZWtH5eq3VVk2FCJR0WAAAAAAAAAAAAAAAA';
+  /* উপরে যাচাই করা ২১টি আইডি — CREX-এ এদের ছবি নেই (wsrv 16×16 MAD ≤ ৫.১) */
+  var IPF_PH = ('72T 7R7 8KL AA5 AAD AFE AQV CDD D7P FUH LZ8 MWK QCG QCH QCJ QJA QJB QK2 QLJ IBS J6G').split(' ');
+  var IPF_MAD = 10;              /* MAD < ১০ ⇒ প্লেসহোল্ডার; আসল মুখের সর্বনিম্ন মাপা মান ১৬.৮ */
+  var ipfVerdict = {};
+  var ipfStoreKey = 'ipfV1';
+
+  function ipfLoadVerdicts() {
+    try {
+      var raw = localStorage.getItem(ipfStoreKey), obj = raw ? JSON.parse(raw) : {};
+      for (var k in obj) if (obj.hasOwnProperty(k)) ipfVerdict[k] = obj[k] | 0;
+    } catch (e) {}
+    IPF_PH.forEach(function (id) { ipfVerdict[id] = 1; });
+  }
+  function ipfSaveVerdicts() {
+    try { localStorage.setItem(ipfStoreKey, JSON.stringify(ipfVerdict)); } catch (e) {}
+  }
+  function ipfVerdictOf(pid) { return Object.prototype.hasOwnProperty.call(ipfVerdict, pid) ? ipfVerdict[pid] : -1; }
+
+  var ipfRefPx = null;
+  function ipfRef() {
+    if (ipfRefPx) return ipfRefPx;
+    try {
+      var bin = atob(IPF_REF), n = bin.length, px = new Uint8Array(n);
+      for (var i = 0; i < n; i++) px[i] = bin.charCodeAt(i);
+      ipfRefPx = px;
+    } catch (e) { ipfRefPx = null; }
+    return ipfRefPx;
+  }
+  var ipfProbing = {}, ipfMADs = {};
+  function ipfProbe(pid, done) {
+    if (ipfProbing[pid]) return;
+    var ref = ipfRef();
+    if (!ref) return;
+    ipfProbing[pid] = 1;
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    var url = 'https://wsrv.nl/?url=' + encodeURIComponent('cricketvectors.akamaized.net/players/org/' + pid + '.png') + '&w=16&h=16&output=png&fit=cover';
+    img.onload = function () {
+      var v = -1;
+      try {
+        var c = document.createElement('canvas'); c.width = 16; c.height = 16;
+        var g = c.getContext('2d', { willReadFrequently: true });
+        g.drawImage(img, 0, 0, 16, 16);
+        var d = g.getImageData(0, 0, 16, 16).data, sum = 0;
+        for (var i = 0, j = 0; i < 768; i += 3, j += 4) {
+          sum += Math.abs(d[j] - ref[i]) + Math.abs(d[j + 1] - ref[i + 1]) + Math.abs(d[j + 2] - ref[i + 2]);
+        }
+        ipfMADs[pid] = sum / 768;
+        v = (sum / 768) < IPF_MAD ? 1 : 0;
+      } catch (e) { v = -1; }
+      delete ipfProbing[pid];
+      if (v >= 0) { ipfVerdict[pid] = v; ipfSaveVerdicts(); }
+      try { done && done(v); } catch (e) {}
+    };
+    img.onerror = function () { delete ipfProbing[pid]; ipfVerdict[pid] = 1; ipfSaveVerdicts(); try { done && done(1); } catch (e) {} };
+    img.src = url;
+  }
+
+  /* --- ছবির উপরে বসানো --- */
+  function ipfPaint(img, pid, teamKey) {
+    try {
+      img.setAttribute('data-ipf', pid);
+      img.style.display = '';
+      img.style.visibility = 'visible';
+      var uri = ipfFaceUri(pid, teamKey);
+      if (img.getAttribute('src') !== uri) img.setAttribute('src', uri);
+    } catch (e) {}
+  }
+  function ipfBind(img, pid, teamKey) {
+    try {
+      var prev = img.getAttribute('data-pid');
+      if (prev && prev !== pid) img.removeAttribute('data-ipf');
+      img.setAttribute('data-pid', pid);
+      img.setAttribute('data-team', teamKey || '');
+      var v = ipfVerdictOf(pid);
+      if (v === 1) ipfPaint(img, pid, teamKey);
+      else if (v === -1) ipfProbe(pid, function (res) {
+        if (res === 1 && img.getAttribute('data-pid') === pid) ipfPaint(img, pid, teamKey);
+      });
+    } catch (e) {}
+  }
+  /* ছবি লোড ব্যর্থ (৪০৪/নেট) — দুইবার ব্যর্থ হলে ইলাস্ট্রেটেড মুখ */
+  function ipfOnError(img) {
+    try {
+      var pid = img.getAttribute('data-pid');
+      if (!pid) return false;
+      var n = (parseInt(img.getAttribute('data-err'), 10) || 0) + 1;
+      img.setAttribute('data-err', String(n));
+      var uri = ipfFaceUri(pid, img.getAttribute('data-team'));
+      var cur = img.getAttribute('src') || '';
+      if (cur.indexOf('data:image/svg+xml') === 0) return true;   /* ইতিমধ্যেই মুখ */
+      if (n >= 2) {
+        ipfVerdict[pid] = 1; ipfSaveVerdicts();
+        img.setAttribute('data-ipf', pid);
+        img.style.display = ''; img.style.visibility = 'visible';
+        img.setAttribute('src', uri);
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  ipfLoadVerdicts();
+  window.__ipfSvg = ipfSvg;
+  window.__ipfFaceUri = ipfFaceUri;
+  window.__ipfRegionOf = ipfRegionOf;
+  window.__ipfRegionByName = ipfRegionByName;
+  window.__ipfBind = ipfBind;
+  window.__ipfOnError = ipfOnError;
+  window.__ipfVerdictOf = ipfVerdictOf;
+  window.__ipfProbe = ipfProbe;
+  window.__ipfMAD = IPF_MAD;
+  window.__ipfMADOf = function (p) { return ipfMADs[p]; };
+})();
     function __ucvImpl(info) {
       const host=document.getElementById('playerOverlay');if(!host)return;
       if(!info.safe){ucvSlots.length=0;try{host.replaceChildren();}catch(e){}try{host.removeAttribute('data-ucv-sig');}catch(e){}return;}
@@ -8365,6 +8628,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const headUrl=`https://cricketvectors.akamaized.net/players/org/${encodeURIComponent(id)}.png`;
         if(slot.head.getAttribute('data-u')!==headUrl){slot.head.setAttribute('data-u',headUrl);slot.head.src=headUrl;try{slot.head.style.visibility='visible';}catch(e){}}
         slot.head.style.display=''; slot.av.style.display='none'; slot.ball.style.display='none';
+        try{ window.__ipfBind && window.__ipfBind(slot.head, id, tk); }catch(_e){}
         if(slot.txt.textContent!==name)slot.txt.textContent=name;
         if(slot.role.textContent!==label)slot.role.textContent=label;
       }
@@ -8378,6 +8642,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     const playerImageHost=document.getElementById('playerOverlay');
     playerImageHost.addEventListener('error',ev=>{
       const img=ev.target;if(!img || img.tagName!=='IMG')return;
+      try{ if(window.__ipfOnError && window.__ipfOnError(img))return; }catch(_e){}
       img.style.visibility='hidden';if(playerImageRetries.has(img))return;
       const timer=setTimeout(()=>{
         playerImageRetries.delete(img);if(!img.isConnected || !playerImageHost.contains(img))return;
@@ -8457,7 +8722,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       if (!selectedMatch || selectedMatch.sport !== 'cricket') return;
       const polledMatch=selectedMatch;
       try {
-        const res = await fetchT(`https://api.goscorer.com/api/v3/getSV3?key=${polledMatch.mf}`, {}, 1500);
+        const res = await fetchT(`https://api.goscorer.com/api/v3/getSV3?key=${polledMatch.mf}`, {}, 1200);
         if(!res.ok) throw new Error('CREX HTTP');
         const sv = await res.json();
         if(selectedMatch!==polledMatch)return;
@@ -8468,7 +8733,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const hasPlay=crexHasPlay(sv);
         let identity=null;
         if(!hasPlay && (polledMatch.confirmedPlay || ['finished','stumps'].includes(polledMatch.state))) {
-          showEntityValidationPending(polledMatch);pollTimer=setTimeout(pollCrexCricket,1200);return;
+          showEntityValidationPending(polledMatch);pollTimer=setTimeout(pollCrexCricket,1000);return;
         }
         if(hasPlay) {
           let roster=null;
@@ -8486,7 +8751,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
             if(polledMatch.__idFail>=3) identity=validateCricketScoreOnly(sv,[polledMatch.t1f,polledMatch.t2f]);
             if(!identity){
               showEntityValidationPending(polledMatch);
-              pollTimer=setTimeout(pollCrexCricket,1200);return;
+              pollTimer=setTimeout(pollCrexCricket,1000);return;
             }
           } else { polledMatch.__idFail=0; }
           /* bncom13e: দলের পুরো স্কোয়াডের নাম এক ডাকে আগেই — নতুন ব্যাটার এলে কার্ড সাথে সাথে */
@@ -8531,7 +8796,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const previousHud=captureBroadcastHud();
 
         if(hasPlay && (!crexTeamCache[batFk] || !crexTeamCache[bowlFk])) {
-          showEntityValidationPending(polledMatch);pollTimer=setTimeout(pollCrexCricket,1200);return;
+          showEntityValidationPending(polledMatch);pollTimer=setTimeout(pollCrexCricket,1000);return;
         }
         const batObj = crexTeamCache[batFk] || { n: selectedMatch.t1 || 'Team 1', sn: batFk || 'T1', uc: '' };
         const bowlObj = crexTeamCache[bowlFk] || { n: selectedMatch.t2 || 'Team 2', sn: bowlFk || 'T2', uc: '' };
@@ -8558,7 +8823,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
               `${safeHome} বনাম ${safeAway} ম্যাচের অপেক্ষায় আছি আমরা। ${count.spoken} আপনাদের মতে কোন দল ভালো করবে? কমেন্টে জানাতে পারেন।`;
             document.getElementById('commText').textContent=line; await speakBangla(line); isSpeakingNow=false;
           }
-          if (selectedMatch && selectedMatch.sport==='cricket') pollTimer=setTimeout(pollCrexCricket,liveFailures ? 800 : 2000);
+          if (selectedMatch && selectedMatch.sport==='cricket') pollTimer=setTimeout(pollCrexCricket,liveFailures ? 500 : 1500);
           return;
         }
         if (hasPlay) {
@@ -8566,7 +8831,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           if (selectedMatch.state === 'upcoming') selectedMatch.state='live';
         } else if (!sv.j && !sv.k) {
           document.getElementById('commText').textContent='স্কোর তথ্যের অপেক্ষায় আছি।';
-          if (selectedMatch && selectedMatch.sport==='cricket') pollTimer=setTimeout(pollCrexCricket,liveFailures ? 800 : 2000);
+          if (selectedMatch && selectedMatch.sport==='cricket') pollTimer=setTimeout(pollCrexCricket,liveFailures ? 500 : 1500);
           return;
         }
         document.getElementById('uiOvers').parentElement.style.display='';
@@ -8763,7 +9028,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           }
         }
       } catch (e) { isSpeakingNow = false; liveFeedFailed('cricket'); }
-      if (selectedMatch && selectedMatch.sport === 'cricket') pollTimer = setTimeout(pollCrexCricket, liveFailures ? 800 : 2000);
+      if (selectedMatch && selectedMatch.sport === 'cricket') pollTimer = setTimeout(pollCrexCricket, liveFailures ? 500 : 1500);
     }
 
     function validateSoccerTeams(comps, match) {
