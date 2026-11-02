@@ -6151,7 +6151,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     window.__brkShow=function(mode){try{
       if(window.__brkActive===mode)return;
       window.__brkActive=mode;
-      try{ if(mode==='cricket'&&window.__brkMusicStart)window.__brkMusicStart(); }catch(_ebm){}   /* bncom23: বিরতির হট মিউজিক */
+      try{ if((mode==='cricket'||mode==='soccer')&&window.__brkMusicStart)window.__brkMusicStart(); }catch(_ebm){}   /* bncom25: ফুটবল বিরতিতেও */
       var root=document.getElementById('studioRoot')||document.body;
       var el=document.getElementById('brkStage');
       if(!el){el=document.createElement('div');el.id='brkStage';
@@ -6164,7 +6164,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           _bc.style.cssText='position:absolute;right:8px;bottom:6px;font:600 7px inherit;color:#cbd5e1;opacity:.62;z-index:59;pointer-events:none;';
           _bc.textContent='\u266a Rock Hybrid \u2014 Kevin MacLeod (CC BY 3.0)';
           el.appendChild(_bc); }
-        if(_bc)_bc.style.display=(mode==='cricket'?'block':'none');
+        if(_bc)_bc.style.display=((mode==='cricket'||mode==='soccer')?'block':'none');   /* bncom25 */
       }catch(_ebc){}   /* CC BY 3.0 ক্রেডিট */
       var idx=0;
       var show=function(){try{
