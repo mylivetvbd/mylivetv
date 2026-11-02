@@ -6151,6 +6151,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     window.__brkShow=function(mode){try{
       if(window.__brkActive===mode)return;
       window.__brkActive=mode;
+      try{ if(mode==='cricket'&&window.__brkMusicStart)window.__brkMusicStart(); }catch(_ebm){}   /* bncom23: বিরতির হট মিউজিক */
       var root=document.getElementById('studioRoot')||document.body;
       var el=document.getElementById('brkStage');
       if(!el){el=document.createElement('div');el.id='brkStage';
@@ -6158,6 +6159,13 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         el.innerHTML='<div id="brkSlide" style="transition:transform .7s ease,opacity .7s ease;"></div>';
         root.appendChild(el);}
       el.style.display='block';
+      try{ var _bc=document.getElementById('brkMusicCredit');
+        if(!_bc&&el){ _bc=document.createElement('div'); _bc.id='brkMusicCredit';
+          _bc.style.cssText='position:absolute;right:8px;bottom:6px;font:600 7px inherit;color:#cbd5e1;opacity:.62;z-index:59;pointer-events:none;';
+          _bc.textContent='\u266a Rock Hybrid \u2014 Kevin MacLeod (CC BY 3.0)';
+          el.appendChild(_bc); }
+        if(_bc)_bc.style.display=(mode==='cricket'?'block':'none');
+      }catch(_ebc){}   /* CC BY 3.0 ক্রেডিট */
       var idx=0;
       var show=function(){try{
         var sls=__brkSlides(mode);if(!sls.length){return;}
@@ -6172,6 +6180,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     }catch(e){}};
     window.__brkStop=function(){try{
       if(!window.__brkActive)return;var _wasSoc=(window.__brkActive==='soccer');window.__brkActive='';
+      try{ if(window.__brkMusicStop)window.__brkMusicStop(); }catch(_ebm2){}   /* bncom23: মিউজিক বন্ধ */
       if(_wasSoc)try{[].concat(socHomePlayers,socAwayPlayers).forEach(function(p){p.visible=true;});}catch(_e3){}
       clearInterval(window.__brkTimer);
       var el=document.getElementById('brkStage');if(el)el.style.display='none';
@@ -7443,7 +7452,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     }
     async function aiLine(baseText,kind){
       try{
-        try{if(window.__brkActive==='cricket'&&kind==='idle'&&window.__anLine&&window.__anInfoFn){var _bi=window.__anInfoFn();if(_bi&&_bi.sport==='cricket'){_bi.phase='break';var _bl=window.__anLine(_bi);if(_bl)return _bl;}}}catch(_e){}
+        try{if(window.__brkFresh&&window.__brkFresh()&&kind==='idle'&&window.__anLine&&window.__anInfoFn){   /* bncom23: পুরোনো break-ফ্ল্যাগে ইনিংস-বিরতির লাইন নয় */var _bi=window.__anInfoFn();if(_bi&&_bi.sport==='cricket'){_bi.phase='break';var _bl=window.__anLine(_bi);if(_bl)return _bl;}}}catch(_e){}
         var now=Date.now();
         var anI=null;try{anI=window.__anInfoFn?window.__anInfoFn():null;}catch(_e){}
         if(now<aiBlockUntil){if(kind==='idle'&&anI&&window.__anLine){var _bl2=window.__anLine(anI);if(_bl2)return _bl2;}return null;}
@@ -7879,6 +7888,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   function clean(t){
     t=String(t||'').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"');
     t=t.replace(/\s+/g,' ').trim();
+    if(/[A-Za-z]/.test(t)) t=t.replace(/^\s*([A-Za-z][A-Za-z.'\- ]*?)\s+to\s+([A-Za-z][A-Za-z.'\- ]*?)\s*$/,'$1-এর বলে $2');   /* bncom23: ইংরেজি c1 লিক বন্ধ */
     t=t.replace(/([\u0980-\u09FF][^,।]*?) থেকে ([\u0980-\u09FF][^,।]*?) এর দিকে/g,'$1-এর বলে $2');
     t=t.replace(/আরাউন্ড দ্য উইকেট/g,'রাউন্ড দ্য উইকেট').replace(/ফুলিশ/g,'ফুল-লেংথ').replace(/ফুলিস/g,'ফুল-লেংথ').replace(/ডিপ মিড উইকেট/g,'ডিপ মিডউইকেট');
     return t.replace(/\s+/g,' ').trim();
@@ -8249,6 +8259,149 @@ window.__cktSitLine=function(x){
     if(ol!=null&&ol>0) return head+'দলের হাতে আছে '+g(String(wl))+' উইকেট, এখনো '+g(String(ol))+' ওভার বাকি আছে; '+close+'।';
     return head+'দলের হাতে আছে '+g(String(wl))+' উইকেট; '+close+'।';
   }catch(e){ return null; }
+};
+/* ===== bncom23: বিরতিতে স্টেডিয়াম-হট মিউজিক (WebAudio-তে বিল্ট-ইন, কোনো ফাইল/CDN ছাড়া) ===== */
+(function(){
+  var M={ctx:null,master:null,timer:null,next:0,step:0,on:false,notes:0};
+  var BPM=128, SPB=60/BPM/2;                 /* অষ্টম-নোটের দৈর্ঘ্য */
+  function ctxGet(){
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext; if(!AC)return null;
+      if(!M.ctx)M.ctx=new AC();
+      if(M.ctx.state==='suspended'){ try{M.ctx.resume();}catch(e){} }
+      return M.ctx;
+    }catch(e){ return null; }
+  }
+  function env(g,t,a,d,peak){
+    try{ g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(peak,t+a); g.gain.exponentialRampToValueAtTime(0.0001,t+a+d); }catch(e){}
+  }
+  function kick(ctx,t,g){
+    var o=ctx.createOscillator(),gg=ctx.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(48,t+0.13);
+    env(gg,t,0.004,0.16,0.9); o.connect(gg); gg.connect(g); o.start(t); o.stop(t+0.22); M.notes++;
+  }
+  function noise(ctx,t,g,dur,hp,freq,peak){
+    var len=Math.max(1,Math.floor(ctx.sampleRate*dur)),b=ctx.createBuffer(1,len,ctx.sampleRate),d=b.getChannelData(0);
+    for(var i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);
+    var src=ctx.createBufferSource(); src.buffer=b;
+    var f=ctx.createBiquadFilter(); f.type=hp?'highpass':'bandpass'; f.frequency.value=freq||2200;
+    var gg=ctx.createGain(); env(gg,t,0.003,dur,peak||0.5);
+    src.connect(f); f.connect(gg); gg.connect(g); src.start(t); src.stop(t+dur+0.02); M.notes++;
+  }
+  function tone(ctx,t,g,freq,dur,type,peak){
+    var o=ctx.createOscillator(),gg=ctx.createGain();
+    o.type=type||'sawtooth'; o.frequency.value=freq;
+    env(gg,t,0.008,dur,peak||0.28); o.connect(gg); gg.connect(g); o.start(t); o.stop(t+dur+0.05); M.notes++;
+  }
+  var BASS=[55,55,65.4,73.4], STAB=[220,261.6,329.6];       /* A1,A1,C2,D2 + A minor triad */
+  function sched(){
+    var ctx=M.ctx; if(!ctx||!M.on)return;
+    try{
+      var now=ctx.currentTime;
+      if(M.next<now)M.next=now+0.05;
+      while(M.next<now+0.4){
+        var st=M.step%16, t=M.next, g=M.master;
+        if(st%4===0) kick(ctx,t,g);                                    /* চার-অন-দ্য-ফ্লোর */
+        if(st===4||st===12) noise(ctx,t,g,0.12,false,1900,0.55);       /* স্নেয়ার/ক্ল্যাপ */
+        noise(ctx,t,g,0.035,true,7000,0.22);                           /* হাই-হ্যাট */
+        if(st===2||st===6||st===10||st===14) tone(ctx,t,g,BASS[(st/4)|0],0.16,'square',0.22);
+        if(st===3||st===11) STAB.forEach(function(f){tone(ctx,t,g,f,0.1,'sawtooth',0.10);});
+        if(st===0) STAB.forEach(function(f){tone(ctx,t,g,f*2,0.08,'triangle',0.07);});
+        M.next+=SPB; M.step++;
+      }
+    }catch(e){}
+  }
+  function duckTarget(){ try{ return (window.__oneHold&&window.__oneHold())?0.055:0.20; }catch(e){ return 0.20; } }
+  /* bncom24: বিরতির হট মিউজিক — আসল ট্র্যাক (Kevin MacLeod, "Rock Hybrid", CC BY 3.0, Wikimedia Commons);
+     নেট/ফাইল ব্যর্থ হলে নিচের বিল্ট-ইন বিট-এ ফলব্যাক */
+  window.__brkMusicUrl='https://upload.wikimedia.org/wikipedia/commons/0/07/Rock_Hybrid_%28ISRC_USUAN1100094%29.mp3';
+  var A={el:null,timer:null,on:false,mode:''};
+  function audioStop(){
+    try{
+      if(A.timer){clearInterval(A.timer);A.timer=null;}
+      var el=A.el; A.on=false; A.mode='';
+      if(!el)return;
+      try{
+        var v=el.volume, t0=Date.now();
+        var fade=setInterval(function(){
+          try{
+            var k=1-(Date.now()-t0)/700;
+            if(k<=0){clearInterval(fade);el.volume=0;el.pause();}
+            else el.volume=Math.max(0,v*k);
+          }catch(e){clearInterval(fade);}
+        },60);
+      }catch(e){ try{el.pause();}catch(_e){} }
+    }catch(e){}
+  }
+  function audioStart(){
+    try{
+      var url=window.__brkMusicUrl; if(!url)return false;
+      if(!A.el){
+        var el=document.createElement('audio');
+        el.preload='auto'; el.loop=true; el.volume=0;
+        el.addEventListener('error',function(){ if(A.on&&A.mode==='track'){ audioStop(); startSynth(); } });
+        A.el=el;
+      }
+      var el2=A.el;
+      if(el2.getAttribute('src')!==url)el2.setAttribute('src',url);
+      A.on=true; A.mode='track';
+      var p=el2.play();
+      if(p&&p.catch)p.catch(function(){ if(A.on&&A.mode==='track'){ audioStop(); startSynth(); } });
+      try{el2.volume=0; el2.volume=duckTarget();}catch(e){}
+      clearInterval(A.timer);
+      A.timer=setInterval(function(){
+        try{
+          if(!A.on||A.mode!=='track')return;
+          var want=duckTarget(); var cur=el2.volume;
+          el2.volume=cur+(want-cur)*0.35;
+        }catch(e){}
+      },150);
+      return true;
+    }catch(e){ return false; }
+  }
+  window.__brkMusicStart=function(){ return audioStart()||startSynth(); };
+  function startSynth(){
+    try{
+      var ctx=ctxGet(); if(!ctx)return false;
+      if(M.on){ try{M.master.gain.linearRampToValueAtTime(duckTarget(),ctx.currentTime+0.4);}catch(e){} return true; }
+      M.master=ctx.createGain(); M.master.gain.value=0.0001; M.master.connect(ctx.destination);
+      M.on=true; M.step=0; M.next=ctx.currentTime+0.08;
+      M.master.gain.linearRampToValueAtTime(duckTarget(),ctx.currentTime+1.2);
+      A.mode='synth'; A.on=true;
+      sched();
+      clearInterval(M.timer); M.timer=setInterval(function(){
+        if(!M.on)return;
+        try{ M.master.gain.linearRampToValueAtTime(duckTarget(),M.ctx.currentTime+0.35); }catch(e){}
+        sched();
+      },120);
+      return true;
+    }catch(e){ return false; }
+  };
+  window.__brkMusicStop=function(){
+    try{
+      var wasAudio=A.on; audioStop();
+      if(!M.on)return wasAudio;
+      M.on=false; clearInterval(M.timer); M.timer=null;
+      var ctx=M.ctx,m=M.master;
+      if(ctx&&m){ try{ m.gain.cancelScheduledValues(ctx.currentTime); m.gain.setValueAtTime(m.gain.value,ctx.currentTime); m.gain.linearRampToValueAtTime(0.0001,ctx.currentTime+0.8); }catch(e){} }
+      setTimeout(function(){ try{ if(!M.on&&M.master){ M.master.disconnect(); M.master=null; } }catch(e){} },1200);
+      return true;
+    }catch(e){ return false; }
+  };
+  window.__brkMusicInfo=function(){
+    try{
+      var el=A.el;
+      return {on:M.on||A.on,mode:A.mode||'',notes:M.notes,state:M.ctx?M.ctx.state:'none',
+              gain:M.master?+M.master.gain.value.toFixed(3):0,duck:duckTarget(),
+              paused:el?el.paused:null,time:el?+el.currentTime.toFixed(1):null,muted:el?el.muted:null,vol:el?+el.volume.toFixed(2):null};
+    }catch(e){ return {on:false}; }
+  };
+})();
+window.__brkFresh=function(){
+  try{
+    if(window.__brkActive!=='cricket')return false;
+    return (Date.now()-(window.__brkSeen||0))<20000;   /* bncom23: ২০ সে-এর মধ্যে বিরতি দেখা গেলেই সত্য */
+  }catch(e){ return false; }
 };
 window.__cktOverPlan=function(x){
   try{
@@ -9407,7 +9560,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         // Compute live chase equation if 2nd innings in limited overs!
         let eqText = '';
         if (!eqText) eqText = isInactive ? (/innings break/i.test(breakStatus) ? 'ইনিংস বিরতি' : statusBn(breakStatus)) : statusBn(selectedMatch.resStr || selectedMatch.bdTime);
-        try{ if(isInactive){ if(window.__brkShow)window.__brkShow('cricket'); if(window.__ambCalm)window.__ambCalm(); } else { if(window.__brkStop&&window.__brkActive==='cricket')window.__brkStop(); if(window.__ambStart)window.__ambStart(); } }catch(_e){}
+        try{ if(isInactive){ if(window.__brkShow)window.__brkShow('cricket'); try{window.__brkSeen=Date.now();}catch(_eb){} if(window.__ambCalm)window.__ambCalm(); } else { if(window.__brkStop&&window.__brkActive==='cricket')window.__brkStop(); if(window.__ambStart)window.__ambStart(); } }catch(_e){}
         if (prevInn && !isInactive && !/দরকার/.test(eqText)) { const _tgt=prevInn.runs+1, _nd=_tgt-rNum; if(_nd>0) eqText = `টার্গেট ${bn(_tgt)} • জয়ের জন্য ${bn(_nd)} রান দরকার`; }
         const oppScore = prevInn ? ` (${bowlBn}: ${bn(prevInn.dispScore)})` : '';
         document.getElementById('uiEquation').textContent = `${batBn} বনাম ${bowlBn}${oppScore} • ${eqText}`;
