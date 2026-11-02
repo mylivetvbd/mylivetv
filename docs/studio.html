@@ -7009,7 +7009,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     // ══ gfxfix1: স্কোর-গ্রাফিক আর কণ্ঠ একসাথে (TV-স্টাইল) ══
     // গ্রাফিক্স পেইন্ট আটকে রাখা হয়; কণ্ঠ **শুরু হওয়ার মুহূর্তে** ছেড়ে দেওয়া হয়।
     // কোনো কারণে কণ্ঠ না এলে lag+900ms পরে নিজে থেকেই ছেড়ে দেয় (আটকে থাকবে না)।
-    window.__gfxLag = (typeof window.__gfxLag === 'number') ? window.__gfxLag : 1200;
+    window.__gfxLag = (typeof window.__gfxLag === 'number') ? window.__gfxLag : 150;   /* bncom13: গ্রাফিক্স আর আটকে থাকবে না */
     (function () {
       if (window.__gfxHold) return;
       var G = { pending: null, t: null, flushed: 0 };
@@ -7624,7 +7624,9 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         ]
       ];
       const category=((step-1)%categories.length+categories.length)%categories.length;
-      return pickFresh('cricket_idle_'+category,categories[category])();
+      var _line=pickFresh('cricket_idle_'+category,categories[category])();
+      try{ if(window.__noOpinion)_line=window.__noOpinion(_line); }catch(e){}
+      return _line;
     }
 
     function statusBn(str) {
@@ -7833,7 +7835,21 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   /* ---- bncom11: HUD-এর প্রতিটি ঘর CREX রেকর্ড থেকে ---- */
   var HUD={s:'',overs:'',tokens:[],p1:'',p2:'',s1:'',s2:'',bowler:'',bd:'',team:'',ts:0};
   window.__crexHud=HUD;
-  function hudAbsorb(arr){
+  function hudAbsorb(arr,mf){
+    /* bncom13: ম্যাচ/ইনিংস বদলালে আগের ম্যাচের ঘর মুছে দাও */
+    try{
+      if(mf&&HUD.mf!==mf){
+        HUD.s='';HUD.overs='';HUD.tokens=[];HUD.p1='';HUD.p2='';HUD.s1='';HUD.s2='';
+        HUD.bowler='';HUD.bd='';HUD.team='';HUD.pf1='';HUD.pf2='';HUD.rbowl='';
+        HUD.striker=0;HUD.outPf='';HUD.mf=mf;HUD.ts=0;
+      }
+      var innMax=-1;
+      arr.forEach(function(x){ if(x&&x.inning!=null&&+x.inning>innMax)innMax=+x.inning; });
+      if(innMax>=0&&HUD.inn!==innMax){
+        HUD.inn=innMax;HUD.s='';HUD.overs='';HUD.tokens=[];HUD.p1='';HUD.p2='';
+        HUD.s1='';HUD.s2='';HUD.pf1='';HUD.pf2='';HUD.outPf='';HUD.striker=0;
+      }
+    }catch(e){}
     try{
       var newestB=null,newestO=null;
       arr.forEach(function(x){
@@ -7845,6 +7861,15 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         }
       });
       if(newestB&&newestB.s)HUD.s=String(newestB.s);
+      /* bncom13: চলতি বোলারের নাম বল-রেকর্ডের c1 থেকেই — পুরোনো ওভারের নাম নয় */
+      if(newestB&&newestB.c1){
+        var c1=String(newestB.c1).replace(/\s+/g,' ').trim();
+        var mb=c1.match(/^(.+?)\s+থেকে\s+(.+?)(?:\s+এর\s+দিকে)?$/);
+        if(!mb)mb=c1.match(/^(.+?)\s+to\s+(.+)$/i);
+        if(mb){ HUD.bowler=mb[1].trim(); HUD.curBat=mb[2].trim(); }
+      }
+      if(newestB&&newestB.bf)HUD.curBf=String(newestB.bf);
+      if(newestB&&String(newestB.b||'').toUpperCase()==='W'&&newestB.pf)HUD.outPf=String(newestB.pf);
       /* ভিন্ন ইনিংস/দলের ওভার-রেকর্ড ⇒ ব্যাটার-বোলার মেশাবেন না */
       var teamKey=newestB?String(newestB.bat_team_fkey||''):'';
       var okO=!!newestO;
@@ -7856,8 +7881,8 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         if(newestO.p2)HUD.p2=String(newestO.p2);
         if(newestO.s1)HUD.s1=String(newestO.s1);
         if(newestO.s2)HUD.s2=String(newestO.s2);
-        if(newestO.bowler)HUD.bowler=String(newestO.bowler);
-        if(newestO.bd)HUD.bd=String(newestO.bd);
+        if(newestO.bowler&&!HUD.bowler)HUD.bowler=String(newestO.bowler);
+        if(newestO.bd){ HUD.bd=String(newestO.bd); HUD.bdKey=String(newestO.bf||''); }
         if(newestO.team)HUD.team=String(newestO.team);
         if(newestO.rb)HUD.rbowl=String(newestO.rb);
         if(newestO.pf1)HUD.pf1=String(newestO.pf1);
@@ -7904,13 +7929,17 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
           dots.appendChild(sp);
         });
       }
-      if(H.p1){set('uiBat0Name',(H.striker===1?'🏏 ':'• ')+H.p1); }
+      var out1=(H.outPf&&H.pf1&&H.outPf===H.pf1), out2=(H.outPf&&H.pf2&&H.outPf===H.pf2);
+      if(H.p1){set('uiBat0Name',out1?'— আউট —':((H.striker===1?'🏏 ':'• ')+H.p1)); if(out1)set('uiBat0Runs','');}
       if(H.s1){var m1=String(H.s1).match(/^(\d+)\s*\(\s*(\d+)/); if(m1)set('uiBat0Runs',D(m1[1])+' ('+D(m1[2])+')');}
-      if(H.p2){set('uiBat1Name',(H.striker===2?'🏏 ':'• ')+H.p2);}
+      if(H.p2){set('uiBat1Name',out2?'— আউট —':((H.striker===2?'🏏 ':'• ')+H.p2)); if(out2)set('uiBat1Runs','');}
+      /* নতুন ব্যাটার এলে আউট-চিহ্ন মিলিয়ে যাবে */
+      if(H.outPf&&H.pf1!==H.outPf&&H.pf2!==H.outPf)H.outPf='';
       if(H.s2){var m2=String(H.s2).match(/^(\d+)\s*\(\s*(\d+)/); if(m2)set('uiBat1Runs',D(m2[1])+' ('+D(m2[2])+')');}
       if(H.bowler){
-        var f=String(H.bd||'').match(/^(\d+)\s*-\s*(\d+)\s*\(([0-9.]+)\)/);
-        var fig=f?(D(f[1])+'/'+D(f[2])+' • '+D(f[3])+' ওভার'):String(H.bd||'');
+        var showBd=(H.bd&&(!H.bdKey||!H.curBf||H.bdKey===H.curBf))?H.bd:'';
+        var f=String(showBd||'').match(/^(\d+)\s*-\s*(\d+)\s*\(([0-9.]+)\)/);
+        var fig=f?(D(f[1])+'/'+D(f[2])+' • '+D(f[3])+' ওভার'):'';
         set('uiBowler','⚾ '+H.bowler+(fig?' ('+fig+')':''));
       }
       /* রান রেট + সমীকরণ — সবই CREX সংখ্যা থেকে */
@@ -7935,7 +7964,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   function handle(arr,mf){
     if(!Array.isArray(arr)||!arr.length)return;
     noteWickets(arr);
-    hudAbsorb(arr);
+    hudAbsorb(arr,mf);
     setTimeout(function(){try{window.__crexHudApply();}catch(e){}},0);
     var balls=arr.filter(function(x){return x&&x.type==='b'&&x.b!=null;}).map(function(x){
       var o=String(x.o);
@@ -9228,11 +9257,22 @@ window.__gapLine=function(){
 };
 window.__gapAsk=false;
 var __gapTick=0;
+/* bncom13: দর্শককে প্রশ্ন/মতামত নয় — শুধু মাঠের কথা */
+window.__opinionRe=/মতামত|মনে হচ্ছে|মনে হয়|কমেন্ট|লিখুন|জানান|প্রশ্ন|ভাবছেন|কী ভাবছেন|ভাবার বিষয়|আপনি কী|আপনাদের|দর্শকদের কাছে/;
+window.__noOpinion=function(t){
+  try{
+    var s=String(t||'');
+    s=s.split(/(?<=[।!?])\s*/).filter(function(x){return !window.__opinionRe.test(x);}).join(' ').trim();
+    if(window.__opinionRe.test(s))return '';
+    return s;
+  }catch(e){return t;}
+};
 window.__gapBot=function(){
   try{
     __gapTick++;
-    if(__gapTick%3===0)window.__gapAsk=true;               /* প্রতি তৃতীয় ফাঁকে দর্শক-প্রশ্ন */
-    return window.__gapLine();
+    window.__gapAsk=false;                                 /* bncom13: মতামত/প্রশ্ন নয়, শুধু কমেন্টারি */
+    var _l=window.__gapLine();
+    return _l?window.__noOpinion(_l):_l;
   }catch(e){return null;}
 };
 /* ---- সাদা-তালিকা শব্দভাণ্ডার ---- */
