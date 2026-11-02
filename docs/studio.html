@@ -291,6 +291,19 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
       background:linear-gradient(90deg,#0b1840f5,#123780f5);border:1px solid #8eb5ed;border-radius:6px;font-size:clamp(9px,1.45vw,15px);font-weight:800;box-shadow:0 3px 9px #000a;}
     .live-player-illustration.bowler .live-player-name {background:linear-gradient(90deg,#471728f5,#9b2b21f5);border-color:#f59b8b}
     .live-player-name span:first-child {display:block;max-width:100%;white-space:normal;overflow-wrap:anywhere;word-break:normal}.live-player-name small{display:block;white-space:nowrap;color:#d1e5ff;font-size:.76em;line-height:1.1}
+    /* bncom15: মাঠের ওপর বড় স্টেটাস কার্ড (বিরতি / ইনিংস শেষ / ফল) */
+    #matchStatusCard {position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.86);z-index:70;display:none;box-sizing:border-box;
+      width:min(76%,1180px);padding:34px 46px;border-radius:26px;text-align:center;color:#fff;font-weight:900;
+      background:linear-gradient(135deg,#07214e,#0f3d8c 58%,#07214e);border:3px solid #7fb2ff;
+      box-shadow:0 30px 80px #000c,inset 0 0 0 4px #ffffff1f;opacity:0;transition:opacity .32s ease,transform .32s ease}
+    #matchStatusCard.show {display:block;opacity:1;transform:translate(-50%,-50%) scale(1)}
+    #matchStatusCard.win {background:linear-gradient(135deg,#5a3b00,#a06f00 58%,#5a3b00);border-color:#ffd76a}
+    #matchStatusCard .msc-tag {font-size:22px;letter-spacing:.18em;color:#a9c9ff;text-transform:uppercase}
+    #matchStatusCard.win .msc-tag {color:#ffe6a2}
+    #matchStatusCard .msc-title {font-size:74px;line-height:1.12;margin:12px 0 8px;text-shadow:0 8px 26px #000a}
+    #matchStatusCard .msc-sub {font-size:34px;font-weight:800;color:#ffe9a8}
+    #matchStatusCard.win .msc-sub {color:#fff3cd}
+    @media (max-width:900px){ #matchStatusCard .msc-title{font-size:8.2vw} #matchStatusCard .msc-sub{font-size:4vw} #matchStatusCard{padding:22px 24px} }
     #cricketMetrics {max-width:1120px;width:100%;margin:0 auto;background:#0b2545ed;border:1px solid #32638b;border-radius:7px;padding:5px 10px;display:flex;gap:clamp(8px,3vw,30px);align-items:center;flex-wrap:wrap;font-size:clamp(10px,1.3vw,13px);font-weight:700;color:#d9edff}
     #cricketMetrics:empty {display:none} #cricketMetrics strong{color:#fdd65b}
     @media (orientation:portrait) {#playerOverlay{height:clamp(75px,16vh,145px)} }
@@ -7502,7 +7515,16 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         playImpactFX(effect.outcome==='6'?440:340,0.09);
       }
       if(effect.outcome==='W') { playWhistleFX(); }
-      eventGraphicTimer=setTimeout(()=>{box.classList.add('exit');eventGraphicTimer=setTimeout(clearEventGraphic,350);},2300);
+      /* bncom15: শেষ বলের কথাটা শেষ হওয়ার আগে কার্ড উঠে যায় না */
+      const _shownAt=Date.now();
+      const _hide=()=>{ if(!box.isConnected)return; box.classList.add('exit'); eventGraphicTimer=setTimeout(clearEventGraphic,350); };
+      const _tick=()=>{
+        if(!box.isConnected)return;
+        let talking=false; try{talking=!!isSpeakingNow;}catch(e){}
+        if(talking && Date.now()-_shownAt<10000){ eventGraphicTimer=setTimeout(_tick,400); return; }
+        _hide();
+      };
+      eventGraphicTimer=setTimeout(_tick,2300);
     }
     /* ==== এক ঘড়ি: কার্ড + স্কোর + কথা একই CREX রেকর্ড থেকে ==== */
     window.__oneCard=function(oc){
@@ -7511,6 +7533,46 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         if(/^WD|WIDE/.test(v))v='WD'; else if(/^NB|NO\s*BALL/.test(v))v='NB';
         else if(!(v==='W'||/^[0-6]$/.test(v)))return;
         showEventGraphic({outcome:v});
+      }catch(e){}
+    };
+    /* ==== bncom15: মাঠের ওপর বড় স্টেটাস কার্ড (বিরতি · ইনিংস শেষ · ফল) ==== */
+    function mscEl(){
+      let el=document.getElementById('matchStatusCard');
+      if(!el){
+        el=document.createElement('div');el.id='matchStatusCard';
+        const tag=document.createElement('div');tag.className='msc-tag';
+        const title=document.createElement('div');title.className='msc-title';
+        const sub=document.createElement('div');sub.className='msc-sub';
+        el.appendChild(tag);el.appendChild(title);el.appendChild(sub);
+        (document.getElementById('studioRoot')||document.body).appendChild(el);
+      }
+      return el;
+    }
+    window.__mscShow=function(o){
+      try{
+        const el=mscEl();o=o||{};
+        el.classList.toggle('win',!!o.win);
+        el.children[0].textContent=o.tag||'';
+        el.children[1].textContent=o.title||'';
+        el.children[2].textContent=o.sub||'';
+        el.classList.add('show');
+        window.__mscOn=true;
+      }catch(e){}
+    };
+    window.__mscHide=function(){ try{const el=document.getElementById('matchStatusCard'); if(el)el.classList.remove('show');}catch(e){} window.__mscOn=false; };
+    window.__matchPhaseUi=function(phase,ctx){
+      try{
+        ctx=ctx||{};
+        if(phase==='finished'){
+          window.__cardsHold=true;
+          const t=ctx.winName?ctx.winName+' জিতেছে':'খেলা শেষ';
+          window.__mscShow({win:true,tag:'ম্যাচ শেষ',title:t,sub:ctx.margin||ctx.status||''});
+        } else if(phase==='break'){
+          window.__cardsHold=true;
+          window.__mscShow({tag:'মাঠে বিরতি',title:ctx.title||'প্রথম ইনিংস শেষ',sub:ctx.sub||'মাঠে বিরতি চলছে'});
+        } else {
+          window.__cardsHold=false;window.__mscHide();
+        }
       }catch(e){}
     };
     window.__oneHud=function(sc,ov){
@@ -7778,6 +7840,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   var pumpT=0;
   var busySince=0;
   function pump(){
+    if(window.__speakMute){Q.length=0;busy=false;isSpeakingNow=false;return;}   /* bncom15 */
     if(busy){ if(Date.now()-busySince>20000){busy=false;isSpeakingNow=false;setTimeout(pump,50);} else return; } /* TTS আটকে গেলে ছেড়ে দাও */
     if(!Q.length)return;
     if(hostMicActive||isSpeakingNow){ if(!pumpT)pumpT=setTimeout(function(){pumpT=0;pump();},800); return; }
@@ -7795,6 +7858,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   function speak(line,meta){
     if(!line||window.__bnCom.on!==true)return;
     if(window.__bnCom.end===1)return;              /* ম্যাচ শেষ ⇒ পুরোনো বলের কথা নয় */
+    if(window.__speakMute){Q.length=0;return;}     /* bncom15: বিরতি/ইনিংস শেষ ⇒ পুরোনো বল আবার নয় */
     if(hostMicActive)return;
     Q.push({l:line,m:meta||null}); if(Q.length>1)Q.shift();   /* কথা পিছিয়ে না পড়ে: সর্বশেষ বলটাই থাকে */
     if(!(meta&&meta.gap))armGap();
@@ -7983,6 +8047,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       var body=(team&&n&&how)?(team+' '+bd(n)+' '+how+' জিতেছে।'):'';
       if(!body&&wc.c)body=String(wc.c).trim();
       if(!body)return;
+      window.__resultInfo={team:team,n:n,how:how,raw:String(wc.c||'')};
       var line='ম্যাচ শেষ। '+body;
       Q.length=0; window.__bnCom.end=1;
       var el=document.getElementById('commText'); if(el)el.textContent='🏆 '+line;
@@ -8266,8 +8331,9 @@ setInterval(function(){
       pumpPlayerArtPrefetch();
     }
     function clearCricketVisuals() {
-      const p=document.getElementById('playerOverlay'),m=document.getElementById('cricketMetrics');
-      if(p)p.replaceChildren();if(m)m.replaceChildren();
+      /* bncom15: প্লেয়ার-কার্ড আর মোছা হয় না — শুধু বিরতি/ফলে __cardsHold দিয়ে ওঠে */
+      const m=document.getElementById('cricketMetrics');
+      if(m)m.replaceChildren();
     }
     function updateCricketVisuals(info) {
       if (typeof window.__gfxHold === 'function') return window.__gfxHold(function () { try { __ucvImpl(info); } catch (e) {} });
@@ -8326,6 +8392,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     /* bncom13b: (১) প্রতিবার নতুন <img> নয় — একই DOM ঘর বারবার ব্যবহার, তাই ছবি সাথে সাথে;
        (২) বোলার-কার্ডে মাথার ছবি বসে না (CREX-এর কিছু key-তে হেলমেট-প্লেসহোল্ডার আসে, বোলারের মাথায় হেলমেট ভুল)। */
     const ucvSlots=[];
+    const ucvLast=[null,null,null];   /* bncom15: নাম/আইডি এক পোলে না এলে আগের ছবিই থাকে (ঝিকমিক বন্ধ) */
 /* ============ bncom14c: ছবি নেই এমন প্লেয়ারের ইলাস্ট্রেটেড মুখ (জাতিসত্তা-ভিত্তিক) ============ */
 /* নিয়ম: শুধু তখনই বসে যখন CREX-এর players/org/<id>.png হয় ৪০৪, নয়তো হেলমেট-প্লেসহোল্ডার।
    আসল ছবি থাকলে কিছুই বদলায় না। মুখটা প্লেয়ার-আইডির হ্যাশ দিয়ে তৈরি ⇒ একই প্লেয়ারের মুখ সবসময় একই। */
@@ -8434,6 +8501,14 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     /* চোখ */
     s.push('<g><ellipse cx="47" cy="' + eyeY + '" rx="6.3" ry="4.6" fill="#fbfaf7"/><circle cx="47.3" cy="' + (eyeY + 0.5) + '" r="3" fill="' + eyeC + '"/><circle cx="47.3" cy="' + (eyeY + 0.5) + '" r="1.4" fill="#0b0906"/><circle cx="48.5" cy="' + (eyeY - 1.5) + '" r="1.05" fill="#fff" opacity=".9"/></g>');
     s.push('<g><ellipse cx="73" cy="' + eyeY + '" rx="6.3" ry="4.6" fill="#fbfaf7"/><circle cx="72.7" cy="' + (eyeY + 0.5) + '" r="3" fill="' + eyeC + '"/><circle cx="72.7" cy="' + (eyeY + 0.5) + '" r="1.4" fill="#0b0906"/><circle cx="73.9" cy="' + (eyeY - 1.5) + '" r="1.05" fill="#fff" opacity=".9"/></g>');
+    /* bncom15: চোখের পলক — SMIL, <img>-এর ভেতরেই চলে (স্ক্রিপ্ট লাগে না) */
+    var blinkDur = (4.6 + Math.floor(r() * 4)).toFixed(1), blinkBegin = '-' + (r() * 9).toFixed(1);
+    var lid = function (cx) {
+      return '<ellipse cx="' + cx + '" cy="' + eyeY + '" rx="7" ry="0" fill="' + skin + '">' +
+        '<animate attributeName="ry" values="0;0;5.1;5.1;0;0" keyTimes="0;0.885;0.905;0.93;0.95;1" dur="' + blinkDur + 's" begin="' + blinkBegin + 's" repeatCount="indefinite"/>' +
+        '</ellipse>';
+    };
+    s.push(lid(47) + lid(73));
     s.push('<path d="M40.5,' + (eyeY - 5.4) + ' C44,54 50,54 53.5,' + (eyeY - 5.2) + '" stroke="' + skinShade + '" stroke-width="1.5" fill="none" opacity=".75"/>');
     s.push('<path d="M66.5,' + (eyeY - 5.2) + ' C70,54 76,54 79.5,' + (eyeY - 5.4) + '" stroke="' + skinShade + '" stroke-width="1.5" fill="none" opacity=".75"/>');
     /* নাক */
@@ -8595,7 +8670,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       const format=cricketKitVariant(info.format), players=[
         [info.p1Fk,info.p1Name,info.batFk,'ব্যাটার'],[info.p2Fk,info.p2Name,info.batFk,'ব্যাটার'],[info.bwFk,info.bwName,info.bowlFk,'বোলার']
       ];
-      const sig=JSON.stringify([players,format]);
+      const sig=JSON.stringify([players,format,!!window.__cardsHold]);
       if(host.getAttribute('data-ucv-sig')===sig)return;
       if(ucvSlots.length!==3){
         ucvSlots.length=0;host.replaceChildren();
@@ -8613,20 +8688,23 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           ucvSlots.push({card,kit,head,ball,av,txt,role});
         }
       }
+      const cardsHold=!!window.__cardsHold;
       for(let i=0;i<3;i++){
-        const raw=players[i][0],name=players[i][1],team=players[i][2],label=players[i][3],slot=ucvSlots[i];
-        const id=safeCricketAssetKey(raw),tk=safeCricketAssetKey(team);
-        const show=!!(id&&tk);   /* bncom13e: নাম দেরিতে এলেও ছবি+কিট সাথে সাথে; নাম এলে বসে যায় */
-        slot.card.style.display=show?'':'none';
-        if(!show)continue;
+        const raw=players[i][0];let name=players[i][1];const team=players[i][2];let label=players[i][3];const slot=ucvSlots[i];
+        let id=safeCricketAssetKey(raw),tk=safeCricketAssetKey(team);
+        if(cardsHold){slot.card.style.display='none';continue;}                 /* শুধু বিরতি/ফল ⇒ সব ছবি ওঠে */
+        if(!id||!tk){const L=ucvLast[i];if(L){id=L.id;tk=L.tk;name=name||L.name;label=label||L.label;}}  /* এক পোলের ফাঁক ⇒ ছবি থাকে */
+        if(!id||!tk){slot.card.style.display='none';continue;}
+        ucvLast[i]={id:id,tk:tk,name:name||'',label:label||''};
+        slot.card.style.display='';
         if(format){
           const kitUrl=`https://cricketvectors.akamaized.net/jersey/${format}/org/${encodeURIComponent(tk)}.png`;
-          if(slot.kit.getAttribute('data-u')!==kitUrl){slot.kit.setAttribute('data-u',kitUrl);slot.kit.src=kitUrl;}
+          if(slot.kit.getAttribute('data-u')!==kitUrl){slot.kit.setAttribute('data-u',kitUrl);window.__imgSwap?window.__imgSwap(slot.kit,kitUrl):slot.kit.src=kitUrl;}
           slot.kit.style.display='';
         } else slot.kit.style.display='none';
         /* bncom14: প্রত্যেক খেলোয়াড়ের ইলাস্ট্রেশন-মুখ আগের মতোই — বোলার-ব্যাটার সবাই */
         const headUrl=`https://cricketvectors.akamaized.net/players/org/${encodeURIComponent(id)}.png`;
-        if(slot.head.getAttribute('data-u')!==headUrl){slot.head.setAttribute('data-u',headUrl);slot.head.src=headUrl;try{slot.head.style.visibility='visible';}catch(e){}}
+        if(slot.head.getAttribute('data-u')!==headUrl){slot.head.setAttribute('data-u',headUrl);window.__imgSwap?window.__imgSwap(slot.head,headUrl):slot.head.src=headUrl;}
         slot.head.style.display=''; slot.av.style.display='none'; slot.ball.style.display='none';
         try{ window.__ipfBind && window.__ipfBind(slot.head, id, tk); }catch(_e){}
         if(slot.txt.textContent!==name)slot.txt.textContent=name;
@@ -8635,6 +8713,18 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       host.setAttribute('data-ucv-sig',sig);
       window.__ucvLastInfo=info;
     }
+    /* নতুন ছবি আগে নামিয়ে, তারপর বসানো ⇒ মাঝপথে ফাঁকা/অদৃশ্য ফ্রেম নেই */
+    window.__imgSwap=function(img,url){
+      try{
+        const tok=(img.__swapTok=(img.__swapTok||0)+1);
+        const pre=new Image();
+        pre.onload=function(){ if(img.__swapTok!==tok)return; try{ if(img.getAttribute('data-ipf'))return; img.src=url;img.style.visibility='visible';img.style.display=''; }catch(e){} };
+        pre.onerror=function(){ if(img.__swapTok!==tok)return; try{ if(img.getAttribute('data-ipf'))return; img.src=url; }catch(e){} };
+        pre.src=url;
+      }catch(e){ try{img.src=url;}catch(_e){} }
+    };
+    try{ window.__ucvImpl=__ucvImpl; }catch(_e){}   /* টেস্ট-হুক */
+    window.__cardsHideAll=function(){ try{ const p=document.getElementById('playerOverlay'); if(p){p.replaceChildren();p.removeAttribute('data-ucv-sig');} ucvSlots.length=0; ucvLast[0]=ucvLast[1]=ucvLast[2]=null; }catch(e){} };
     window.__ucvRefresh=function(){ try{ if(window.__ucvLastInfo)__ucvImpl(window.__ucvLastInfo); }catch(e){} };
     // A temporary image outage must not hide the same player's picture forever.
     // Do not keep the previous player's image while retrying a new ID.
@@ -8890,6 +8980,18 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const p2Name = crexPlayerCache[p2Fk] || '';
         const bwName = crexPlayerCache[bwFk] || '';
         updateCricketVisuals({safe:playersSafe && hasPlay && !isInactive, batFk,bowlFk,p1Fk,p2Fk,bwFk,p1Name,p2Name,bwName,format:sv.fo || polledMatch.fo});
+        try{ window.__speakMute=!!isInactive; }catch(_e){}
+        try{
+          if(isFinished){
+            const r=window.__resultInfo||{};
+            const wn=r.team?(teamBn(r.team)||r.team):'';
+            window.__matchPhaseUi('finished',{winName:wn,margin:(r.n&&r.how)?(bn(r.n)+' '+r.how):'',status:statusBn(sv.B||'')});
+          } else if(isInactive){
+            window.__matchPhaseUi('break',{title:(activeIndex===0?'প্রথম ইনিংস শেষ':'ইনিংস বিরতি'),sub:'মাঠে বিরতি চলছে • পরবর্তী ইনিংসের অপেক্ষায়'});
+          } else {
+            window.__matchPhaseUi('play',{});
+          }
+        }catch(_e){}
         const rosterForPictures=crexRosterCache.get(polledMatch.mf);
         if(identity && identity.playersVerified && !isInactive && rosterForPictures) {
           const verifiedRoster=decodeCrexRoster(rosterForPictures.data);
@@ -8931,6 +9033,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           document.getElementById('uiBowler').textContent = `⚾ ${bwName} (${bn(bwOvDisp)} ওভার • ${bn(bwFig)}) • ${bowlBn}`;
         }
 
+        try{ if(CXHUD && window.__crexHudApply) window.__crexHudApply({batBn:batBn,bowlBn:bowlBn,prevInn:prevInn}); }catch(_e){}   /* নাম/স্কোর ঝিকমিক বন্ধ */
         // Current Over Dots — SV-র rb (ব্যাকআপ); CREX-HUD থাকলে সেটাই চূড়ান্ত
         const dots = document.getElementById('uiOverDots');
         dots.innerHTML = '<span style="font-size:20px;color:#cbd5e1;font-weight:800;">এই ওভার:</span>';
