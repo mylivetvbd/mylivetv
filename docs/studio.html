@@ -284,6 +284,7 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
     .live-player-head,.live-player-kit {position:absolute;object-fit:contain;left:50%;transform:translateX(-50%);}
     .live-player-head {height:76%;bottom:26%;z-index:2;filter:drop-shadow(0 4px 5px #000a)}
     .live-player-kit {width:100%;height:38%;bottom:0;z-index:1;filter:drop-shadow(0 4px 5px #000a)}
+    .live-player-ball {position:absolute;left:50%;transform:translateX(-50%);bottom:30%;z-index:2;font-size:min(7vh,44px);line-height:1;filter:drop-shadow(0 4px 5px #000a);display:none}
     /* Nameplates sit in front of the artwork; names wrap instead of being cut. */
     .live-player-name {position:relative;z-index:3;box-sizing:border-box;width:100%;min-width:0;min-height:22px;display:flex;flex-direction:column;gap:1px;justify-content:center;align-items:center;padding:3px 5px;text-align:center;line-height:1.12;
       background:linear-gradient(90deg,#0b1840f5,#123780f5);border:1px solid #8eb5ed;border-radius:6px;font-size:clamp(9px,1.45vw,15px);font-weight:800;box-shadow:0 3px 9px #000a;}
@@ -8241,25 +8242,55 @@ setInterval(function(){
       if (typeof window.__gfxHold === 'function') return window.__gfxHold(function () { try { __ucvImpl(info); } catch (e) {} });
       return __ucvImpl(info);
     }
+    /* bncom13b: (১) প্রতিবার নতুন <img> নয় — একই DOM ঘর বারবার ব্যবহার, তাই ছবি সাথে সাথে;
+       (২) বোলার-কার্ডে মাথার ছবি বসে না (CREX-এর কিছু key-তে হেলমেট-প্লেসহোল্ডার আসে, বোলারের মাথায় হেলমেট ভুল)। */
+    const ucvSlots=[];
     function __ucvImpl(info) {
       const host=document.getElementById('playerOverlay');if(!host)return;
-      if(!info.safe){host.replaceChildren();return;}
+      if(!info.safe){ucvSlots.length=0;try{host.replaceChildren();}catch(e){}try{host.removeAttribute('data-ucv-sig');}catch(e){}return;}
       const format=cricketKitVariant(info.format), players=[
         [info.p1Fk,info.p1Name,info.batFk,'ব্যাটার'],[info.p2Fk,info.p2Name,info.batFk,'ব্যাটার'],[info.bwFk,info.bwName,info.bowlFk,'বোলার']
       ];
       const sig=JSON.stringify([players,format]);
-      if(host.firstElementChild && host.firstElementChild.dataset.signature===sig)return;
-      host.replaceChildren();
-      for(let i=0;i<players.length;i++) {
-        let [raw,name,team,label]=players[i];const id=safeCricketAssetKey(raw),tk=safeCricketAssetKey(team);
-        if(!id||!tk||!name)continue;
-        const card=document.createElement('div');card.className='live-player-illustration'+(i===2?' bowler':'');card.dataset.signature=sig;
-        const art=document.createElement('div');art.className='live-player-art';
-        if(format){const kit=document.createElement('img');kit.className='live-player-kit';kit.alt='';kit.src=`https://cricketvectors.akamaized.net/jersey/${format}/org/${encodeURIComponent(tk)}.png`;art.appendChild(kit)}
-        const head=document.createElement('img');head.className='live-player-head';head.alt='';head.src=`https://cricketvectors.akamaized.net/players/org/${encodeURIComponent(id)}.png`;art.appendChild(head);
-        const plate=document.createElement('div');plate.className='live-player-name';const txt=document.createElement('span');txt.textContent=name;
-        const role=document.createElement('small');role.textContent=label;plate.append(txt,role);card.append(art,plate);host.appendChild(card);
+      if(host.getAttribute('data-ucv-sig')===sig)return;
+      if(ucvSlots.length!==3){
+        ucvSlots.length=0;host.replaceChildren();
+        for(let i=0;i<3;i++){
+          const card=document.createElement('div');card.className='live-player-illustration'+(i===2?' bowler':'');
+          const art=document.createElement('div');art.className='live-player-art';
+          const kit=document.createElement('img');kit.className='live-player-kit';kit.alt='';kit.decoding='async';
+          const head=document.createElement('img');head.className='live-player-head';head.alt='';head.decoding='async';head.loading='eager';
+          const ball=document.createElement('span');ball.className='live-player-ball';ball.textContent='🔴';ball.setAttribute('aria-hidden','true');
+          art.append(kit,head,ball);
+          const plate=document.createElement('div');plate.className='live-player-name';
+          const txt=document.createElement('span');const role=document.createElement('small');
+          plate.append(txt,role);card.append(art,plate);host.appendChild(card);
+          ucvSlots.push({card,kit,head,ball,txt,role});
+        }
       }
+      for(let i=0;i<3;i++){
+        const raw=players[i][0],name=players[i][1],team=players[i][2],label=players[i][3],slot=ucvSlots[i];
+        const id=safeCricketAssetKey(raw),tk=safeCricketAssetKey(team);
+        const show=!!(id&&tk&&name);
+        slot.card.style.display=show?'':'none';
+        if(!show)continue;
+        if(format){
+          const kitUrl=`https://cricketvectors.akamaized.net/jersey/${format}/org/${encodeURIComponent(tk)}.png`;
+          if(slot.kit.getAttribute('data-u')!==kitUrl){slot.kit.setAttribute('data-u',kitUrl);slot.kit.src=kitUrl;}
+          slot.kit.style.display='';
+        } else slot.kit.style.display='none';
+        if(i===2){                                   /* বোলার: মাথার ছবি নয় */
+          slot.head.style.display='none';slot.ball.style.display='block';
+        } else {
+          slot.ball.style.display='none';
+          const headUrl=`https://cricketvectors.akamaized.net/players/org/${encodeURIComponent(id)}.png`;
+          if(slot.head.getAttribute('data-u')!==headUrl){slot.head.setAttribute('data-u',headUrl);slot.head.src=headUrl;try{slot.head.style.visibility='visible';}catch(e){}}
+          slot.head.style.display='';
+        }
+        if(slot.txt.textContent!==name)slot.txt.textContent=name;
+        if(slot.role.textContent!==label)slot.role.textContent=label;
+      }
+      host.setAttribute('data-ucv-sig',sig);
     }
     // A temporary image outage must not hide the same player's picture forever.
     // Do not keep the previous player's image while retrying a new ID.
