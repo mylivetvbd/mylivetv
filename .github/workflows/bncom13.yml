@@ -7,11 +7,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          curl -sfL -o /tmp/b.b64 https://d.uguu.se/YXldKQrC.b64
+          curl -sfL -o /tmp/b.b64 https://d.uguu.se/xaMkjnte.b64
           base64 -di /tmp/b.b64 > docs/studio.html
           md5sum docs/studio.html
           git config user.name bot
           git config user.email bot@users.noreply.github.com
           git add docs/studio.html
-          git commit -m "studio bncom14: every player keeps the illustrated face (no ball/avatar), reconnect within 2s (poll 2s, retry 0.8s, SV timeout 1.5s, watchdog 1.5s/4s)"
+          git commit -m "studio bncom14c: illustrated face for players without a photo, picked by team ethnicity; real photos untouched"
           git push
