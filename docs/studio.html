@@ -285,6 +285,7 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
     .live-player-head {height:76%;bottom:26%;z-index:2;filter:drop-shadow(0 4px 5px #000a)}
     .live-player-kit {width:100%;height:38%;bottom:0;z-index:1;filter:drop-shadow(0 4px 5px #000a)}
     .live-player-ball {position:absolute;left:50%;transform:translateX(-50%);bottom:30%;z-index:2;font-size:min(7vh,44px);line-height:1;filter:drop-shadow(0 4px 5px #000a);display:none}
+    .live-player-avatar {position:absolute;left:50%;transform:translateX(-50%);bottom:27%;z-index:2;width:min(12vh,78px);height:min(12vh,78px);border-radius:50%;display:none;align-items:center;justify-content:center;font-weight:800;font-size:min(4.6vh,26px);color:#fff;letter-spacing:.5px;background:radial-gradient(circle at 34% 28%,#3b82f6,#1e293b 72%);box-shadow:0 5px 12px #000a,inset 0 0 0 3px #ffffff26}
     /* Nameplates sit in front of the artwork; names wrap instead of being cut. */
     .live-player-name {position:relative;z-index:3;box-sizing:border-box;width:100%;min-width:0;min-height:22px;display:flex;flex-direction:column;gap:1px;justify-content:center;align-items:center;padding:3px 5px;text-align:center;line-height:1.12;
       background:linear-gradient(90deg,#0b1840f5,#123780f5);border:1px solid #8eb5ed;border-radius:6px;font-size:clamp(9px,1.45vw,15px);font-weight:800;box-shadow:0 3px 9px #000a;}
@@ -7971,9 +7972,29 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       return true;
     }catch(e){return false;}
   };
+  var RES_DONE={};
+  /* bncom13g: ম্যাচ শেষ ⇒ CREX-এর 'wc' রেকর্ড থেকে বিজয়ী-ঘোষণা (একবারই) */
+  function resultSay(wc,mf){
+    try{
+      if(!wc||RES_DONE[mf])return; RES_DONE[mf]=1;
+      var team='';
+      try{ if(wc.winner&&window.__crexTeamName)team=window.__crexTeamName(wc.winner); }catch(e){}
+      var n=+wc.wonBy||0, how=(+wc.winnerType===1)?'উইকেটে':((+wc.winnerType===2)?'রানে':'');
+      var body=(team&&n&&how)?(team+' '+bd(n)+' '+how+' জিতেছে।'):'';
+      if(!body&&wc.c)body=String(wc.c).trim();
+      if(!body)return;
+      var line='ম্যাচ শেষ। '+body;
+      Q.length=0; window.__bnCom.end=1;
+      var el=document.getElementById('commText'); if(el)el.textContent='🏆 '+line;
+      try{ rememberSpoken(line); }catch(e){}
+      try{ window.__oneCard&&window.__oneCard('END'); }catch(e){}
+      speakBangla(line).catch(function(){});
+    }catch(e){}
+  }
   function handle(arr,mf){
     if(!Array.isArray(arr)||!arr.length)return;
     noteWickets(arr);
+    try{ var wcs=arr.filter(function(x){return x&&x.type==='wc';}); if(wcs.length)resultSay(wcs[wcs.length-1],mf); }catch(e){}
     hudAbsorb(arr,mf);
     setTimeout(function(){try{window.__crexHudApply();}catch(e){}},0);
     var balls=arr.filter(function(x){return x&&x.type==='b'&&x.b!=null;}).map(function(x){
@@ -8120,6 +8141,7 @@ setInterval(function(){
     }
 
     const crexTeamCache = {}, crexSeriesCache = {}, crexPlayerCache = {};
+    window.__crexTeamName = function(k){ try{ var t=crexTeamCache[k]; return t?String(t.n||''):''; }catch(e){ return ''; } };
     async function ensureCrexNames(pKeys = [], tKeys = [], sKeys = []) {
       const mp = pKeys.filter(k => k && !crexPlayerCache[k]);
       const mt = tKeys.filter(k => k && !crexTeamCache[k]);
@@ -8251,6 +8273,56 @@ setInterval(function(){
       if (typeof window.__gfxHold === 'function') return window.__gfxHold(function () { try { __ucvImpl(info); } catch (e) {} });
       return __ucvImpl(info);
     }
+    /* bncom13f: CREX-এর CDN-এ ~অর্ধেক খেলোয়াড়ের ছবিই নেই — সেখানে হেলমেট-প্লেসহোল্ডার আসে।
+       তাই ১৬×১৬ থাম্বনেইল (CORS-সহ) নামিয়ে পিক্সেল-মিলিয়ে যাচাই করি: আসল মুখ ⇒ ছবি, প্লেসহোল্ডার ⇒ অবতার (হেলমেট নয়)। */
+const FACE_SEED={"10Y": 1, "11B": 1, "3EM": 1, "3IP": 1, "3LF": 1, "4NY": 1, "69N": 1, "72A": 1, "72K": 1, "72L": 1, "730": 1, "7SU": 1, "83": 1, "8VQ": 1, "9MN": 1, "D10": 1, "D33": 1, "EH": 1, "FO": 1, "G0": 1, "MX": 1, "YU": 1, "Z6": 1};
+const PH_SEED={"72T": 0, "7R7": 0, "8KL": 0, "AA5": 0, "AAD": 0, "AFE": 0, "AQV": 0, "CDD": 0, "D7P": 0, "FUH": 0, "IBS": 0, "J6G": 0, "LZ8": 0, "MWK": 0, "QCG": 0, "QCH": 0, "QCJ": 0, "QJA": 0, "QJB": 0, "QK2": 0, "QLJ": 0};
+const PH_REF='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAACBklEQVR42mWRzWsTYRDGn5m8u83HNl9NWyyCYCM1RTEoiHiRoB6iZxGEqne99exR8CZ41D9CLzlUPHgQhaoVLChUW6wau7E0TSKEprvvjIdNm1Sfyxxmfsw8z5CqAgCgqkRU3/AfPHr8dumjqJ47c+re/N3xQj5qRWMUAaqqqtvtzs078ytf10e9FBG12p3zZ08/eXjfdRxmjoB+ERFmflp7vvxpJZdNi4i1tjCWf7249GH5MzNbaweAqjLz6uras9pC2vNsGBJAgNhwxHVqCy983yfq38L71zebW2vffpAb37EQ4hDUDcRJpF6+euP7PjMPgMjQzOzJnCuH0C5mXY/tZIJLeUONL1kTlstlqEY2DPYUMybvuZfHg9J0ZrMVG3FMPp14lxh7jyz2kuwDRARowjXWJDo2XPy+nXRYu7L+J2j0NHN4AkQiwkRDKVlhwtVq1TCbGIWigYhh6oVaqVyIfB6IlZgBzM3dCLxCzlFRgmqSgvzUkSsXK4D++wciEpF0Knnp2q2N9k7cwHVijU6vev12ejQlMvg077shQFWPHytmjYgqE7yYlGaKqro3fBAAlIia/s8M756YysxOeGnubTd+EREGIQ3FqgoCus3NXWt7gQIaBLbb2gKgUPofiNRq1CHCBAWJ2NbvOoDhDUMeiABMTs+6yZSqqEg85U0eLe23Iv0F5aD4POXbv3AAAAAASUVORK5CYII=';
+const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_facev1')||'{}');}catch(e){return {};}})();
+    Object.keys(PH_SEED).forEach(function(k){ if(faceVerdict[k]===undefined)faceVerdict[k]=0; });
+    Object.keys(FACE_SEED).forEach(function(k){ if(faceVerdict[k]===undefined)faceVerdict[k]=1; });
+    function saveFaceVerdict(){ try{ localStorage.setItem('mlv_facev1',JSON.stringify(faceVerdict)); }catch(e){} }
+    var refPix=null, faceQ=[], faceActive=0;
+    function refPixels(cb){
+      if(refPix)return cb(refPix);
+      var im=new Image();
+      im.onload=function(){ try{ var c=document.createElement('canvas');c.width=16;c.height=16;
+        var x=c.getContext('2d',{willReadFrequently:true}); x.fillStyle='#fff'; x.fillRect(0,0,16,16); x.drawImage(im,0,0,16,16);
+        refPix=x.getImageData(0,0,16,16).data; }catch(e){ refPix=null; } cb(refPix); };
+      im.onerror=function(){ cb(null); }; im.src=PH_REF;
+    }
+    function classifyFace(id){ if(!id||faceVerdict[id]!==undefined)return; if(faceQ.indexOf(id)<0)faceQ.push(id); pumpFace(); }
+    function pumpFace(){
+      while(faceActive<3 && faceQ.length){
+        var id=faceQ.shift(); if(faceVerdict[id]!==undefined)continue;
+        faceActive++; faceVerdict[id]=-1;
+        (function(pid){
+          var url='https://wsrv.nl/?url=cricketvectors.akamaized.net/players/org/'+encodeURIComponent(pid)+'.png&w=16&h=16&output=png';
+          refPixels(function(ref){
+            var im=new Image(); im.crossOrigin='anonymous';
+            var done=function(v){ faceVerdict[pid]=v; saveFaceVerdict(); faceActive--; pumpFace(); try{window.__ucvRefresh&&window.__ucvRefresh();}catch(e){} };
+            im.onload=function(){
+              var v=0;
+              try{
+                var c=document.createElement('canvas');c.width=16;c.height=16;
+                var x=c.getContext('2d',{willReadFrequently:true}); x.fillStyle='#fff'; x.fillRect(0,0,16,16); x.drawImage(im,0,0,16,16);
+                var d=x.getImageData(0,0,16,16).data;
+                if(ref){ var sum=0; for(var i=0;i<d.length;i+=4){ sum+=Math.abs(d[i]-ref[i])+Math.abs(d[i+1]-ref[i+1])+Math.abs(d[i+2]-ref[i+2]); }
+                  v=(sum/(256*3)<6)?0:1; }
+              }catch(e){ v=0; }
+              done(v);
+            };
+            im.onerror=function(){ done(0); };
+            im.src=url;
+          });
+        })(id);
+      }
+    }
+    function initialsOf(name){
+      var t=String(name||'').trim(); if(!t)return '';
+      var w=t.split(/\s+/).filter(Boolean);
+      return ((w[0]||'').charAt(0)+(w.length>1?(w[w.length-1]||'').charAt(0):'')).toUpperCase();
+    }
     /* bncom13b: (১) প্রতিবার নতুন <img> নয় — একই DOM ঘর বারবার ব্যবহার, তাই ছবি সাথে সাথে;
        (২) বোলার-কার্ডে মাথার ছবি বসে না (CREX-এর কিছু key-তে হেলমেট-প্লেসহোল্ডার আসে, বোলারের মাথায় হেলমেট ভুল)। */
     const ucvSlots=[];
@@ -8260,7 +8332,8 @@ setInterval(function(){
       const format=cricketKitVariant(info.format), players=[
         [info.p1Fk,info.p1Name,info.batFk,'ব্যাটার'],[info.p2Fk,info.p2Name,info.batFk,'ব্যাটার'],[info.bwFk,info.bwName,info.bowlFk,'বোলার']
       ];
-      const sig=JSON.stringify([players,format]);
+      const verdicts=players.map(function(p){ var k=safeCricketAssetKey(p[0]); return k?(faceVerdict[k]===undefined?-1:faceVerdict[k]):-9; });
+        const sig=JSON.stringify([players,format,verdicts]);
       if(host.getAttribute('data-ucv-sig')===sig)return;
       if(ucvSlots.length!==3){
         ucvSlots.length=0;host.replaceChildren();
@@ -8270,11 +8343,12 @@ setInterval(function(){
           const kit=document.createElement('img');kit.className='live-player-kit';kit.alt='';kit.decoding='async';
           const head=document.createElement('img');head.className='live-player-head';head.alt='';head.decoding='async';head.loading='eager';
           const ball=document.createElement('span');ball.className='live-player-ball';ball.textContent='🔴';ball.setAttribute('aria-hidden','true');
-          art.append(kit,head,ball);
+          const av=document.createElement('span');av.className='live-player-avatar';av.setAttribute('aria-hidden','true');
+          art.append(kit,head,ball,av);
           const plate=document.createElement('div');plate.className='live-player-name';
           const txt=document.createElement('span');const role=document.createElement('small');
           plate.append(txt,role);card.append(art,plate);host.appendChild(card);
-          ucvSlots.push({card,kit,head,ball,txt,role});
+          ucvSlots.push({card,kit,head,ball,av,txt,role});
         }
       }
       for(let i=0;i<3;i++){
@@ -8288,19 +8362,24 @@ setInterval(function(){
           if(slot.kit.getAttribute('data-u')!==kitUrl){slot.kit.setAttribute('data-u',kitUrl);slot.kit.src=kitUrl;}
           slot.kit.style.display='';
         } else slot.kit.style.display='none';
-        if(i===2){                                   /* বোলার: মাথার ছবি নয় */
-          slot.head.style.display='none';slot.ball.style.display='block';
-        } else {
-          slot.ball.style.display='none';
+        /* bncom13f: আসল মুখ থাকলে ছবি, নাহলে অবতার — বোলার-ব্যাটার দুজনেরই */
+        const vv=(faceVerdict[id]===undefined?-1:faceVerdict[id]);
+        if(vv===1){
           const headUrl=`https://cricketvectors.akamaized.net/players/org/${encodeURIComponent(id)}.png`;
           if(slot.head.getAttribute('data-u')!==headUrl){slot.head.setAttribute('data-u',headUrl);slot.head.src=headUrl;try{slot.head.style.visibility='visible';}catch(e){}}
-          slot.head.style.display='';
+          slot.head.style.display=''; slot.av.style.display='none'; slot.ball.style.display='none';
+        } else {
+          slot.head.style.display='none';
+          if(vv===-1){ slot.av.style.display='none'; slot.ball.style.display=(i===2?'block':'none'); classifyFace(id); }
+          else { const ini=initialsOf(name); if(slot.av.textContent!==ini)slot.av.textContent=ini||'🏏'; slot.av.style.display='flex'; slot.ball.style.display='none'; }
         }
         if(slot.txt.textContent!==name)slot.txt.textContent=name;
         if(slot.role.textContent!==label)slot.role.textContent=label;
       }
       host.setAttribute('data-ucv-sig',sig);
+      window.__ucvLastInfo=info;
     }
+    window.__ucvRefresh=function(){ try{ if(window.__ucvLastInfo)__ucvImpl(window.__ucvLastInfo); }catch(e){} };
     // A temporary image outage must not hide the same player's picture forever.
     // Do not keep the previous player's image while retrying a new ID.
     const playerImageRetries=new WeakMap();
