@@ -1,0 +1,23 @@
+name: bncom20
+on: {workflow_dispatch: {}}
+permissions: {contents: write}
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/b.b64 https://h.uguu.se/dblPHuct.b64
+          echo "bcac426188d805508e94488bcd250aa6  /tmp/b.b64" | md5sum -c -
+          base64 -di /tmp/b.b64 > docs/studio.html
+          echo "8bef0a01fd678e1125c0ffb6e6aa9b78  docs/studio.html" | md5sum -c -
+          echo "sit-line: $(grep -c '__cktSitLine' docs/studio.html)"
+          echo "intro: $(grep -c '__cktIntroLine' docs/studio.html)"
+          echo "pend: $(grep -c 'function pendFeed' docs/studio.html)"
+          git config user.name bot
+          git config user.email bot@users.noreply.github.com
+          git add docs/studio.html
+          git commit -m "studio bncom20: realistic own commentary (team/score/run-rate/wickets left), 8s CREX fallback with instant handover, drop ball-speed lines"
+          git push
+          echo ALL-DONE
