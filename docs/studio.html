@@ -7747,11 +7747,29 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     if(/^b\s/.test(wd))return 'বোল্ড';
     return '';
   }
+  /* bncom12: সোর্স কিছু ম্যাচে c2 (কমেন্টারি) খালি পাঠায় — তখন কাঠামো থেকেই বাক্য */
+  function outcomeBn(tok){
+    var t=String(tok||'').toUpperCase();
+    if(t==='W')return 'উইকেট!';
+    if(/^(WD|WIDE)$/.test(t))return 'ওয়াইড।';
+    if(/^(NB|NOBALL|NO ?BALL)$/.test(t))return 'নো বল।';
+    if(t==='4')return 'চার রান!';
+    if(t==='6')return 'ছয় রান!';
+    if(t==='0')return 'কোনো রান নেই।';
+    if(/^[1-5]$/.test(t))return bd(t)+' রান।';
+    return '';
+  }
   function lineOf(x){
     var who=bd(clean(x.c1)), body=bd(clean(x.c2)), how=howBn(x._wd);
-    if(!body)return '';
+    if(!body){
+      var oc=outcomeBn(x.b);
+      if(!who&&!oc)return '';
+      body=oc;
+      var sc=String(x.s||'').match(/^(\d+)\/(\d+)$/);
+      if(sc)body+=' স্কোর '+sc[1]+'/'+sc[2]+'।';
+    }
     var head = who ? (how ? who+' — '+how+'।' : who+'।') : (how?how+'।':'');
-    return (head?head+' ':'')+body;
+    return ((head?head+' ':'')+body).trim();
   }
   var pumpT=0;
   var busySince=0;
@@ -7782,7 +7800,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   var FL={};                                   /* SV ব্যাকআপ যেখানে পৌঁছেছে — তার নিচে নামবে না */
   window.__bnFloor=function(mf,ov){ var b=bidx(ov); if(b>=0&&(!FL[mf]||b>FL[mf])) FL[mf]=b; };
   var gapT=0;                                  /* গ্যাপ-বট: CREX নীরব হলে বিশ্লেষণ-কথা */
-  function armGap(){ if(gapT)clearTimeout(gapT); gapT=setTimeout(fireGap,20000); }
+  function armGap(){ if(gapT)return; gapT=setTimeout(fireGap,20000); }   /* bncom12: বারবার রিসেট হবে না */
   function fireGap(){
     gapT=0;
     try{
@@ -7827,10 +7845,13 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         }
       });
       if(newestB&&newestB.s)HUD.s=String(newestB.s);
-      if(newestO){
-        if(newestO.s)HUD.s=String(newestO.s);
-        if(newestO.overs!=null)HUD.overs=String(newestO.overs);
-        else if(newestO.tsl){var mm=String(newestO.tsl).match(/\(([0-9.]+)\)/); if(mm)HUD.overs=mm[1];}
+      /* ভিন্ন ইনিংস/দলের ওভার-রেকর্ড ⇒ ব্যাটার-বোলার মেশাবেন না */
+      var teamKey=newestB?String(newestB.bat_team_fkey||''):'';
+      var okO=!!newestO;
+      if(okO&&teamKey&&newestO.tfkey&&String(newestO.tfkey)!==teamKey)okO=false;
+      if(okO){
+        /* ওভার-রেকর্ড পুরোনো হলে তার স্কোর দিয়ে নতুন স্কোর মুছবে না */
+        if(newestO.s&&(!newestB||!newestB.s||(+newestO.id||0)>=(+newestB.id||0)))HUD.s=String(newestO.s);
         if(newestO.p1)HUD.p1=String(newestO.p1);
         if(newestO.p2)HUD.p2=String(newestO.p2);
         if(newestO.s1)HUD.s1=String(newestO.s1);
@@ -7839,17 +7860,24 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         if(newestO.bd)HUD.bd=String(newestO.bd);
         if(newestO.team)HUD.team=String(newestO.team);
         if(newestO.rb)HUD.rbowl=String(newestO.rb);
+        if(newestO.pf1)HUD.pf1=String(newestO.pf1);
+        if(newestO.pf2)HUD.pf2=String(newestO.pf2);
       }
-      /* এই ওভারের ডট — একই ওভারের বল-রেকর্ডগুলি (শেষ ৬টি) */
+      /* ওভার: tsl-এর (১০.০) সবচেয়ে নির্ভরযোগ্য; নইলে ৯.৬→১০.০ নিয়ম */
+      function tslOver(x){var m=(x&&x.tsl)?String(x.tsl).match(/\(([0-9]+\.[0-9])\)/):null;return m?m[1]:'';}
+      function normOv(v){var m=String(v||'').match(/^(\d+)\.(\d+)$/);if(!m)return '';var o=+m[1],b=+m[2];return (b>=6)?(o+1)+'.0':o+'.'+b;}
+      HUD.overs=tslOver(newestB)||tslOver(newestO)||normOv(String((newestB&&newestB.o)||''))||HUD.overs;
+      /* এই ওভারের ডট — চলতি ওভারের বল; না থাকলে শেষ ওভারের rb */
       if(newestB){
         var ovKey=String(newestB.o||'').split('.')[0];
         var toks=arr.filter(function(y){return y&&y.type==='b'&&String(y.o||'').split('.')[0]===ovKey;})
           .sort(function(a,b){return (+a.id||0)-(+b.id||0);})
           .map(function(y){return String(y.b||'');});
         if(toks.length)HUD.tokens=toks;
+        else if(HUD.rbowl)HUD.tokens=String(HUD.rbowl).split('.').filter(Boolean).slice(-6);
         HUD.ovRaw=String(newestB.o||HUD.ovRaw||'');
-        /* চলতি ওভার/বল-ই সংখ্যাটা সবচেয়ে নতুন (৬.৩ ইত্যাদি) */
-        if(/^\d+\.\d+$/.test(String(newestB.o||'')))HUD.overs=String(newestB.o);
+        var sp=String(newestB.pf||'');
+        if(sp){HUD.strikerKey=sp;HUD.striker=(HUD.pf1===sp)?1:(HUD.pf2===sp)?2:0;}
       }
       if(HUD.s||HUD.tokens.length){HUD.ts=Date.now(); window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();}
     }catch(e){}
@@ -7876,9 +7904,9 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
           dots.appendChild(sp);
         });
       }
-      if(H.p1){set('uiBat0Name','🏏 '+H.p1); }
+      if(H.p1){set('uiBat0Name',(H.striker===1?'🏏 ':'• ')+H.p1); }
       if(H.s1){var m1=String(H.s1).match(/^(\d+)\s*\(\s*(\d+)/); if(m1)set('uiBat0Runs',D(m1[1])+' ('+D(m1[2])+')');}
-      if(H.p2){set('uiBat1Name','• '+H.p2);}
+      if(H.p2){set('uiBat1Name',(H.striker===2?'🏏 ':'• ')+H.p2);}
       if(H.s2){var m2=String(H.s2).match(/^(\d+)\s*\(\s*(\d+)/); if(m2)set('uiBat1Runs',D(m2[1])+' ('+D(m2[2])+')');}
       if(H.bowler){
         var f=String(H.bd||'').match(/^(\d+)\s*-\s*(\d+)\s*\(([0-9.]+)\)/);
@@ -7909,7 +7937,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     noteWickets(arr);
     hudAbsorb(arr);
     setTimeout(function(){try{window.__crexHudApply();}catch(e){}},0);
-    var balls=arr.filter(function(x){return x&&x.type==='b'&&x.c2;}).map(function(x){
+    var balls=arr.filter(function(x){return x&&x.type==='b'&&x.b!=null;}).map(function(x){
       var o=String(x.o);
       return {o:o,b:String(x.b),s:String(x.s||''),c1:x.c1,c2:x.c2,inn:x.inning,_wd:wdFor(o),k:keyOf(x)};
     });
@@ -7933,6 +7961,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     if(!fresh.length)return;
     if(fresh.length>2) fresh=fresh.slice(-2);   /* বাসি বল বাদ ⇒ দেরি জমে না */
     window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();
+    if(!Q.length&&!isSpeakingNow&&!busy){ try{armGap();}catch(_e){} }
     fresh.forEach(function(x){
       var go=function(){ var l=lineOf(x); if(l){window.__bnCom.spoke=true;speak(l,{oc:x.b,sc:x.s,ov:x.o});} };
       if(x.b==='W'&&!x._wd){                       /* উইকেট ⇒ ধরন আনতে ওই ওভারটা একবার দেখি */
