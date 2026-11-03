@@ -7986,12 +7986,27 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   var SEEN={}, Q=[], busy=false, lastFetch=0, primed={}, WD_CACHE={};
   var BND='০১২৩৪৫৬৭৮৯';
   function bd(t){return String(t==null?'':t).replace(/[0-9]/g,function(d){return BND[+d];});}
+  /* bncom32 ধাপ-২: বাংলা সম্বন্ধ বিভক্তি — \"আলী\"→\"আলীর\", \"রহমান\"→\"রহমানের\" (\"-এর\" জোড়া বন্ধ) */
+  function bnGen(w){
+    var x=String(w||'').replace(/[-–\s]+$/,'').trim(); if(!x)return '';
+    var last=x.charAt(x.length-1);
+    var vowel='অআইঈউঊঋএঐওঔািীুূৃেৈোৌ';
+    return x + (vowel.indexOf(last)>=0 ? 'র' : 'ের');
+  }
+  /* bncom32 ধাপ-২: ফিলার শব্দ বাদ — তথ্য আগে */
+  function deFiller(t){
+    var F=['দুর্দান্ত','অসাধারণ','চমৎকার','দারুণ','জমে উঠেছে','সত্যিই'];
+    var o=String(t||'');
+    for(var i=0;i<F.length;i++){ o=o.split(F[i]).join(' '); }
+    return o.replace(/\s+/g,' ').replace(/\s+([।,!?])/g,'$1').replace(/([।,!?]){2,}/g,'$1').trim();
+  }
   function clean(t){
     t=String(t||'').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"');
     t=t.replace(/\s+/g,' ').trim();
-    if(/[A-Za-z]/.test(t)) t=t.replace(/^\s*([A-Za-z][A-Za-z.'\- ]*?)\s+to\s+([A-Za-z][A-Za-z.'\- ]*?)\s*$/,'$1-এর বলে $2');   /* bncom23: ইংরেজি c1 লিক বন্ধ */
-    t=t.replace(/([\u0980-\u09FF][^,।]*?) থেকে ([\u0980-\u09FF][^,।]*?) এর দিকে/g,'$1-এর বলে $2');
+    if(/[A-Za-z]/.test(t)) t=t.replace(/^\s*([A-Za-z][A-Za-z.'\- ]*?)\s+to\s+([A-Za-z][A-Za-z.'\- ]*?)\s*$/,(m,a,b)=>(/[A-Za-z]/.test(a)?a.trim()+'-এর':bnGen(a))+' বলে '+b);   /* bncom23+bncom32: সঠিক বিভক্তি */
+    t=t.replace(/([\u0980-\u09FF][^,।]*?) থেকে ([\u0980-\u09FF][^,।]*?) এর দিকে/g,(m,a,b)=>bnGen(a)+' বলে '+b);   /* bncom32: \"-এর\" জোড়া বন্ধ */
     t=t.replace(/আরাউন্ড দ্য উইকেট/g,'রাউন্ড দ্য উইকেট').replace(/ফুলিশ/g,'ফুল-লেংথ').replace(/ফুলিস/g,'ফুল-লেংথ').replace(/ডিপ মিড উইকেট/g,'ডিপ মিডউইকেট');
+    t=deFiller(t);   /* bncom32 ধাপ-২ */
     return t.replace(/\s+/g,' ').trim();
   }
   function howBn(wd){
@@ -8025,6 +8040,11 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       body=oc;
       var sc=String(x.s||'').match(/^(\d+)\/(\d+)$/);
       if(sc)body+=' স্কোর '+bd(sc[1])+'/'+bd(sc[2])+'।';   /* bncom22: বাংলা অঙ্ক */
+    }
+    /* bncom32 ধাপ-২: চার/ছয়/উইকেটে সংখ্যা (স্কোর) আলাদা করে বলা — ঘটনা→সংখ্যা */
+    if(body && !/স্কোর/.test(body) && /^(4|6|W)$/i.test(String(x.b||''))){
+      var sc3=String(x.s||'').match(/^(\d+)\/(\d+)$/);
+      if(sc3) body+=' স্কোর '+bd(sc3[1])+'/'+bd(sc3[2])+'।';
     }
     var head = who ? (how ? who+' — '+how+'।' : who+'।') : (how?how+'।':'');
     return ((head?head+' ':'')+body).trim();
@@ -9822,8 +9842,8 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
             lastSpeakTime=Date.now(); isSpeakingNow=true; analysisStep++;
             const safeHome=Object.keys(TEAM_MAP).some(k=>String(batEng).toLowerCase().includes(k.toLowerCase())) ? batBn : (bnTeamName(batEng)||'প্রথম দল');
             const safeAway=Object.keys(TEAM_MAP).some(k=>String(bowlEng).toLowerCase().includes(k.toLowerCase())) ? bowlBn : (bnTeamName(bowlEng)||'দ্বিতীয় দল');
-            const line=analysisStep%3===0 ? `${count.spoken} আপনারা ধৈর্য নিয়ে মাঠের হুল্লোড়ের সঙ্গে থাকুন।` :
-              `${safeHome} বনাম ${safeAway} ম্যাচের অপেক্ষায় আছি আমরা। ${count.spoken} আপনাদের মতে কোন দল ভালো করবে? কমেন্টে জানাতে পারেন।`;
+            const line=analysisStep%3===0 ? `${safeHome} বনাম ${safeAway} — ${count.spoken} আপনাদের মতে কোন দল এগিয়ে থাকবে? কমেন্টে জানাতে পারেন।` :
+              `${safeHome} বনাম ${safeAway} ম্যাচের অপেক্ষায় আছি আমরা। ${count.spoken}`;
             document.getElementById('commText').textContent=line; await speakBangla(line); isSpeakingNow=false;
           }
           if (selectedMatch && selectedMatch.sport==='cricket') pollTimer=setTimeout(pollCrexCricket,liveFailures ? 500 : 1500);
