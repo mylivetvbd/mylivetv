@@ -1,0 +1,26 @@
+name: bugfix10
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/bf10.b64 "https://n.uguu.se/ZSYYsKBp.b64"
+          echo "2dd79e1cdc37044f5cbcdd6b8b63dbcc  /tmp/bf10.b64" | md5sum -c -
+          base64 -di /tmp/bf10.b64 > docs/studio.html
+          echo "83a4abe74b58a8b0e82960caa9f654d3  docs/studio.html" | md5sum -c -
+          echo "cmtLastSay : $(grep -c '__cmtLastSay' docs/studio.html)"
+          echo "setScore   : $(grep -c 'window.__setScore=' docs/studio.html)"
+          echo "brand-card : $(grep -c 'brand-card' docs/studio.html)"
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio bugfix10: protect CREX ball-by-ball commentary queue from gap overwrite + sync SV gate with ball feed"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
