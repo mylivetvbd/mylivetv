@@ -1,0 +1,25 @@
+name: bncom32b
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/b32b.b64 "https://d.uguu.se/NjfRpVQQ.b64"
+          echo "649d4254c2319cdb9fcec54009e22b27  /tmp/b32b.b64" | md5sum -c -
+          base64 -di /tmp/b32b.b64 > docs/studio.html
+          echo "8c651939fdfa7760c4fcdef045932f05  docs/studio.html" | md5sum -c -
+          echo "bnGen    : $(grep -c 'function bnGen(' docs/studio.html)"
+          echo "deFiller : $(grep -c 'function deFiller(' docs/studio.html)"
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio bncom32 step2: commentary rules (correct Bengali genitive, filler words removed, score on 4/6/W, question only every 3rd line)"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
