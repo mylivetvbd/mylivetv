@@ -7306,7 +7306,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     // CREX can publish 0/0 (0.0) before the first delivery. It is not proof of live play.
     function crexHasPlay(data) {
       const delivered = Array.isArray(data.rb) && data.rb.some(o => Array.isArray(o.b) && o.b.some(b => b && b.u !== undefined && b.u !== null && String(b.u) !== ''));
-      const progressed = [data.j, data.k].some(raw => /\(\s*(?:[1-9]\d*\.[0-5]|0\.[1-5])/.test(String(raw || '')));
+      const progressed = [data.j, data.k].some(raw => /\(\s*(?:[1-9]\d*\.[0-9]|0\.[1-9])/.test(String(raw || '')));
       return Boolean(delivered || progressed);
     }
     function showCricketWaiting(m) {
@@ -7874,7 +7874,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     // Idle commentary uses only the validated current score and player figures.
     // Tactical and audience lines are explicitly questions, never claims of observed fielding or real comments.
     function cricketRunRate(runs, oversRaw) {
-      const m=String(oversRaw||'').trim().match(/^(\d+)\.([0-5])$/);
+      const m=String(oversRaw||'').trim().match(/^(\d+)\.([0-9])$/);
       if(!m || !Number.isInteger(runs) || runs<0)return '';
       const balls=Number(m[1])*6+Number(m[2]);
       if(!balls)return '';
@@ -9604,7 +9604,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     // Rate from actual legal balls only. A chase equation is used ONLY if the
     // current feed explicitly provides both runs and balls remaining.
     function computeCricketMetrics({runs,overs,status,active,inningsIndex}) {
-      const m=String(overs||'').match(/^(\d+)\.([0-5])$/);const balls=m?Number(m[1])*6+Number(m[2]):0;
+      const m=String(overs||'').match(/^(\d+)\.([0-9])$/);const balls=m?Number(m[1])*6+Number(m[2]):0;
       const rate=Number.isInteger(runs)&&runs>=0&&balls>0?(runs*6/balls).toFixed(2):'';
       let need=null,lead=null,trail=null;
       if(active && inningsIndex>=1) {
