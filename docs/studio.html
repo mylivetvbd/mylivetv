@@ -16,6 +16,9 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
   <link rel="preconnect" href="https://cricketvectors.akamaized.net" crossorigin />
   <link rel="dns-prefetch" href="https://cricketvectors.akamaized.net" />
   <link rel="preconnect" href="https://api.goscorer.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@500;600;700&family=Noto+Sans+Bengali:wght@500;600;700;800;900&display=swap" />
   <link rel="manifest" href='data:application/manifest+json,{"name":"মাঠের হুল্লোড় LIVE","short_name":"মাঠের হুল্লোড়","start_url":".","display":"fullscreen","background_color":"#040812","theme_color":"#040812"}' />
   <title>মাঠের হুল্লোড় LIVE — ক্রিকেট ও ফুটবল 3D স্টুডিও</title>
   <style>
@@ -24,6 +27,10 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
       width: 100%; height: 100%; overflow: hidden;
       background: #040812;
       font-family: 'Noto Sans Bengali', 'Hind Siliguri', system-ui, -apple-system, sans-serif;
+      font-feature-settings: "kern" 1, "liga" 1, "clig" 1;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       color: #f8fafc; user-select: none;
     }
     #studioRoot { position:fixed; inset:0; overflow:hidden; }
@@ -6742,35 +6749,83 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     const BN_TR_CONS='bcdfghjklmnpqrstvwxyz';
     const BN_TR_C={b:'ব',c:'ক',d:'ড',f:'ফ',g:'গ',h:'হ',j:'জ',k:'ক',l:'ল',m:'ম',n:'ন',p:'প',q:'ক',r:'র',s:'স',t:'ট',v:'ভ',w:'ওয়',x:'ক্স',y:'য়',z:'জ'};
     const BN_TR_V={a:['আ','া'],e:['এ','ে'],i:['ই','ি'],o:['ও','ো'],u:['উ','ু']};
-    const BN_TR_PAIR={sh:'শ',ch:'চ',th:'থ',kh:'খ',gh:'ঘ',ph:'ফ',bh:'ভ',dh:'ধ',jh:'ঝ',chh:'ছ',ng:'ং',ck:'ক',qu:'ক',wh:'হ',gn:'ন',kn:'ন'};
+    const BN_TR_PAIR={sh:'শ',ch:'চ',th:'থ',kh:'খ',gh:'ঘ',ph:'ফ',bh:'ভ',dh:'ধ',jh:'ঝ',ck:'ক',qu:'ক',wh:'হ',gn:'ন',kn:'ন'};
     const BN_TR_VPAIR={ee:['ঈ','ী'],oo:['ঊ','ু'],ea:['ই','ি'],oa:['ও','ো'],ow:['ও','ো'],ou:['আউ','াউ'],ai:['আই','াই'],ay:['এ','ে']};
     const BN_TR_CLUSTER=new Set(['bl','br','cl','cr','dr','fl','fr','gl','gr','kl','kr','pl','pr','sk','sl','sm','sn','sp','st','sw','tr','tw','nd','nt','mp','nk','ns','nc','lt','ld','lk','rk','rt','rd','rm','rn','rl','ct','pt','xt','mb','ft','rb','rc','rg','rv','lm','lp','lf']);
     const BN_TR_H='\u09CD';
+    /* bug#14: ইউনিকোড বাংলা মাত্রা-গার্ড — ব্যঞ্জন ছাড়া মাত্রা/হসন্ত/অনুস্বার বসে কখনো ◌ তৈরি হতে দেবে না */
+    const BN_VMAP={'\u09BE':'আ','\u09BF':'ই','\u09C0':'ঈ','\u09C1':'উ','\u09C2':'ঊ','\u09C3':'ঋ','\u09C7':'এ','\u09C8':'ঐ','\u09CB':'ও','\u09CC':'ঔ','\u09D7':'ও'};
+    const bnIsCons=c=>/[\u0995-\u09B9\u09DC-\u09DF\u09F0\u09F1\u09BC]/.test(c||'');
+    function bnCleanMarks(s){
+      s=String(s||'').replace(/\u25CC/g,'');
+      let o='';
+      for(let i=0;i<s.length;i++){
+        const ch=s[i], prev=o[o.length-1]||'';
+        if(ch==='\u09BC'){ if(/[\u09A1\u09A2\u09AF]/.test(prev)) o+=ch; continue; }
+        if(ch==='\u09CD'){
+          if(bnIsCons(prev) || ((prev==='\u0985'||prev==='\u098F') && s[i+1]==='\u09AF')) o+=ch;
+          continue;
+        }
+        if(BN_VMAP[ch]){
+          if(bnIsCons(prev)) o+=ch;
+          else if((prev==='\u09BF'||prev==='\u09C0') && ch==='\u09BE') o+='\u09DF\u09BE';
+          else o+=BN_VMAP[ch];
+          continue;
+        }
+        if(ch>='\u0981' && ch<='\u0983'){
+          if(prev==='\u09CD') o=o.slice(0,-1);
+          const p2=o[o.length-1]||'';
+          if(/[\u0985-\u09B9\u09BC\u09BE-\u09CC\u09CE\u09DC-\u09DF\u09F0\u09F1]/.test(p2)) o+=ch;
+          else if(ch==='\u0982') o+='ঙ';
+          continue;
+        }
+        o+=ch;
+      }
+      return o.replace(/\u09CD$/,'');
+    }
+    window.__bnCleanMarks=bnCleanMarks;
     function bnTranslitWord(w0){
       let w=String(w0||'').toLowerCase().replace(/[^a-z]/g,'');
       if(!w) return '';
-      if(w.length>3 && /e$/.test(w)) w=w.slice(0,-1);
+      if(w.length>3){
+        w=w.replace(/dge$/,'j').replace(/nge$/,'nj').replace(/ce$/,'s');
+        if(w.length>3 && /e$/.test(w)) w=w.slice(0,-1);
+      }
       w=w.replace(/([bcdfgklmnprstvz])\1+/g,'$1');
       if(!w) return '';
       let out='', i=0, prevCons=false;
       while(i<w.length){
-        const one=w[i], two=w.substr(i,2);
+        const one=w[i], two=w.substr(i,2), three=w.substr(i,3);
+        if(three==='chh'){ out+='ছ'; prevCons=true; i+=3; continue; }
         if(BN_TR_VPAIR[two]){ const p=BN_TR_VPAIR[two]; out+= prevCons?p[1]:p[0]; prevCons=false; i+=2; continue; }
+        if(two==='ng'){
+          const nx=w[i+2]||'';
+          if(i===0){ out+= /[aeiouy]/.test(nx)?'এনগ':'এনজি'; prevCons=/[aeiouy]/.test(nx); }
+          else if(nx==='e'||nx==='y'){ out+='ঞ্জ'; prevCons=true; }
+          else if(/[aiou]/.test(nx)){ out+='ঙ্গ'; prevCons=true; }
+          else { out+='ং'; prevCons=false; }
+          i+=2; continue;
+        }
         if(BN_TR_PAIR[two]){ out+=BN_TR_PAIR[two]; prevCons=true; i+=2; continue; }
-        if(one==='y' && prevCons){ out+='ি'; prevCons=false; i+=1; continue; }
-        if(BN_TR_V[one]){ const p=BN_TR_V[one]; out+= prevCons?p[1]:p[0]; prevCons=false; i+=1; continue; }
+        if(one==='y' && prevCons && !/[aeiou]/.test(w[i+1]||'')){ out+='ি'; prevCons=false; i+=1; continue; }
+        if(BN_TR_V[one]){
+          const p=BN_TR_V[one];
+          if(!prevCons && /[\u09BF\u09C0]$/.test(out) && one==='a') out+='য়া';
+          else out+= prevCons?p[1]:p[0];
+          prevCons=false; i+=1; continue;
+        }
         if(BN_TR_CONS.indexOf(one)>=0){
           out += (one==='g' && /[eiy]/.test(w[i+1]||'')) ? 'জ' : (one==='c' && /[eiy]/.test(w[i+1]||'')) ? 'স' : BN_TR_C[one];
-          const nextIsCons=(i+1<w.length) && BN_TR_CONS.indexOf(w[i+1])>=0 && !BN_TR_PAIR[w.substr(i+1,2)] && w[i+1]!==w[i];
+          const nextIsCons=(i+1<w.length) && BN_TR_CONS.indexOf(w[i+1])>=0 && w.substr(i+1,3)!=='chh' && w.substr(i+1,2)!=='ng' && !BN_TR_PAIR[w.substr(i+1,2)] && w[i+1]!==w[i];
           if(nextIsCons && BN_TR_CLUSTER.has(two)) out+=BN_TR_H;
           prevCons=true; i+=1; continue;
         }
         i+=1;
       }
-      return out.replace(/\u09CD$/,'');
+      return bnCleanMarks(out);
     }
     /* পরিচিত নামের শব্দ — ট্রান্সলিটারেশনের আগে দেখা হয় (সঠিক বানানের জন্য) */
-    const BN_WORD_TR={united:'ইউনাইটেড',city:'সিটি',real:'রিয়াল',club:'ক্লাব',cricket:'ক্রিকেট',king:'কিং',star:'স্টার',sports:'স্পোর্টস',academy:'অ্যাকাডেমি',fc:'এফসি',sc:'এসসি',east:'ইস্ট',west:'ওয়েস্ট',north:'নর্থ',south:'সাউথ',eastern:'ইস্টার্ন',western:'ওয়েস্টার্ন',northern:'নর্দার্ন',southern:'সাদার্ন',royal:'রয়্যাল',challengers:'চ্যালেঞ্জার্স',warriors:'ওয়ারিয়র্স',riders:'রাইডার্স',tigers:'টাইগার্স',strikers:'স্ট্রাইকার্স',capitals:'ক্যাপিটালস',victorians:'ভিক্টোরিয়ান্স',qalandars:'কলন্দর',zalmi:'জালমি',gladiators:'গ্ল্যাডিয়েটর্স',bolts:'বোল্টস',patriots:'প্যাট্রিয়টস',blasters:'ব্লাস্টার্স',thunders:'থান্ডার্স',legends:'লেজেন্ডস',superstars:'সুপারস্টার্স',sultans:'সুলতানস',falcons:'ফ্যালকনস',sydney:'সিডনি',mumbai:'মুম্বাই',indians:'ইন্ডিয়ান্স',emirates:'এমিরেটস',cape:'কেপ',sunrisers:'সানরাইজার্স',marvels:'মার্ভেলস',sixers:'সিক্সার্স',giants:'জায়ান্টস',knight:'নাইট',knights:'নাইটস',nassr:'নাসর',abu:'আবু',dhabi:'ধাবি',desert:'ডেজার্ট',vipers:'ভাইপার্স',gulf:'গালফ',madrid:'মাদ্রিদ',manchester:'ম্যানচেস্টার',kandy:'ক্যান্ডি',jaffna:'জাফনা',colombo:'কলম্বো',dambulla:'দাম্বুলা',galle:'গল',dhaka:'ঢাকা',khulna:'খুলনা',rangpur:'রংপুর',comilla:'কুমিল্লা',chittagong:'চট্টগ্রাম',barishal:'বরিশাল',biratnagar:'বিরাটনগর',janakpur:'জানকপুর',nepal:'নেপাল'};
+    const BN_WORD_TR={united:'ইউনাইটেড',city:'সিটি',real:'রিয়াল',club:'ক্লাব',cricket:'ক্রিকেট',king:'কিং',kings:'কিংস',star:'স্টার',stars:'স্টার্স',sports:'স্পোর্টস',academy:'অ্যাকাডেমি',fc:'এফসি',sc:'এসসি',east:'ইস্ট',west:'ওয়েস্ট',north:'নর্থ',south:'সাউথ',eastern:'ইস্টার্ন',western:'ওয়েস্টার্ন',northern:'নর্দার্ন',southern:'সাদার্ন',royal:'রয়্যাল',royals:'রয়্যালস',challengers:'চ্যালেঞ্জার্স',warriors:'ওয়ারিয়র্স',riders:'রাইডার্স',tigers:'টাইগার্স',strikers:'স্ট্রাইকার্স',capitals:'ক্যাপিটালস',victorians:'ভিক্টোরিয়ান্স',qalandars:'কলন্দর',zalmi:'জালমি',gladiators:'গ্ল্যাডিয়েটর্স',bolts:'বোল্টস',patriots:'প্যাট্রিয়টস',blasters:'ব্লাস্টার্স',thunders:'থান্ডার্স',thunder:'থান্ডার',legends:'লেজেন্ডস',superstars:'সুপারস্টার্স',sultans:'সুলতানস',falcons:'ফ্যালকনস',sydney:'সিডনি',mumbai:'মুম্বাই',indians:'ইন্ডিয়ান্স',emirates:'এমিরেটস',cape:'কেপ',sunrisers:'সানরাইজার্স',marvels:'মার্ভেলস',sixers:'সিক্সার্স',giants:'জায়ান্টস',knight:'নাইট',knights:'নাইটস',nassr:'নাসর',abu:'আবু',dhabi:'ধাবি',desert:'ডেজার্ট',vipers:'ভাইপার্স',gulf:'গালফ',madrid:'মাদ্রিদ',manchester:'ম্যানচেস্টার',kandy:'ক্যান্ডি',jaffna:'জাফনা',colombo:'কলম্বো',dambulla:'দাম্বুলা',galle:'গল',dhaka:'ঢাকা',khulna:'খুলনা',rangpur:'রংপুর',comilla:'কুমিল্লা',chittagong:'চট্টগ্রাম',chattogram:'চট্টগ্রাম',barishal:'বরিশাল',barisal:'বরিশাল',sylhet:'সিলেট',rajshahi:'রাজশাহী',durbar:'দুর্বার',fortune:'ফরচুন',biratnagar:'বিরাটনগর',janakpur:'জনকপুর',nepal:'নেপাল',pokhara:'পোখারা',lumbini:'লুম্বিনী',kathmandu:'কাঠমান্ডু',chitwan:'চিতওয়ান',karnali:'কর্ণালী',sudurpaschim:'সুদূরপশ্চিম',avengers:'অ্যাভেঞ্জার্স',avenger:'অ্যাভেঞ্জার',lions:'লায়ন্স',lion:'লায়ন',rhinos:'রাইনোস',gurkhas:'গোর্খাস',gorkhas:'গোর্খাস',yaks:'ইয়াকস',titans:'টাইটানস',rangers:'রেঞ্জার্স',panthers:'প্যান্থার্স',stallions:'স্ট্যালিয়নস',dolphins:'ডলফিনস',eagles:'ঈগলস',hurricanes:'হারিকেনস',scorchers:'স্কর্চার্স',renegades:'রেনেগেডস',heat:'হিট',chargers:'চার্জার্স',daredevils:'ডেয়ারডেভিলস',tuskers:'টাস্কার্স',invincibles:'ইনভিন্সিবলস',originals:'অরিজিনালস',phoenix:'ফিনিক্স',rockets:'রকেটস',chennai:'চেন্নাই',kolkata:'কলকাতা',bengaluru:'বেঙ্গালুরু',bangalore:'বেঙ্গালুরু',delhi:'দিল্লি',punjab:'পাঞ্জাব',rajasthan:'রাজস্থান',gujarat:'গুজরাট',lucknow:'লখনউ',hobart:'হোবার্ট',perth:'পার্থ',adelaide:'অ্যাডিলেড',brisbane:'ব্রিসবেন',melbourne:'মেলবোর্ন',paarl:'পার্ল',pretoria:'প্রিটোরিয়া',durban:'ডারবান',joburg:'জোবার্গ'};
     function bnTeamName(n){
       const raw=String(n||'').trim(); if(!raw) return '';
       const known=getTeamStyle(raw,0).bn;
@@ -6781,14 +6836,53 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     }
     /* bug#2: প্লেয়ার-নামও বাংলায় — টিম-নামের একই নিয়ম (bnTranslit), নেটওয়ার্ক ছাড়া।
        নামে আগেই বাংলা থাকলে অপরিবর্তিত; সম্পূর্ণ অজানা/ল্যাটিন-অবশিষ্ট হলে ইংরেজিই থাকে (নিরাপদ ফলব্যাক)। */
-    /* bug#2: প্রচলিত পদবি/নামের সঠিক বানান (ট্রান্সলিটারেশনের আগে) */
+    /* bug#2 + bug#14: প্রচলিত পদবি/নামের সঠিক বানান (ট্রান্সলিটারেশনের আগে) */
     const BN_PLAYER_WORDS={ali:'আলী',khan:'খান',singh:'সিং',sharma:'শর্মা',kumar:'কুমার',ahmed:'আহমেদ',
-      ahmad:'আহমদ',rahman:'রহমান',rehman:'রেহমান',hossain:'হোসেন',hussain:'হুসেন',hasan:'হাসান',hassan:'হাসান',
+      ahmad:'আহমদ',ahamad:'আহমেদ',rahman:'রহমান',rehman:'রেহমান',hossain:'হোসেন',hussain:'হুসেন',hosein:'হোসেন',hasan:'হাসান',hassan:'হাসান',
       sheikh:'শেখ',shaikh:'শেখ',siddique:'সিদ্দিকী',islam:'ইসলাম',uddin:'উদ্দিন',alam:'আলম',yadav:'যাদব',
       patel:'প্যাটেল',perera:'পেরেরা',fernando:'ফার্নান্দো',jayasuriya:'জয়াসুরিয়া',rajapaksa:'রাজাপক্ষে',
       shakib:'শাকিব',mushfiqur:'মুশফিকুর',mahmudullah:'মাহমুদুল্লাহ',mustafizur:'মুস্তাফিজুর',tamim:'তামিম',
-      bahadur:'বাহাদুর',prasad:'প্রসাদ',shah:'শাহ',malik:'মালিক',butt:'বাট',akhtar:'আখতার',zaman:'জমান',
-      imran:'ইমরান',lokesh:'লোকেশ',moeen:'মোঈন',harmeet:'হারমীত',naveen:'নবীন',rashid:'রশিদ'};
+      bahadur:'বাহাদুর',prasad:'প্রসাদ',shah:'শাহ',sah:'সাহ',saha:'সাহা',malik:'মালিক',butt:'বাট',akhtar:'আখতার',zaman:'জমান',
+      imran:'ইমরান',lokesh:'লোকেশ',moeen:'মোঈন',harmeet:'হারমীত',naveen:'নবীন',rashid:'রশিদ',
+      bipin:'বিপিন',khatri:'খত্রী',chhetri:'ছেত্রী',kushal:'কুশল',bhurtel:'ভুর্তেল',sher:'শের',malla:'মাল্লা',
+      rohit:'রোহিত',paudel:'পাউডেল',aasif:'আসিফ',asif:'আসিফ',arif:'আরিফ',aarif:'আরিফ',dipendra:'দীপেন্দ্র',
+      airee:'আইরি',sompal:'সোমপাল',kami:'কামি',karan:'করণ',sandeep:'সন্দীপ',lamichhane:'লামিছানে',
+      lalit:'ললিত',rajbanshi:'রাজবংশী',gulshan:'গুলশান',jha:'ঝা',anil:'অনিল',rijan:'রিজান',dhakal:'ধাকাল',
+      pratish:'প্রতিশ',basir:'বশির',bibek:'বিবেক',surya:'সূর্য',tamang:'তামাং',dev:'দেব',khanal:'খানাল',
+      arjun:'অর্জুন',bhim:'ভীম',sharkee:'শার্কি',sharki:'শার্কি',narayan:'নারায়ণ',binod:'বিনোদ',
+      bhandari:'ভান্ডারী',kamal:'কমল',abinash:'অবিনাশ',bohara:'বোহারা',sagar:'সাগর',akash:'আকাশ',chand:'চাঁদ',kiran:'কিরণ',
+      litton:'লিটন',liton:'লিটন',das:'দাস',najmul:'নাজমুল',shanto:'শান্ত',towhid:'তাওহীদ',hridoy:'হৃদয়',
+      mehedi:'মেহেদী',mehidy:'মেহেদী',miraz:'মিরাজ',taskin:'তাসকিন',shoriful:'শরিফুল',tanzim:'তানজিম',tanzid:'তানজিদ',
+      soumya:'সৌম্য',sarkar:'সরকার',rishad:'রিশাদ',taijul:'তাইজুল',mominul:'মুমিনুল',haque:'হক',nurul:'নুরুল',
+      sohan:'সোহান',afif:'আফিফ',mahedi:'মাহেদী',nasum:'নাসুম',ebadot:'ইবাদত',khaled:'খালেদ',zakir:'জাকির',
+      jaker:'জাকের',parvez:'পারভেজ',emon:'ইমন',shamim:'শামীম',patwari:'পাটোয়ারী',sabbir:'সাব্বির',mosaddek:'মোসাদ্দেক',
+      virat:'বিরাট',kohli:'কোহলি',jasprit:'জসপ্রীত',bumrah:'বুমরাহ',hardik:'হার্দিক',pandya:'পান্ডিয়া',
+      ravindra:'রবীন্দ্র',jadeja:'জাদেজা',rishabh:'ঋষভ',pant:'পন্ত',shubman:'শুবমান',gill:'গিল',
+      suryakumar:'সূর্যকুমার',rahul:'রাহুল',shreyas:'শ্রেয়াস',iyer:'আইয়ার',kuldeep:'কুলদীপ',siraj:'সিরাজ',
+      arshdeep:'আর্শদীপ',axar:'অক্ষর',ashwin:'অশ্বিন',shami:'শামি',sanju:'সঞ্জু',samson:'স্যামসন',rinku:'রিঙ্কু',
+      yashasvi:'যশস্বী',jaiswal:'জয়সওয়াল',ruturaj:'রুতুরাজ',gaikwad:'গায়কোয়াড়',shivam:'শিবম',dube:'দুবে',
+      tilak:'তিলক',varma:'বর্মা',verma:'বর্মা',chahal:'চাহাল',bishnoi:'বিষ্ণোই',mukesh:'মুকেশ',nitish:'নীতীশ',
+      reddy:'রেড্ডি',washington:'ওয়াশিংটন',sundar:'সুন্দর',dhoni:'ধোনি',abhishek:'অভিষেক',ishan:'ঈশান',kishan:'কিষাণ',
+      babar:'বাবর',azam:'আজম',rizwan:'রিজওয়ান',shaheen:'শাহীন',afridi:'আফ্রিদি',naseem:'নাসিম',haris:'হারিস',
+      rauf:'রউফ',fakhar:'ফখর',shadab:'শাদাব',iftikhar:'ইফতিখার',saim:'সাইম',ayub:'আইয়ুব',abdullah:'আবদুল্লাহ',
+      shafique:'শফিক',saud:'সৌদ',shakeel:'শাকিল',salman:'সালমান',agha:'আগা',usman:'উসমান',abrar:'আবরার',
+      mohammad:'মোহাম্মদ',muhammad:'মুহাম্মদ',amir:'আমির',shoaib:'শোয়েব',sarfaraz:'সরফরাজ',
+      wanindu:'ওয়ানিন্দু',hasaranga:'হাসারাঙ্গা',pathirana:'পাথিরানা',malinga:'মালিঙ্গা',mendis:'মেন্ডিস',
+      nissanka:'নিসাঙ্কা',asalanka:'আসালাঙ্কা',shanaka:'শানাকা',theekshana:'থিকশানা',madushanka:'মাধুশঙ্কা',
+      chameera:'চামিরা',dhananjaya:'ধনঞ্জয়া',silva:'সিলভা',mathews:'ম্যাথিউস',chandimal:'চান্ডিমাল',
+      wellalage:'ওয়েলালাগে',thushara:'তুষারা',gurbaz:'গুরবাজ',ibrahim:'ইব্রাহিম',zadran:'জাদরান',nabi:'নবী',
+      fazalhaq:'ফজলহক',farooqi:'ফারুকী',azmatullah:'আজমতউল্লাহ',omarzai:'ওমরজাই',mujeeb:'মুজিব',noor:'নূর',
+      warner:'ওয়ার্নার',smith:'স্মিথ',starc:'স্টার্ক',cummins:'কামিন্স',hazlewood:'হ্যাজলউড',maxwell:'ম্যাক্সওয়েল',
+      head:'হেড',marsh:'মার্শ',stoinis:'স্টয়নিস',zampa:'জাম্পা',inglis:'ইংলিস',carey:'ক্যারি',david:'ডেভিড',
+      buttler:'বাটলার',salt:'সল্ট',jacks:'জ্যাকস',bairstow:'বেয়ারস্টো',brook:'ব্রুক',stokes:'স্টোকস',root:'রুট',
+      archer:'আর্চার',wood:'উড',curran:'কারান',livingstone:'লিভিংস্টোন',adil:'আদিল',woakes:'ওকস',
+      williamson:'উইলিয়ামসন',conway:'কনওয়ে',mitchell:'মিচেল',phillips:'ফিলিপস',santner:'স্যান্টনার',boult:'বোল্ট',
+      southee:'সাউদি',ferguson:'ফার্গুসন',henry:'হেনরি',allen:'অ্যালেন',seifert:'সাইফার্ট',markram:'মার্করাম',
+      klaasen:'ক্লাসেন',miller:'মিলার',stubbs:'স্টাবস',rabada:'রাবাদা',nortje:'নর্টজে',ngidi:'এনগিডি',
+      maharaj:'মহারাজ',shamsi:'শামসি',jansen:'জানসেন',pooran:'পুরান',powell:'পাওয়েল',rovman:'রভম্যান',
+      russell:'রাসেল',narine:'নারিন',hetmyer:'হেটমায়ার',hope:'হোপ',charles:'চার্লস',shepherd:'শেফার্ড',
+      holder:'হোল্ডার',joseph:'জোসেফ',alzarri:'আলজারি',motie:'মোতি',akeal:'আকিল',pollard:'পোলার্ড',
+      bravo:'ব্রাভো',gayle:'গেইল',sikandar:'সিকান্দার',raza:'রাজা',muzarabani:'মুজারাবানি',ngarava:'এনগারাভা'};
     /* bug#6: লিগ/সিরিজের নাম বাংলায় — টিম-নামের মতোই নিয়ম-ভিত্তিক + প্রচলিত লিগ-শব্দের তালিকা */
     const BN_LEAGUE_WORDS={premier:'প্রিমিয়ার',premeir:'প্রিমিয়ার',league:'লিগ',leagues:'লিগ',cup:'কাপ',
       trophy:'ট্রফি',trophies:'ট্রফি',series:'সিরিজ',championship:'চ্যাম্পিয়নশিপ',championships:'চ্যাম্পিয়নশিপ',
@@ -10736,11 +10830,16 @@ window.__sayAs={
   'icc':'আইসিসি','bcci':'বিসিসিআই','pcb':'পিসিবি','ecb':'ইসিবি','uae':'ইউএই','t20i':'টি-টোয়েন্টি',
   'sa':'দক্ষিণ আফ্রিকা','sl':'শ্রীলঙ্কা','wi':'ওয়েস্ট ইন্ডিজ','nz':'নিউজিল্যান্ড'
 };
-/* ল্যাটিন → বাংলা হরফ (নতুন নামের জন্যও; অক্ষর ধরে ধরে পড়া বন্ধ) */
+/* ল্যাটিন → বাংলা হরফ (নতুন নামের জন্যও; অক্ষর ধরে ধরে পড়া বন্ধ + ভাঙা মাত্রা ◌ রোধ) */
 window.__bnTranslit=function(w){
   var s=String(w||'').toLowerCase(), o='', i=0;
-  var R=[['tion','শন'],['sion','শন'],['sch','শ'],['sh','শ'],['ch','চ'],['ck','ক'],['ph','ফ'],
-    ['th','থ'],['kh','খ'],['gh','ঘ'],['bh','ভ'],['dh','ধ'],['jh','ঝ'],['ng','ং'],['qu','ক'],
+  if(/^[a-z]+$/.test(s)){
+    if(typeof BN_WORD_TR!=='undefined'&&BN_WORD_TR[s]) return BN_WORD_TR[s];
+    if(typeof BN_PLAYER_WORDS!=='undefined'&&BN_PLAYER_WORDS[s]) return BN_PLAYER_WORDS[s];
+  }
+  var R=[['tion','শন'],['sion','শন'],['sch','শ'],['chh','ছ'],['sh','শ'],['ch','চ'],['ck','ক'],['ph','ফ'],
+    ['th','থ'],['kh','খ'],['gh','ঘ'],['bh','ভ'],['dh','ধ'],['jh','ঝ'],['nge','ঞ্জে'],['nga','ঙ্গা'],
+    ['ngi','ঙ্গি'],['ngo','ঙ্গো'],['ngu','ঙ্গু'],['ng','ং'],['qu','ক'],
     ['iya','িয়া'],['aya','ায়া'],['ee','ী'],['oo','ু'],['ea','ি'],['ou','াউ'],['ai','াই'],
     ['ay','য়'],['ey','ি'],['oi','য়ি'],['oa','ো'],
     ['ss','স'],['ll','ল'],['tt','ট'],['pp','প'],['mm','ম'],['nn','ন'],['dd','ড'],['rr','র'],
@@ -10749,24 +10848,30 @@ window.__bnTranslit=function(w){
     ['b','ব'],['c','ক'],['d','ড'],['f','ফ'],['g','গ'],['h','হ'],['j','জ'],['k','ক'],['l','ল'],
     ['m','ম'],['n','ন'],['p','প'],['q','ক'],['r','র'],['s','স'],['t','ট'],['v','ভ'],['w','ওয়'],
     ['x','ক্স'],['z','জ']];
-  var HEAD={a:'আ',e:'এ',i:'ই',o:'ও',u:'উ'};
-  var MATRA={'া':1,'ি':1,'ী':1,'ু':1,'ূ':1,'ে':1,'ৈ':1,'ো':1,'ৌ':1};
+  var HEAD={a:'আ',e:'এ',i:'ই',o:'ও',u:'উ',y:'ই',ee:'ঈ',oo:'ঊ',ea:'ই',ou:'আউ',ai:'আই',ey:'ই',oa:'ও',iya:'ইয়া',aya:'আয়া'};
+  var MATRA={'া':'আ','ি':'ই','ী':'ঈ','ু':'উ','ূ':'ঊ','ে':'এ','ৈ':'ঐ','ো':'ও','ৌ':'ঔ','াউ':'আউ','াই':'আই'};
+  var CONS=/[\u0995-\u09B9\u09DC-\u09DF\u09F0\u09F1]\u09BC?$/;
   while(i<s.length){
     var hit=null;
     for(var k=0;k<R.length;k++){
-      var a=R[k][0];
+      var a=R[k][0], b=R[k][1];
       if(s.substr(i,a.length)===a){
         if(a==='c'&&/[eiy]/.test(s.charAt(i+1))){o+='স';}
-        else if(i===0&&HEAD[a]){o+=HEAD[a];}
-        else if(MATRA[R[k][1]]&&/ং$/.test(o)){/* অনুস্বারের পর মাত্রা বসে না */}
-        else {o+=R[k][1];}
+        else if(a==='g'&&/[eiy]/.test(s.charAt(i+1))){o+='জ';}
+        else if(a==='y'&&/[aeiou]/.test(s.charAt(i+1))){o+='য়';}
+        else if(i===0&&a.indexOf('ng')===0){o+=(a==='ng'?'এনজি':'এনগ'+b.slice(3));}
+        else if(!CONS.test(o)&&(HEAD[a]||MATRA[b])){
+          if(/[\u09BF\u09C0]$/.test(o)&&b==='া') o+='য়া';
+          else o+=(HEAD[a]||MATRA[b]);
+        }
+        else {o+=b;}
         hit=1;i+=a.length;break;
       }
     }
     if(!hit){i++;}
   }
   if(o.length>3&&o.charAt(o.length-1)==='ে')o=o.slice(0,-1);   /* শেষের নীরব e */
-  return o;
+  return window.__bnCleanMarks ? window.__bnCleanMarks(o) : o;
 };
 /* ইংরেজি ফাংশন-শব্দ: ঢালাই করলে অর্থ পাল্টায় ("at"→"আট"), তাই অভিধানেই ঠিক */
 window.__bnStop={
