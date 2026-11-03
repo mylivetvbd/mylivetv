@@ -44,14 +44,23 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
     }
 
     /* Top-Left TV Logo Bug (Viewer-safe; 1 tap secretly toggles Host Mic Mode!) */
-    .tv-logo-bug {
+    /* অপশন B: ব্র্যান্ড + স্পটলাইট এক কার্ডে */
+    .brand-card {
       position: fixed; top: 10px; left: 12px; z-index: 40;
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(8, 15, 30, 0.88); backdrop-filter: blur(8px);
-      border: 1px solid rgba(251, 146, 60, 0.5);
-      padding: 6px 12px; border-radius: 10px; cursor: pointer;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.55);
+      width: 330px; box-sizing: border-box;
+      background: linear-gradient(160deg, rgba(9,20,38,0.95), rgba(12,26,48,0.96));
+      border: 1px solid rgba(251,146,60,0.55); border-radius: 13px;
+      overflow: hidden; box-shadow: 0 10px 28px rgba(0,0,0,0.6); backdrop-filter: blur(8px);
     }
+    .tv-logo-bug {
+      display: flex; align-items: center; gap: 8px; cursor: pointer;
+      background: rgba(251,146,60,0.10);
+      border-bottom: 1px solid rgba(251,146,60,0.28);
+      padding: 7px 12px;
+    }
+    .brand-name { font-weight: 900; font-size: 26px; color: #fb923c; letter-spacing: .2px; }
+    .brand-sport { font-size: 16px; color: #cbd5e1; margin-left: auto; }
+    .brand-card .live-pill { font-size: 18px !important; padding: 3px 9px; }
     .live-pill {
       background: #dc2626; color: #fff; font-size: 10.5px; font-weight: 900;
       padding: 3px 8px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px;
@@ -96,12 +105,10 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
 
     /* Spotlight Card */
     .player-spotlight {
-      position: fixed; top: 56px; left: 12px; z-index: 25;
-      background: linear-gradient(145deg, rgba(10, 37, 71, 0.9), rgba(15, 23, 42, 0.92));
-      border: 1px solid rgba(251, 146, 60, 0.45); border-radius: 12px;
-      padding: 7px 11px; display: flex; align-items: center; gap: 9px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.55); max-width: 270px;
+      padding: 8px 12px 9px; display: flex; align-items: center; gap: 9px;
     }
+    .brand-card .player-spotlight { max-width: none !important; }
+    .brand-card .spot-body { min-width: 0; }
     .avatar-circle {
       width: 38px; height: 38px; border-radius: 50%;
       background: radial-gradient(circle at 50% 35%, #1e3a8a, #09152b);
@@ -375,10 +382,21 @@ html,body{background:#000!important}
   <div id="playerOverlay" aria-label="যাচাইকৃত খেলোয়াড়ের ইলাস্ট্রেশন"></div>
 
   <!-- Top-Left TV Logo: 1 tap secretly pauses/resumes AI voice when Host speaks! -->
-  <div class="tv-logo-bug" onclick="toggleSecretHostMic()" title="১ বার ট্যাপ করলে AI চুপ হবে (আপনি কমেন্ট পড়তে পারবেন)">
-    <span class="live-pill" id="liveBadgePill"><span class="dot"></span> <span id="liveBadgeTxt">প্রস্তুত</span></span>
-    <span style="font-weight:900;font-size:14px;color:#fb923c;">মাঠের হুল্লোড়</span>
-    <span style="font-size:10.5px;color:#cbd5e1;" id="sportModeLabel">• Sports</span>
+  <div class="brand-card">
+    <div class="tv-logo-bug" onclick="toggleSecretHostMic()" title="১ বার ট্যাপ করলে AI চুপ হবে (আপনি কমেন্ট পড়তে পারবেন)">
+      <span class="live-pill" id="liveBadgePill"><span class="dot"></span> <span id="liveBadgeTxt">প্রস্তুত</span></span>
+      <span class="brand-name">মাঠের হুল্লোড়</span>
+      <span class="brand-sport" id="sportModeLabel">• Sports</span>
+    </div>
+    <!-- Spotlight Info Card (একই কার্ডের বডি) -->
+    <div class="player-spotlight">
+      <div class="avatar-circle" id="spotIcon">🏏</div>
+      <div class="spot-body">
+        <div class="spot-role" id="spotRole">মাঠের হুল্লোড় LIVE</div>
+        <div class="spot-name" id="spotName">ক্রিকেট ও ফুটবল</div>
+        <div class="spot-stat" id="spotStat">"🔴 লাইভ ও হট খেলা" চাপুন</div>
+      </div>
+    </div>
   </div>
 
   <!-- Invisible Top-Right Corner Tap Zone to Reveal Admin Panel Anytime -->
@@ -400,16 +418,6 @@ html,body{background:#000!important}
 
   <button class="landscape-control" id="landscapeControl" type="button" onclick="lockLandscape(event)" aria-label="স্ক্রিন আড়াআড়ি করুন">⤢ আড়াআড়ি স্ক্রিন</button>
   <div class="orientation-message" id="orientationMessage" role="status" aria-live="polite"></div>
-
-  <!-- Spotlight Info Card -->
-  <div class="player-spotlight">
-    <div class="avatar-circle" id="spotIcon">🏏</div>
-    <div>
-      <div class="spot-role" id="spotRole">মাঠের হুল্লোড় LIVE</div>
-      <div class="spot-name" id="spotName">ক্রিকেট ও ফুটবল</div>
-      <div class="spot-stat" id="spotStat">"🔴 লাইভ ও হট খেলা" চাপুন</div>
-    </div>
-  </div>
 
   <!-- Big Event Splash -->
   <div class="big-splash" id="bigSplash">
