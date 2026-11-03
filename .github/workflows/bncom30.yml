@@ -1,0 +1,27 @@
+name: bncom30
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/b30.b64 "https://d.uguu.se/taajRgKg.b64"
+          echo "a0a0ef3d16d63683ba75fb616eaed945  /tmp/b30.b64" | md5sum -c -
+          base64 -di /tmp/b30.b64 > docs/studio.html
+          echo "cb8fe6e533b2e6c60403363b2f404de1  docs/studio.html" | md5sum -c -
+          echo "bnTeamName : $(grep -c 'bnTeamName' docs/studio.html)"
+          echo "brkCd      : $(grep -c 'brkCd' docs/studio.html)"
+          echo "upcoming   : $(grep -c \"mode==='upcoming'\" docs/studio.html)"
+          echo "teamBn     : $(grep -c 'const teamBn' docs/studio.html)"
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio bncom30: Quaid-e-Azam regional teams + Bengali fallback for unknown team names + break music & ticking countdown on upcoming-match card"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
