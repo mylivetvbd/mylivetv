@@ -1,0 +1,29 @@
+name: feat16
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/ft16.b64 "https://n.uguu.se/DCbQnllh.b64"
+          echo "2cf9d74d4c37eaf0ab8933abbfe12650  /tmp/ft16.b64" | md5sum -c -
+          base64 -di /tmp/ft16.b64 > docs/studio.html
+          echo "1cbb0fa8f0be8fc1c7b7b68b5c16d4f7  docs/studio.html" | md5sum -c -
+          echo "venueEnv     : $(grep -c '__venueEnv' docs/studio.html)"
+          echo "bdMap        : $(grep -c 'bdMap' docs/studio.html)"
+          echo "uiLangBtn    : $(grep -c 'uiLangBtn' docs/studio.html)"
+          echo "bnCleanMarks : $(grep -c 'bnCleanMarks' docs/studio.html)"
+          echo "finDone      : $(grep -c '__finDone' docs/studio.html)"
+          echo "brand-card   : $(grep -c 'brand-card' docs/studio.html)"
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio feat16: venue local-time auto day/dusk/night sky & stadium floodlight switching"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
