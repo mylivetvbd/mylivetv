@@ -6769,6 +6769,27 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         .map(w=>BN_TEAM_WORDS[w]||BN_WORD_TR[w]||bnTranslitWord(w)).join(' ');
       return /[A-Za-z]/.test(out) ? '' : out;
     }
+    /* bug#2: প্লেয়ার-নামও বাংলায় — টিম-নামের একই নিয়ম (bnTranslit), নেটওয়ার্ক ছাড়া।
+       নামে আগেই বাংলা থাকলে অপরিবর্তিত; সম্পূর্ণ অজানা/ল্যাটিন-অবশিষ্ট হলে ইংরেজিই থাকে (নিরাপদ ফলব্যাক)। */
+    /* bug#2: প্রচলিত পদবি/নামের সঠিক বানান (ট্রান্সলিটারেশনের আগে) */
+    const BN_PLAYER_WORDS={ali:'আলী',khan:'খান',singh:'সিং',sharma:'শর্মা',kumar:'কুমার',ahmed:'আহমেদ',
+      ahmad:'আহমদ',rahman:'রহমান',rehman:'রেহমান',hossain:'হোসেন',hussain:'হুসেন',hasan:'হাসান',hassan:'হাসান',
+      sheikh:'শেখ',shaikh:'শেখ',siddique:'সিদ্দিকী',islam:'ইসলাম',uddin:'উদ্দিন',alam:'আলম',yadav:'যাদব',
+      patel:'প্যাটেল',perera:'পেরেরা',fernando:'ফার্নান্দো',jayasuriya:'জয়াসুরিয়া',rajapaksa:'রাজাপক্ষে',
+      shakib:'শাকিব',mushfiqur:'মুশফিকুর',mahmudullah:'মাহমুদুল্লাহ',mustafizur:'মুস্তাফিজুর',tamim:'তামিম',
+      bahadur:'বাহাদুর',prasad:'প্রসাদ',shah:'শাহ',malik:'মালিক',butt:'বাট',akhtar:'আখতার',zaman:'জমান',
+      imran:'ইমরান',lokesh:'লোকেশ',moeen:'মোঈন',harmeet:'হারমীত',naveen:'নবীন',rashid:'রশিদ'};
+    const bnPlayerName = n => {
+      const raw=String(n||'').trim(); if(!raw) return '';
+      if(/[\u0980-\u09FF]/.test(raw) && !/[A-Za-z]/.test(raw)) return raw;
+      const out=raw.split(/\s+/).map(function(w){
+        const k=String(w||'').toLowerCase().replace(/[^a-z]/g,'');
+        if(BN_PLAYER_WORDS[k]) return BN_PLAYER_WORDS[k];
+        if(typeof bnTranslitWord==='function') return bnTranslitWord(k);
+        return w;
+      }).join(' ').trim();
+      return (out && !/[A-Za-z]/.test(out)) ? out : raw;
+    };
     const teamBn = n => { const _st=getTeamStyle(n, 0).bn; const base = (_st && /[\u0980-\u09FF]/.test(_st)) ? _st : (bnTeamName(n) || _st || n || 'দল'); return /\b(women|womens|women's|ladies)\b/i.test(String(n||'')) && !/নারী/.test(base) ? base+' নারী' : base; };
 
     function applyTeamKit(p, style, keeper=false) {
@@ -8231,9 +8252,9 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         });
       }
       var out1=(H.outPf&&H.pf1&&H.outPf===H.pf1), out2=(H.outPf&&H.pf2&&H.outPf===H.pf2);
-      if(H.p1){set('uiBat0Name',out1?'— আউট —':((H.striker===1?'🏏 ':'• ')+H.p1)); if(out1)set('uiBat0Runs','');}
+      if(H.p1){set('uiBat0Name',out1?'— আউট —':((H.striker===1?'🏏 ':'• ')+bnPlayerName(H.p1))); if(out1)set('uiBat0Runs','');}
       if(H.s1){var m1=String(H.s1).match(/^(\d+)\s*\(\s*(\d+)/); if(m1)set('uiBat0Runs',D(m1[1])+' ('+D(m1[2])+')');}
-      if(H.p2){set('uiBat1Name',out2?'— আউট —':((H.striker===2?'🏏 ':'• ')+H.p2)); if(out2)set('uiBat1Runs','');}
+      if(H.p2){set('uiBat1Name',out2?'— আউট —':((H.striker===2?'🏏 ':'• ')+bnPlayerName(H.p2))); if(out2)set('uiBat1Runs','');}
       /* নতুন ব্যাটার এলে আউট-চিহ্ন মিলিয়ে যাবে */
       if(H.outPf&&H.pf1!==H.outPf&&H.pf2!==H.outPf)H.outPf='';
       if(H.s2){var m2=String(H.s2).match(/^(\d+)\s*\(\s*(\d+)/); if(m2)set('uiBat1Runs',D(m2[1])+' ('+D(m2[2])+')');}
@@ -9918,10 +9939,10 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         };
         const bs1 = parseBatStat(sv.q), bs2 = parseBatStat(sv.s);
         const bnds = String(sv.r || '0.0.0.0').split('.').map(n => parseInt(n||'0',10)||0);
-        const p1Name = crexPlayerCache[p1Fk] || '';
-        const p2Name = crexPlayerCache[p2Fk] || '';
+        const p1Name = bnPlayerName(crexPlayerCache[p1Fk] || '');
+        const p2Name = bnPlayerName(crexPlayerCache[p2Fk] || '');
         const bwName = crexPlayerCache[bwFk] || '';
-        updateCricketVisuals({safe:playersSafe && hasPlay && !isInactive, batFk,bowlFk,p1Fk,p2Fk,bwFk,p1Name,p2Name,bwName,format:sv.fo || polledMatch.fo});
+        updateCricketVisuals({safe:playersSafe && hasPlay && !isInactive, batFk,bowlFk,p1Fk,p2Fk,bwFk,p1Name:bnPlayerName(p1Name),p2Name:bnPlayerName(p2Name),bwName:bnPlayerName(bwName),format:sv.fo || polledMatch.fo});
         try{ window.__speakMute=!!isInactive; }catch(_e){}
         try{
           if(isFinished){
