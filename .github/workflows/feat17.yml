@@ -1,0 +1,21 @@
+name: feat17
+on: {workflow_dispatch: {}}
+permissions: {contents: write}
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/b.b64 https://h.uguu.se/yXhFpmSu.b64
+          echo "6f9b139c0f61c7117b5e2c781078d6bd  /tmp/b.b64" | md5sum -c -
+          base64 -di /tmp/b.b64 > docs/studio.html
+          echo "0fb68fbd2b3f313210bddd06d7895f70  docs/studio.html" | md5sum -c -
+          echo "venueEnv: $(grep -c '__venueEnv' docs/studio.html) | prosodyFor: $(grep -c '__prosodyFor' docs/studio.html) | feat17: $(grep -c 'feat17' docs/studio.html)"
+          git config user.name bot
+          git config user.email bot@users.noreply.github.com
+          git add docs/studio.html
+          git commit -m "studio feat17: human-realistic prosody — dynamic rate/pitch, suspense delay & priority queue"
+          git push
+          echo ALL-DONE
