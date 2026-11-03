@@ -6781,6 +6781,36 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       shakib:'শাকিব',mushfiqur:'মুশফিকুর',mahmudullah:'মাহমুদুল্লাহ',mustafizur:'মুস্তাফিজুর',tamim:'তামিম',
       bahadur:'বাহাদুর',prasad:'প্রসাদ',shah:'শাহ',malik:'মালিক',butt:'বাট',akhtar:'আখতার',zaman:'জমান',
       imran:'ইমরান',lokesh:'লোকেশ',moeen:'মোঈন',harmeet:'হারমীত',naveen:'নবীন',rashid:'রশিদ'};
+    /* bug#6: লিগ/সিরিজের নাম বাংলায় — টিম-নামের মতোই নিয়ম-ভিত্তিক + প্রচলিত লিগ-শব্দের তালিকা */
+    const BN_LEAGUE_WORDS={premier:'প্রিমিয়ার',premeir:'প্রিমিয়ার',league:'লিগ',leagues:'লিগ',cup:'কাপ',
+      trophy:'ট্রফি',trophies:'ট্রফি',series:'সিরিজ',championship:'চ্যাম্পিয়নশিপ',championships:'চ্যাম্পিয়নশিপ',
+      super:'সুপার',international:'ইন্টারন্যাশনাল',world:'বিশ্ব',global:'গ্লোবাল',women:'নারী',womens:"নারী",
+      under:'অনূর্ধ্ব',county:'কাউন্টি',blast:'ব্লাস্ট',hundred:'হান্ড্রেড',qualifier:'কোয়ালিফায়ার',
+      qualifiers:'কোয়ালিফায়ার',tri:'ত্রিদেশীয়',asia:'এশিয়া',asian:'এশীয়',emerging:'এমার্জিং',nations:'নেশনস',
+      nepal:'নেপাল',india:'ভারত',indian:'ভারতীয়',bangladesh:'বাংলাদেশ',pakistan:'পাকিস্তান',
+      sri:'শ্রীলঙ্কা',lanka:'শ্রীলঙ্কা',england:'ইংল্যান্ড',australia:'অস্ট্রেলিয়া',africa:'আফ্রিকা',
+      south:'দক্ষিণ',west:'ওয়েস্ট',indies:'ইন্ডিজ',new:'নিউ',zealand:'জিল্যান্ড',ireland:'আয়ারল্যান্ড',
+      scotland:'স্কটল্যান্ড',afghanistan:'আফগানিস্তান',zimbabwe:'জিম্বাবুয়ে',uae:'ইউএই',usa:'যুক্তরাষ্ট্র',
+      t20:'টি-টোয়েন্টি',odi:'ওয়ানডে',test:'টেস্ট',tests:'টেস্ট',
+      /* প্রচলিত সংক্ষেপ ও নাম */
+      icc:'আইসিসি',ipl:'আইপিএল',bpl:'বিপিএল',cpl:'সিপিএল',psl:'পিএসএল',npl:'এনপিএল',
+      bbl:'বিবিএল',wpl:'ডব্লিউপিএল',ilt20:'আইএলটি-টোয়েন্টি',sa20:'এসএ-টোয়েন্টি',
+      big:'বিগ',bash:'ব্যাশ',caribbean:'ক্যারিবিয়ান',legends:'লেজেন্ডস',the:'দ্য',of:'অফ',
+      champions:'চ্যাম্পিয়নস',plate:'প্লেট',shield:'শিল্ড',tournament:'টুর্নামেন্ট',fixtures:'ফিক্সচার'};
+    const bnLeagueName = n => {
+      const raw=String(n||'').trim(); if(!raw) return '';
+      if(/[\u0980-\u09FF]/.test(raw) && !/[A-Za-z]/.test(raw)) return raw;
+      const out=raw.replace(/[.'’\-–]/g,' ').split(/\s+/).filter(Boolean).map(function(w){
+        const k=String(w||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+        if(!k) return '';
+        if(/^\d+$/.test(k)) return k;                       /* অঙ্ক পরে বাংলা হবে */
+        if(BN_LEAGUE_WORDS[k]) return BN_LEAGUE_WORDS[k];
+        if(typeof BN_TEAM_WORDS!=='undefined' && BN_TEAM_WORDS[k]) return BN_TEAM_WORDS[k];
+        if(typeof BN_WORD_TR!=='undefined' && BN_WORD_TR[k]) return BN_WORD_TR[k];
+        return w;                                            /* অচেনা শব্দ ⇒ ল্যাটিনই রাখি (ভুল বাংলার চেয়ে ভালো) */
+      }).filter(Boolean).join(' ').trim();
+      return /[A-Za-z]/.test(out) ? raw : bn(out);           /* অচেনা ল্যাটিন থাকলে ইংরেজিই নিরাপদ */
+    };
     const bnPlayerName = n => {
       const raw=String(n||'').trim(); if(!raw) return '';
       if(/[\u0980-\u09FF]/.test(raw) && !/[A-Za-z]/.test(raw)) return raw;
@@ -7316,7 +7346,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       document.getElementById('uiScore').textContent='শুরুর অপেক্ষা';
       document.getElementById('uiOvers').parentElement.style.display='none';
       document.getElementById('uiEquation').textContent=count.display;
-      document.getElementById('spotRole').textContent=m.leagueName || 'ক্রিকেট ম্যাচ';
+      document.getElementById('spotRole').textContent=bnLeagueName(m.leagueName) || 'ক্রিকেট ম্যাচ';
       document.getElementById('spotName').textContent=`${teamBn(m.t1)} বনাম ${teamBn(m.t2)}`;
       document.getElementById('spotStat').textContent=count.display;
       document.getElementById('uiBat0Name').textContent='একাদশের অপেক্ষায়';
@@ -10039,7 +10069,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
             if(srEl){
               srEl.textContent = isFinished ? `খেলা শেষ • ${batBn}` : isBreak ? `ইনিংস বিরতি • ${batBn}` : `স্ট্রাইকে • ${batBn}`;
               if(!isFinished && !isBreak && selectedMatch.leagueName){       /* বাগ #৪: লিগ-নাম আলাদা ছোট লাইনে */
-                const lgEl=document.createElement('span'); lgEl.className='lg'; lgEl.textContent=String(selectedMatch.leagueName);
+                const lgEl=document.createElement('span'); lgEl.className='lg'; lgEl.textContent=bnLeagueName(selectedMatch.leagueName);
                 srEl.append(lgEl);
               }
             }
@@ -10047,7 +10077,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           document.getElementById('spotName').textContent = onS.n;
           document.getElementById('spotStat').textContent = `${bn(onS.r)}* (${bn(onS.b)} বল)`;
         } else {
-          document.getElementById('spotRole').textContent = isBreak ? 'ইনিংস বিরতি' : selectedMatch.leagueName;
+          document.getElementById('spotRole').textContent = isBreak ? 'ইনিংস বিরতি' : bnLeagueName(selectedMatch.leagueName);
           document.getElementById('spotName').textContent = `${batBn} বনাম ${bowlBn}`;
           document.getElementById('spotStat').textContent = isBreak ? 'পরবর্তী ইনিংসের অপেক্ষায়' : (selectedMatch.countdown || selectedMatch.bdTime);
         }
