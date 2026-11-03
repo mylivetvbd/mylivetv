@@ -8049,6 +8049,30 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     if(/^b\s/.test(wd))return 'বোল্ড';
     return '';
   }
+  /* বাগ #৭: CREX-এর wicketDesc (যেমন "c A Sah b A Tiwari") ভেঙে ফিল্ডার ও বোলারের নামসহ বাংলা */
+  function wdNames(s){
+    var t=String(s||'').replace(/[()]/g,' ').replace(/\s+/g,' ').trim();
+    if(!t)return '';
+    return t.split(' ').filter(Boolean).map(function(w){
+      if(/^[A-Za-z]$/.test(w)){ return ({a:'এ',b:'বি',c:'সি',d:'ডি',e:'ই',f:'এফ',g:'জি',h:'এইচ',i:'আই',j:'জে',k:'কে',l:'এল',m:'এম',n:'এন',o:'ও',p:'পি',q:'কিউ',r:'আর',s:'এস',t:'টি',u:'ইউ',v:'ভি',w:'ডব্লিউ',x:'এক্স',y:'ওয়াই',z:'জেড'}[w.toLowerCase()]||w); }
+      try{ if(typeof bnPlayerName==='function'){ var b=bnPlayerName(w); if(b) return b; } }catch(e){}
+      return w;
+    }).join(' ');
+  }
+  function wdBn(wd){
+    var raw=String(wd||'').trim(); if(!raw) return '';
+    if(/[\u0980-\u09FF]/.test(raw)) return raw;          /* ফিডেই বাংলা ⇒ যেমন আছে */
+    var m;
+    if(/^c\s*&\s*b\s/i.test(raw)) return 'ক্যাচ অ্যান্ড বোল্ড, বোলার '+wdNames(raw.replace(/^c\s*&\s*b\s+/i,''));
+    if((m=raw.match(/^c\s+(.+?)\s+b\s+(.+)$/i))) return 'ক্যাচ আউট, ক্যাচ নিলেন '+wdNames(m[1])+', বোলার '+wdNames(m[2]);
+    if((m=raw.match(/^st\s+(.+?)\s+b\s+(.+)$/i))) return 'স্টাম্পড, স্টাম্পিং '+wdNames(m[1])+', বোলার '+wdNames(m[2]);
+    if((m=raw.match(/^lbw\s+b\s+(.+)$/i))) return 'এলবিডব্লিউ, বোলার '+wdNames(m[1]);
+    if(/^lbw\b/i.test(raw)) return 'এলবিডব্লিউ';
+    if((m=raw.match(/^b\s+(.+)$/i))) return 'বোল্ড, বোলার '+wdNames(m[1]);
+    if((m=raw.match(/^run\s*out\s*\(?([^)]*)\)?\s*$/i))) return m[1]?('রান আউট, ফিল্ডার '+wdNames(m[1])):'রান আউট';
+    if(/^hit\s*wicket/i.test(raw)) return 'হিট উইকেট, বোল্ড '+wdNames(raw.replace(/^hit\s*wicket\s*(b\s+)?/i,''));
+    return howBn(raw);                                      /* অজানা ⇒ আগের আচরণ */
+  }
   /* bncom12: সোর্স কিছু ম্যাচে c2 (কমেন্টারি) খালি পাঠায় — তখন কাঠামো থেকেই বাক্য */
   function outcomeBn(tok){
     var t=String(tok||'').toUpperCase();
@@ -8062,7 +8086,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     return '';
   }
   function lineOf(x){
-    var who=bd(clean(x.c1)), body=bd(clean(x.c2)), how=howBn(x._wd);
+    var who=bd(clean(x.c1)), body=bd(clean(x.c2)), how=wdBn(x._wd);
     if(!body){
       var oc=outcomeBn(x.b);
       if(!who&&!oc)return '';
