@@ -7645,6 +7645,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     function restoreBroadcastHud(snapshot) {if(!snapshot)return;Object.keys(snapshot).forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=snapshot[id];});}
     function resetBroadcastQueue() {syncEpoch++;syncQueue=[];syncPendingSnapshot=null;syncBusy=false;clearEventGraphic();stopAllSpeech();isSpeakingNow=false;}
     function submitBroadcastEvent(event) {
+      if(window.__finDone&&event&&event.matchUid&&window.__finDone[event.matchUid])return;
       // Limit backlog; if overflowing, discard old commentary and show the latest verified snapshot.
       event.ts=Date.now();
       if(syncQueue.length>=3) {syncQueue=syncQueue.slice(-2);}
@@ -7660,6 +7661,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       try {
         while(epoch===syncEpoch && syncQueue.length) {
           const ev=syncQueue.shift();if(!selectedMatch || selectedMatch.uid!==ev.matchUid)continue;
+          if(window.__finDone&&window.__finDone[ev.matchUid])continue;
           if(ev.ts&&(Date.now()-ev.ts)>25000&&syncQueue.length)continue; /* বাসি লাইন বাদ, নতুনটা বলো */
           if(!ev.silent){stopAllSpeech();restoreBroadcastHud(ev.snapshot);} /* silent: HUD পুরোনো স্কোরে ফেরে না */
           let evSay=ev.text;
@@ -8460,20 +8462,22 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   /* bncom13g: ম্যাচ শেষ ⇒ CREX-এর 'wc' রেকর্ড থেকে বিজয়ী-ঘোষণা (একবারই) */
   function resultSay(wc,mf){
     try{
-      if(!wc||RES_DONE[mf])return; RES_DONE[mf]=1;
+      if(!wc||RES_DONE[mf]||(window.__resultInfo&&window.__resultInfo.mf===mf))return; RES_DONE[mf]=1;
       var team='';
       try{ if(wc.winner&&window.__crexTeamName)team=window.__crexTeamName(wc.winner); }catch(e){}
       var n=+wc.wonBy||0, how=(+wc.winnerType===1)?'উইকেটে':((+wc.winnerType===2)?'রানে':'');
       var body=(team&&n&&how)?(team+' '+bd(n)+' '+how+' জিতেছে।'):'';
       if(!body&&wc.c)body=String(wc.c).trim();
       if(!body)return;
-      window.__resultInfo={team:team,n:n,how:how,raw:String(wc.c||'')};
+      window.__resultInfo={mf:mf,team:team,n:n,how:how,raw:String(wc.c||'')};
       var line='ম্যাচ শেষ। '+body;
-      Q.length=0; window.__bnCom.end=1;
+      Q.length=0; if(gapT){clearTimeout(gapT);gapT=0;} window.__bnCom.end=1;
+      try{ if(typeof selectedMatch!=='undefined'&&selectedMatch&&String(selectedMatch.mf)===String(mf)){window.__finDone=window.__finDone||{};window.__finDone[selectedMatch.uid]=1;} }catch(_ef){}
+      try{ resetBroadcastQueue(); }catch(_er){}
       var el=document.getElementById('commText'); if(el)el.textContent='🏆 '+line;
       try{ rememberSpoken(line); }catch(e){}
       try{ window.__oneCard&&window.__oneCard('END'); }catch(e){}
-      speakBangla(line).catch(function(){});
+      if(!hostMicActive){ lastSpeakTime=Date.now(); isSpeakingNow=true; speakBangla(line).catch(function(){}).finally(function(){if(!syncBusy)isSpeakingNow=false;}); }
     }catch(e){}
   }
   function handle(arr,mf){
@@ -8544,7 +8548,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     }catch(e){}
   };
   window.__cktSay=function(l,m){ try{ speak(l,m||null); }catch(e){} };   /* bncom22: বাইরে থেকে লাইন জমা */
-  window.__bnComStop=function(){ Q.length=0; busy=false; isSpeakingNow=false; window.__bnCom.end=1; };
+  window.__bnComStop=function(){ Q.length=0; if(gapT){clearTimeout(gapT);gapT=0;} busy=false; isSpeakingNow=false; window.__bnCom.end=1; };
   window.__bnComFlush=function(){ Q.length=0; };   /* bncom27: ফেজ বদলালে অপেক্ষমাণ লাইন ফেলে দাও */ /* ম্যাচ শেষ: কথা বন্ধ, ok অপরিবর্তিত ⇒ পোস্ট-ম্যাচ বিশ্লেষণও চুপ */
   window.__bnComInfo=function(){return {on:window.__bnCom.on,ok:window.__bnCom.ok,q:Q.length,busy:busy,seen:Object.keys(SEEN).length};};
   window.__oneHold=function(){return (Q.length>0||busy) && (Date.now()-(lastSpeakTime||0)<15000);}; /* কথা বাকি থাকলে স্কোর আটকায় — সর্বোচ্চ ১৫ সে */
@@ -8665,7 +8669,7 @@ window.__MS=(function(){
       var t=String(text||''); if(!t)return false;
       if(S.confidence==='low')return false;                        /* ফিড অসংগত ⇒ নীরব */
       if(S.phase==='finished'){                                    /* শেষ ⇒ বিরতি/তাড়ার কথা নয় */
-        if(/ইনিংস বিরতি|প্রথম ইনিংস|দ্বিতীয় ইনিংস|ওভার বাকি|বাকি আছে|টার্গেট|জয়ের জন্য|দরকার/i.test(t))return false;
+        if(/ইনিংস বিরতি|প্রথম ইনিংস|দ্বিতীয় ইনিংস|ওভার বাকি|বাকি আছে|টার্গেট|জয়ের জন্য|দরকার|খেলা চলছে|ক্রিজে আছেন|ব্যাট করছেন|বোলিংয়ে|পরের বলের অপেক্ষায়|সংগ্রহ গড়ছে/i.test(t))return false;
       }
       if(S.innings===1&&S.phase!=='finished'){                     /* ১ম ইনিংসে টার্গেট নেই */
         if(/টার্গেট|রান তাড়া|জয়ের জন্য\s*[০-৯]+\s*রান|দরকার/i.test(t))return false;
@@ -8969,7 +8973,7 @@ setInterval(function(){
       let bowler='';const m=String(o.st).match(/^(.+?)\s+to\s+/i);if(m)bowler=m[1].trim();
       const line=(type==='রান আউট!')?('রিপ্লেতে নিশ্চিত — রান আউট! ফিরে গেলেন '+o.n+'।'):('রিপ্লেতে নিশ্চিত — '+type+(bowler?(' '+bowler+'-এর বলে'):'')+' ফিরে গেলেন '+o.n+'।');
       X.pend=0;
-      if(!hostMicActive&&!isSpeakingNow&&!syncBusy){
+      if(!hostMicActive&&!isSpeakingNow&&!syncBusy&&!(window.__finDone&&selectedMatch&&window.__finDone[selectedMatch.uid])){
         lastSpeakTime=Date.now();isSpeakingNow=true;
         document.getElementById('commText').textContent='🎬 '+line;
         rememberSpoken(line);
@@ -10220,6 +10224,27 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         });
 
         try{ window.__crexHudApply(_hudCtx); }catch(_e){}
+        try{
+          window.__finDone=window.__finDone||{};
+          if(isFinished){
+            if(!window.__finDone[polledMatch.uid]){
+              window.__finDone[polledMatch.uid]=1;
+              try{ if(window.__bnComStop)window.__bnComStop(); }catch(_eb){}
+              const alreadySpoke=!!(window.__resultInfo&&String(window.__resultInfo.mf||'')===String(polledMatch.mf));
+              if(!alreadySpoke){
+                try{ resetBroadcastQueue(); }catch(_er){}
+                const finRes=(window.__MS&&window.__MS.get&&window.__MS.get().resultBn)||statusBn(sv.B||selectedMatch.resStr||'');
+                const finLine=finRes?`ম্যাচ শেষ। ${finRes}${/[।!?]$/.test(finRes)?'':'।'}`:'ম্যাচ সমাপ্ত হয়েছে।';
+                window.__resultInfo={mf:polledMatch.mf,team:'',n:0,how:'',raw:finLine};
+                document.getElementById('commText').textContent=`🏆 ${finLine}`;
+                rememberSpoken(finLine);
+                if(!hostMicActive){ lastSpeakTime=Date.now(); isSpeakingNow=true; void speakBangla(finLine).catch(()=>{}).finally(()=>{if(!syncBusy)isSpeakingNow=false;}); }
+              }
+            }
+          } else if(window.__finDone[polledMatch.uid]){
+            delete window.__finDone[polledMatch.uid];
+          }
+        }catch(_efd){}
         const lastBall = curRb && Array.isArray(curRb.b) ? curRb.b[curRb.b.length - 1] : null;
         const latestTok = lastBall ? String(lastBall.u ?? '') : '';
         if(selectedMatch!==polledMatch)return;
@@ -10248,7 +10273,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const strikerNow = (bs2.star && p2Name) ? p2Name : (p1Name || 'ব্যাটার');
         const eqClean = eqText;
 
-        if (!CXHUD && crexInningValue(sv, activeIndex) && lastBall && ballSig !== lastCrexBallSig && (newCnt>=1 || bigTok)) {
+        if (!isFinished && !CXHUD && crexInningValue(sv, activeIndex) && lastBall && ballSig !== lastCrexBallSig && (newCnt>=1 || bigTok)) {
           lastCrexBallSig=ballSig;
           const newObjs = newCnt>=1 ? curRb.b.slice(curRb.b.length-newCnt) : [lastBall];
           const startI = Math.max(0, newObjs.length-3);
@@ -10278,7 +10303,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         } else {
           if(lastBall)lastCrexBallSig=ballSig;
           holdNewerHud(previousHud);
-          if (!(window.__bnOn&&window.__bnOn()&&!window.__bnStale()) && !hostMicActive && !isSpeakingNow && !syncBusy && (Date.now() - lastSpeakTime > 12000)) {
+          if (!isFinished && !(window.__bnOn&&window.__bnOn()&&!window.__bnStale()) && !hostMicActive && !isSpeakingNow && !syncBusy && (Date.now() - lastSpeakTime > 12000)) {
           lastSpeakTime = Date.now(); isSpeakingNow = true;
           const spkSc = spkScore(rNum, wNum);
           analysisStep++;
@@ -10297,6 +10322,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
             runs:rNum,rawOvers:curInn.ovRaw,bats,bowl},analysisStep);
           rememberSpoken(text);
           if (!hostMicActive) { void (async()=>{let t2=text;try{const a=await aiLine(text,'idle');if(a&&selectedMatch===matchAtStart&&!hostMicActive){t2=a;rememberSpoken(a);}}catch(_e){}
+            if((window.__bnCom&&window.__bnCom.end===1)||(window.__finDone&&selectedMatch&&window.__finDone[selectedMatch.uid])){isSpeakingNow=false;return;}
             try{ if(window.__CMT&&window.__CMT.norm)t2=window.__CMT.norm(t2); }catch(_en){}
             try{ if(window.__MS&&window.__MS.sayGate&&!window.__MS.sayGate(t2)){isSpeakingNow=false;return;} }catch(_eg){}   /* bncom28: ফেজ-গেট এই পথেও */
             try{ if(window.__MS&&window.__MS.factCheck&&!window.__MS.factCheck(t2)){isSpeakingNow=false;return;} }catch(_efc){}
@@ -10454,7 +10480,27 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
 
         document.getElementById('spotRole').textContent = `⚽ ${lgTitle}`;
         document.getElementById('spotName').textContent = `${hBn} ${bn(hSc)} - ${bn(aSc)} ${aBn}`;
-        document.getElementById('spotStat').textContent = stState === 'in' ? `ম্যাচ ঘড়ি: ${bn(dispClock || 'লাইভ')}` : (selectedMatch.countdown || selectedMatch.bdTime);
+        document.getElementById('spotStat').textContent = stState === 'post' ? 'ফুল-টাইম • ম্যাচ সমাপ্ত' : (stState === 'in' ? `ম্যাচ ঘড়ি: ${bn(dispClock || 'লাইভ')}` : (selectedMatch.countdown || selectedMatch.bdTime));
+        try{
+          window.__finDone=window.__finDone||{};
+          if(stState==='post'){
+            if(!window.__finDone[polledMatch.uid]){
+              window.__finDone[polledMatch.uid]=1;
+              try{ resetBroadcastQueue(); }catch(_er){}
+              const hn=Number(hSc), an=Number(aSc);
+              const ftLine=(scoreAvailable&&Number.isFinite(hn)&&Number.isFinite(an))
+                ?(hn>an?`ফুল-টাইম! খেলা শেষ। ${hBn} ${bn(hSc)}-${bn(aSc)} ব্যবধানে ${aBn}-কে হারিয়ে জিতেছে।`
+                  :an>hn?`ফুল-টাইম! খেলা শেষ। ${aBn} ${bn(aSc)}-${bn(hSc)} ব্যবধানে ${hBn}-কে হারিয়ে জিতেছে।`
+                  :`ফুল-টাইম! খেলা শেষ। ${hBn} ${bn(hSc)}, ${aBn} ${bn(aSc)} — ম্যাচটি ড্র হয়েছে।`)
+                :`ফুল-টাইম! ${hBn} বনাম ${aBn} ম্যাচ সমাপ্ত হয়েছে।`;
+              document.getElementById('commText').textContent=`🏁 ${ftLine}`;
+              rememberSpoken(ftLine);
+              if(!hostMicActive){ lastSpeakTime=Date.now(); isSpeakingNow=true; void speakBangla(ftLine).catch(()=>{}).finally(()=>{if(!syncBusy)isSpeakingNow=false;}); }
+            }
+          } else if(stState==='in'&&window.__finDone[polledMatch.uid]){
+            delete window.__finDone[polledMatch.uid];
+          }
+        }catch(_efs){}
 
         const evKey = latestComm ? String(latestComm.sequence || latestComm.id || latestComm.text) : '';
         /*soc2 queue*/
@@ -10556,7 +10602,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
               window.__socPrev=X;
             } else if(X){ window.__socPrev=X; }
           }catch(_e){}
-          if (!hostMicActive && !isSpeakingNow && !syncBusy && (Date.now() - lastSpeakTime > 6500)) {
+          if (stState !== 'post' && !hostMicActive && !isSpeakingNow && !syncBusy && (Date.now() - lastSpeakTime > 6500)) {
           lastSpeakTime = Date.now(); isSpeakingNow = true;
           analysisStep++;
           const prevCam = camMode; camMode = (analysisStep % 2 === 1) ? 2 : 1;
@@ -10564,7 +10610,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           let htLine=null;try{if(stState==='in'&&!socLiveRunning){var _hp=['বিরতি চলছে। স্কোর '+hBn+' '+bn(hSc)+', '+aBn+' '+bn(aSc)+'। দুই দল এখন ড্রেসিংরুমে।','প্রথমার্ধ শেষ। কোচের পরামর্শ চলছে, একটু পরেই দ্বিতীয়ার্ধ।','বিরতির বিশ্রাম চলছে। দ্বিতীয়ার্ধে কৌশল কী বদলায়, সেটাই দেখার।'];htLine=_hp[analysisStep%_hp.length];}}catch(_e){}
           let quick=null;try{quick=(stState==='in'&&socLiveRunning&&window.__socQuickLine)?window.__socQuickLine():null;}catch(_e){}
           rememberSpoken(htLine||quick||text);
-          if (!hostMicActive) { void (async()=>{let t2=htLine||quick||text;try{if(!htLine&&!quick){const a=await aiLine(text,'idle');if(a&&selectedMatch&&selectedMatch.sport==='soccer'&&!hostMicActive){t2=a;rememberSpoken(a);}}}catch(_e){} document.getElementById('commText').textContent = (htLine?`⏸️ `:(quick?`⚽ `:`📊 ফুটবল বিশ্লেষণ: `))+t2; await speakBangla(t2);})().finally(()=>{if(!syncBusy)isSpeakingNow=false;}); }
+          if (!hostMicActive) { void (async()=>{let t2=htLine||quick||text;try{if(!htLine&&!quick){const a=await aiLine(text,'idle');if(a&&selectedMatch&&selectedMatch.sport==='soccer'&&!hostMicActive){t2=a;rememberSpoken(a);}}}catch(_e){} if(window.__finDone&&selectedMatch&&window.__finDone[selectedMatch.uid]){isSpeakingNow=false;return;} document.getElementById('commText').textContent = (htLine?`⏸️ `:(quick?`⚽ `:`📊 ফুটবল বিশ্লেষণ: `))+t2; await speakBangla(t2);})().finally(()=>{if(!syncBusy)isSpeakingNow=false;}); }
           camMode = prevCam;
           }
         }
