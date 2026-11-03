@@ -1,0 +1,25 @@
+name: bugfix2
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/bf2.b64 "https://n.uguu.se/cQXDnhFO.b64"
+          echo "f7cd2d9378bd555047b5364696e537f7  /tmp/bf2.b64" | md5sum -c -
+          base64 -di /tmp/bf2.b64 > docs/studio.html
+          echo "a7ebbeada97c2312090ca2308a040a08  docs/studio.html" | md5sum -c -
+          echo "bnPlayerName : $(grep -c 'const bnPlayerName' docs/studio.html)"
+          echo "BN_PLAYER_WORDS: $(grep -c 'BN_PLAYER_WORDS' docs/studio.html)"
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio bugfix2: batter names in Bengali (rule-based transliteration + surname list), safe fallback to English"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
