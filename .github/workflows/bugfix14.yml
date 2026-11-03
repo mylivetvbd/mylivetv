@@ -1,0 +1,29 @@
+name: bugfix14
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/bf14.b64 "https://d.uguu.se/oNYuHvpS.b64"
+          echo "66ec9e4ca51f7233553efcc27c979bff  /tmp/bf14.b64" | md5sum -c -
+          base64 -di /tmp/bf14.b64 > docs/studio.html
+          echo "b1b74acdc30746f1edc8a901f6b8e69f  docs/studio.html" | md5sum -c -
+          echo "bdMap        : $(grep -c 'bdMap' docs/studio.html)"
+          echo "curIsGap     : $(grep -c 'curIsGap' docs/studio.html)"
+          echo "uiLangBtn    : $(grep -c 'uiLangBtn' docs/studio.html)"
+          echo "bnCleanMarks : $(grep -c 'bnCleanMarks' docs/studio.html)"
+          echo "finDone      : $(grep -c '__finDone' docs/studio.html)"
+          echo "brand-card   : $(grep -c 'brand-card' docs/studio.html)"
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio bugfix14: instant ball-by-ball bowler, batter, strike-bar & 2nd-innings chase sync"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
