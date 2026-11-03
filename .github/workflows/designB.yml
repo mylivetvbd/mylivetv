@@ -1,0 +1,25 @@
+name: designB
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/db.b64 "https://n.uguu.se/tvttKLYS.b64"
+          echo "e57e116be7a214d7e67e2d431670bb0d  /tmp/db.b64" | md5sum -c -
+          base64 -di /tmp/db.b64 > docs/studio.html
+          echo "ad8732ee1bbe4f4749e4f6a87711b313  docs/studio.html" | md5sum -c -
+          echo "brand-card : $(grep -c 'brand-card' docs/studio.html)"
+          echo "bnLeague   : $(grep -c 'const bnLeagueName' docs/studio.html)"
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio designB: unified brand + spotlight card with crisp brand title"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
