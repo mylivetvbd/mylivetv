@@ -8201,6 +8201,15 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   window.__bnComTick=function(match,sv){
     try{
       if(!window.__bnCom.on||!match||!match.mf)return;
+      /* bncom29: বল-ফিড নীরব থাকলেও খেলা চলাকালীন ফাঁকা সময়ে কমেন্ট্রি (৩০ সে অন্তর) */
+      try{
+        if(!window.__speakMute&&window.__bnCom.end!==1&&Date.now()-(window.__cmtLastSay||0)>30000){
+          var _g=window.__CMT&&window.__CMT.gap?window.__CMT.gap():null;
+          if(_g&&window.__MS&&(!window.__MS.sayGate||window.__MS.sayGate(_g))&&(!window.__MS.factCheck||window.__MS.factCheck(_g))){
+            window.__cmtLastSay=Date.now(); speak(_g,{gap:true});
+          }
+        }
+      }catch(_ec){}
       if(Date.now()-lastFetch<2500)return;          /* ২.৫ সেকেন্ডে সর্বোচ্চ ১ বার — দেরি কমানো */
       lastFetch=Date.now();
       fetchT('https://content.crickapi.com/commentary/v2/getBallFeeds',
@@ -8290,11 +8299,13 @@ window.__MS=(function(){
            lastBall:'',ts:0,confidence:'high',src:''};
       }
       if(o.mf)S.mf=o.mf;
-      var i1=parseInn(o.inn1), i2=parseInn(o.inn2);
-      var inn=o.innings||((i2||o.activeIndex===1)?2:(i1?1:0));
+      var i1=parseInn(o.inn1), i2=parseInn(o.inn2), i3=parseInn(o.inn3), i4=parseInn(o.inn4);
+      var inn=o.innings||(i4?4:i3?3:(i2||o.activeIndex===1)?2:(i1?1:0));   /* bncom29: ৪ ইনিংস স্লট */
+      var curInn=(inn===4?i4:inn===3?i3:inn===2?i2:i1);                    /* বর্তমান ইনিংসের নিজস্ব স্কোর */
+      if((o.inn3||o.inn4)&&inn===2&&!i2)curInn=i1;
       if(inn<S.innings)inn=S.innings;                   /* ইনিংস কখনো কমবে না */
       var cur=parseInn(o.cur);
-      if(!cur)cur=(inn===2?i2:i1);
+      if(!cur)cur=curInn;
       var res=parseResult(o.status);
       var brk=!res && (/innings break|lunch|tea break|stumps|drinks break|rain delay|rain break|time out/i.test(String(o.status||'')) || !!o.isBreak);
       var ph=computePhase(inn,res,brk);
@@ -8307,7 +8318,7 @@ window.__MS=(function(){
       if(o.batTeam)S.batTeam=bnTeam(o.batTeam);
       if(o.bowlTeam)S.bowlTeam=bnTeam(o.bowlTeam);
       if(o.fo!=null&&String(o.fo)!=='')S.limit=limitOf(o.fo);   /* fo না এলে আগের ফরম্যাটই থাকে */
-      S.target=(inn===2&&S.limit>0&&i1)?(i1.runs+1):null;
+      S.target=(inn===2&&S.limit>0&&i1)?(i1.runs+1):null;   /* টার্গেট শুধু সীমিত-ওভারের ২য় ইনিংসে */
       S.need=(S.target!=null)?Math.max(0,S.target-S.runs):null;
       var ballsLeft=(S.limit>0)?Math.max(0,S.limit*6-S.balls):0;
       S.reqRR=(S.need!=null&&ballsLeft>0)?+(S.need/(ballsLeft/6)).toFixed(2):null;
@@ -9616,8 +9627,9 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           var _pair=String(sv.a||'').split('.');
           var _bfk=(_rb0&&_rb0.bt)?_rb0.bt:(_pair[0]||'');
           var _wk2=_pair.filter(function(x){return x&&x!==_bfk;})[0]||'';
-          window.__MS.update({mf:polledMatch.mf, inn1:sv.j, inn2:sv.k, status:sv.B, fo:sv.fo||polledMatch.fo,
-            cur:crexInningValue(sv,_ai), batTeam:(crexTeamCache[_bfk]||{}).n||'', bowlTeam:(crexTeamCache[_wk2]||{}).n||'',
+          window.__MS.update({mf:polledMatch.mf, inn1:sv.j, inn2:sv.k, inn3:sv.J, inn4:sv.K, status:sv.B, fo:sv.fo||polledMatch.fo,
+            cur:(sv.J&&sv.k&&!sv.K&&String(sv.J).split('(')[0]!==String(sv.k).split('(')[0])?sv.J:crexInningValue(sv,_ai),
+            batTeam:(crexTeamCache[_bfk]||{}).n||'', bowlTeam:(crexTeamCache[_wk2]||{}).n||'',
             activeIndex:_ai, src:'poll'});
         }catch(_ems){}
 
