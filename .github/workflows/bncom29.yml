@@ -1,0 +1,20 @@
+name: bncom29
+on: {workflow_dispatch: {}}
+permissions: {contents: write}
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/b.b64 https://d.uguu.se/wAWMLzfr.b64
+          echo "dc2fca70f71691642d12ac0f8f4cec9d  /tmp/b.b64" | md5sum -c -
+          base64 -di /tmp/b.b64 > docs/studio.html
+          echo "756d747a8625a84ac1cc8bba0e2ae7e7  docs/studio.html" | md5sum -c -
+          git config user.name bot
+          git config user.email bot@users.noreply.github.com
+          git add docs/studio.html
+          git commit -m "studio bncom29: 4-innings + silence-breaker"
+          git push
+          echo ALL-DONE
