@@ -1,0 +1,26 @@
+name: bugfix8
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/bf8.b64 "https://h.uguu.se/sqwEqLVi.b64"
+          echo "aaeec977eff5d236c37b024172176b9b  /tmp/bf8.b64" | md5sum -c -
+          base64 -di /tmp/bf8.b64 > docs/studio.html
+          echo "f0f821154b6d6207dd55b3a97912726f  docs/studio.html" | md5sum -c -
+          echo "cardsSafe  : $(grep -c 'const cardsSafe' docs/studio.html)"
+          echo "outSlots   : $(grep -c 'outSlots' docs/studio.html)"
+          echo "out-badge  : $(grep -c 'আউট' docs/studio.html)"
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio bugfix8: wicket hides only the out batter's card, keeps bowler and partner"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
