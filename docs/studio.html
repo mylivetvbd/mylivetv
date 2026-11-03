@@ -7495,6 +7495,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     function voiceStatus(msg) {
       const el=document.getElementById('voiceDiagnostic'); if(el) el.textContent=msg;
     }
+    /* feat17: prosody — ! — … । মুছে ফেলা বন্ধ, Native TTS নিজেই বিরতি নেয় */
     function cleanForSpeech(raw) {
       if (!raw) return '';
       let t = replacePhoneticNames(raw)
@@ -7508,6 +7509,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         .replace(/%/g, ' শতাংশ ')
         /* bncom17: উচ্চারণ ঠিক — বদল/বদলে/বদলের ⇒ বদোল/বদোলে/বদোলের ("বদল" শব্দটা ভুল শোনা যায়) */
         .replace(/বদলের/g, 'বদোলের').replace(/বদলে/g, 'বদোলে').replace(/বদল(?!ি)/g, 'বদোল')
+        .replace(/\.\.\./g, '…').replace(/…+/g, '…')
         .replace(/\s+/g, ' ')
         .trim();
       return bn(t);
@@ -7555,7 +7557,8 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           controller=new AbortController();neuralController=controller;
           timer=setTimeout(()=>finish(true),30000);
           try {
-            const response=await fetch('/api/bangla-voice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:chunks[index++]}),signal:controller.signal});
+            var __oc=(window.__lastOc||''); var __pr=(window.__prosodyFor?window.__prosodyFor(__oc, false):{rate:0.93});
+            const response=await fetch('/api/bangla-voice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:chunks[index++], rate:__pr.rate}),signal:controller.signal});
             if(!response.ok)throw new Error('voice unavailable');
             const blob=await response.blob();if(!blob.size)throw new Error('empty voice');
             if(done||token!==currentSpeechToken){finish(false);return;}
@@ -7576,8 +7579,11 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       if(!document.getElementById('norefMeta')){var mm=document.createElement('meta');mm.id='norefMeta';mm.name='referrer';mm.content='no-referrer';document.head.appendChild(mm);}
       function banner(msg){var d=document.getElementById('noVoiceBn');if(!d){d=document.createElement('div');d.id='noVoiceBn';d.style.cssText='position:fixed;top:8px;right:8px;z-index:99999;background:#7f1d1d;color:#fecaca;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;font-family:sans-serif;';document.body.appendChild(d);}d.textContent=msg;clearTimeout(d.__t);d.__t=setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},15000);}
       function findBn(){loadBnVoices();return availableBnVoices.find(v=>/^bn[-_]IN$/i.test(v.lang)&&/bashkar/i.test(v.name+' '+v.voiceURI))||availableBnVoices.find(v=>/pradeep/i.test(v.name+' '+v.voiceURI))||availableBnVoices.find(v=>/^bn[-_]IN$/i.test(v.lang))||availableBnVoices.find(v=>/^bn[-_]BD$/i.test(v.lang))||availableBnVoices[0]||null;}
-      function chunksOf(t){const out=[];let cur='';const words=String(t).replace(/\s+/g,' ').trim().split(' ');for(let i=0;i<words.length;i++){let w=words[i];while(w.length>180){out.push(w.slice(0,180));w=w.slice(180);}if(!w)continue;if((cur?cur.length+1:0)+w.length>180){if(cur)out.push(cur);cur=w;}else{cur=cur?cur+' '+w:w;}}if(cur)out.push(cur);return out;}
-      function speakLocal(voice){return new Promise(function(resolve){let done=false,timer,started=false;const finish=function(ok){if(done)return;done=true;clearTimeout(timer);if(token===currentSpeechToken){speechFinish=null;if(mic)mic.classList.remove('talking');}resolve(ok);};speechFinish=function(){finish(true);};try{const u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang||'bn-IN';u.rate=.95;u.pitch=1;u.volume=1;u.onstart=function(){if(done)return;started=true;try{window.__gfxFlush&&window.__gfxFlush();}catch(e){}clearTimeout(timer);timer=setTimeout(function(){if(token===currentSpeechToken)engine.cancel();finish(true);},45000);};u.onend=function(){finish(started);};u.onerror=function(){finish(false);};timer=setTimeout(function(){if(token===currentSpeechToken)engine.cancel();finish(false);},8000);voiceStatus('\u09ac\u09be\u0982\u09b2\u09be \u0995\u09a3\u09cd\u09a0: '+voice.name);if(mic)mic.classList.add('talking');if(engine.paused)engine.resume();engine.speak(u);}catch(e){finish(false);}});}
+      /* feat17: prosody-aware chunks — প্রথম অংশ উত্তেজিত, দ্বিতীয় স্বাভাবিক */
+      function chunksOf(t){const txt=String(t).replace(/\s+/g,' ').trim(); /* 2-phase split at !/।/— for excitement */
+        var sp=txt.search(/[!।—…]/); if(sp>12 && sp<txt.length-8){ var a=txt.slice(0,sp+1).trim(), b=txt.slice(sp+1).trim(); if(a.length>10 && b.length>8) return [a,b].flatMap(function(seg){ const out=[];let cur='';const words=seg.split(' ');for(let i=0;i<words.length;i++){let w=words[i];while(w.length>180){out.push(w.slice(0,180));w=w.slice(180);}if(!w)continue;if((cur?cur.length+1:0)+w.length>180){if(cur)out.push(cur);cur=w;}else{cur=cur?cur+' '+w:w;}}if(cur)out.push(cur);return out;});}
+        const out=[];let cur='';const words=txt.split(' ');for(let i=0;i<words.length;i++){let w=words[i];while(w.length>180){out.push(w.slice(0,180));w=w.slice(180);}if(!w)continue;if((cur?cur.length+1:0)+w.length>180){if(cur)out.push(cur);cur=w;}else{cur=cur?cur+' '+w:w;}}if(cur)out.push(cur);return out;}
+      function speakLocal(voice){return new Promise(function(resolve){let done=false,timer,started=false;const finish=function(ok){if(done)return;done=true;clearTimeout(timer);if(token===currentSpeechToken){speechFinish=null;if(mic)mic.classList.remove('talking');}resolve(ok);};speechFinish=function(){finish(true);};try{var __prL=(window.__prosodyFor?window.__prosodyFor(window.__lastOc||'', !!window.__lastGap):{rate:0.93,pitch:0.98});const u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang||'bn-IN';u.rate=__prL.rate;u.pitch=__prL.pitch;u.volume=1;u.onstart=function(){if(done)return;started=true;try{window.__gfxFlush&&window.__gfxFlush();}catch(e){}clearTimeout(timer);timer=setTimeout(function(){if(token===currentSpeechToken)engine.cancel();finish(true);},45000);};u.onend=function(){finish(started);};u.onerror=function(){finish(false);};timer=setTimeout(function(){if(token===currentSpeechToken)engine.cancel();finish(false);},8000);voiceStatus('\u09ac\u09be\u0982\u09b2\u09be \u0995\u09a3\u09cd\u09a0: '+voice.name);if(mic)mic.classList.add('talking');if(engine.paused)engine.resume();engine.speak(u);}catch(e){finish(false);}});}
       async function speakOnline(){const parts=chunksOf(text);if(!parts.length)return true;let okAny=false;voiceStatus('\u0985\u09a8\u09b2\u09be\u0987\u09a8 \u09ac\u09be\u0982\u09b2\u09be \u0995\u09a3\u09cd\u09a0 \u099a\u09b2\u099b\u09c7');if(mic)mic.classList.add('talking');for(let i=0;i<parts.length;i++){if(token!==currentSpeechToken)break;const played=await new Promise(function(res){const a=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q='+encodeURIComponent(parts[i]));let done=false,tm;const fin=function(v){if(done)return;done=true;clearTimeout(tm);try{a.pause();}catch(e){}res(v);};speechFinish=function(){fin(true);};a.onended=function(){fin(true);};a.onerror=function(){fin(false);};tm=setTimeout(function(){fin(false);},30000);a.play().catch(function(){fin(false);});});if(played){okAny=true;}else{break;}}
         if(token===currentSpeechToken){speechFinish=null;if(mic)mic.classList.remove('talking');}return okAny;}
       const g=await speakOnline();
@@ -7656,8 +7662,8 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           const finish=()=>{if(finished)return;finished=true;clearTimeout(timer);if(token===currentSpeechToken){speechFinish=null;if(mic)mic.classList.remove('talking');}resolve();};
           speechFinish=finish;
           try{
-            const u=new SpeechSynthesisUtterance(cleanSpeech);u.lang=chosen?(chosen.lang||'bn-IN'):'bn-IN';if(chosen)u.voice=chosen;
-            u.rate=0.95;u.pitch=1;u.volume=1;u.onend=finish;
+            var __prM=(window.__prosodyFor?window.__prosodyFor(window.__lastOc||'', !!window.__lastGap):{rate:0.93,pitch:0.98});const u=new SpeechSynthesisUtterance(cleanSpeech);u.lang=chosen?(chosen.lang||'bn-IN'):'bn-IN';if(chosen)u.voice=chosen;
+            u.rate=__prM.rate;u.pitch=__prM.pitch;u.volume=1;u.onend=finish;
             u.onstart=function(){try{window.__gfxFlush&&window.__gfxFlush();}catch(e){}};
             u.onerror=()=>{if(token===currentSpeechToken)voiceStatus('ফোনের বাংলা কণ্ঠ চালানো যায়নি। ফোনের Text-to-speech সেটিংসে বাংলা ভয়েস চালু করুন।');finish();};
             timer=setTimeout(()=>{if(token===currentSpeechToken){window.speechSynthesis.cancel();voiceStatus('কণ্ঠ থেমে গেছে। ফোনের টেক্সট-টু-স্পিচ সেটিংস পরীক্ষা করুন।');}finish();},45000);
@@ -8688,13 +8694,21 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       try{var _m=(it&&it.m)||null; if(_m){ if(_m.sc!=null)window.__oneHud(_m.sc,_m.ov,true,_m.mf); if(_m.oc!=null)window.__oneCard(_m.oc);} }catch(_e){}
       var el=document.getElementById('commText'); if(el)el.textContent='📣 '+line;
       rememberSpoken(line);
-      speakBangla(line).finally(function(){
-        if(mySeq!==pumpSeq)return;
-        window.__cmtLastSay=Date.now(); busy=false; curIsGap=false; isSpeakingNow=false;
-        var hasReal=Q.some(function(q){return !(q&&q.m&&q.m.gap);});
-        if(!hasReal&&window.__flushScore){try{window.__flushScore();}catch(_ef){}}
-        setTimeout(pump,Q.length?80:250);
-      });
+      /* feat17: prosody context + boundary suspense delay 250ms (watchdogs intact 20s/45s) */
+      try{ window.__lastOc=(it&&it.m&&it.m.oc)||''; window.__lastGap=curIsGap; }catch(_pl){}
+      var __ocP=String(window.__lastOc||'').toUpperCase();
+      var __isB=/^(4|6|W)$/i.test(__ocP);
+      var __preD=__isB?250:0;
+      var __doSpeak=function(){
+        speakBangla(line).finally(function(){
+          if(mySeq!==pumpSeq)return;
+          window.__cmtLastSay=Date.now(); busy=false; curIsGap=false; isSpeakingNow=false;
+          var hasReal=Q.some(function(q){return !(q&&q.m&&q.m.gap);});
+          if(!hasReal&&window.__flushScore){try{window.__flushScore();}catch(_ef){}}
+          setTimeout(pump,Q.length?80:250);
+        });
+      };
+      if(__preD) setTimeout(__doSpeak, __preD); else __doSpeak();
     }catch(e){busy=false; curIsGap=false; isSpeakingNow=false;}
   }
   function speak(line,meta){
@@ -8718,7 +8732,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       }
       if(pumpT){clearTimeout(pumpT);pumpT=0;}
     }
-    Q.push({l:line,m:meta||null}); if(Q.length>6)Q.shift();   /* bugfix14: ক্রমিক বল-বাই-বল কিউ — মাঝের চার/ডট/সিঙ্গেল স্কিপ নয় */
+    var __ocQ=String((meta&&meta.oc)||'').toUpperCase(); var __prio=(meta&&meta.gap)?0:(__ocQ==='W'?3:(__ocQ==='6'||__ocQ==='4'?2:1)); Q.push({l:line,m:meta||null,prio:__prio}); if(Q.length>6)Q.shift();   /* feat17: prio W=3,6/4=2,other=1,gap=0 + bugfix14 */
     if(!(meta&&meta.gap))armGap();
     pump();
   }
@@ -11675,9 +11689,24 @@ window.__spokenFix=function(t){
     t=t.replace(/[০-৯0-9]+/g,function(m){return W(m);});
     var i,p;
     for(i=0;i<window.__pronDict.length;i++){p=window.__pronDict[i];t=t.replace(new RegExp('(^|[^\\u0980-\\u09FF])'+p[0]+'(?=$|[^\\u0980-\\u09FF])','g'),'$1'+p[1]);}
+    /* feat17: ইচ্ছাকৃত প্রসোডি বিরতি — সংখ্যা/স্কোরের পর — এবং !/। এর পর — */
+    t=t.replace(/স্কোর/g,' — স্কোর');
+    t=t.replace(/([!।])\s*/g,'$1 — ');
+    t=t.replace(/\s+—\s+—/g,' — ');
     t=t.replace(/\s+/g,' ').trim();
   }catch(e){}
   return t;
+};
+/* feat17: ডাইনামিক প্রসোডি ম্যাপ — রেট/পিচ/প্রি-ডিলে */
+window.__prosodyFor=function(oc,gap){
+  var o=String(oc||'').toUpperCase();
+  if(gap) return {rate:0.90, pitch:0.95, pre:0, mid:0};
+  if(o==='W') return {rate:0.86, pitch:1.25, pre:500, mid:0};
+  if(o==='6') return {rate:1.08, pitch:1.18, pre:350, mid:300};
+  if(o==='4') return {rate:1.05, pitch:1.12, pre:180, mid:0};
+  if(o==='0' || o==='1') return {rate:0.93, pitch:0.98, pre:0, mid:0};
+  if(o==='WD' || o==='NB') return {rate:0.95, pitch:1.02, pre:0, mid:0};
+  return {rate:0.93, pitch:0.98, pre:0, mid:0};
 };
 
 /* ═══════ bncom11: উচ্চারণ-মেশিন — অভিধান + বানান ঠিক রাখা ═══════ */
@@ -11973,15 +12002,15 @@ window.__CMT=(function(){
     return 'plain';
   }
   var P={
-    '4':{up:['চার! সীমানার দিকে দুরন্ত শট, দর্শকরা জেগে উঠল।','দারুণ! ফাঁক গলে বল গেল বাউন্ডারিতে।','চার! চেষ্টা সফল, দল এগিয়ে যাচ্ছে।'],
-         press:['চার! চাপের মুখে দারুণ প্রত্যুত্তর।','চার! এই শটেই দল ফিরল লড়াইয়ে।'],
-         plain:['চার রান, স্কোরবোর্ডে যোগ হলো চার।','বাউন্ডারি! চার রান দলের খাতায়।']},
-    '6':{up:['ছক্কা! বিশাল শট, গ্যালারিতে গিয়ে পড়ল বল।','ছয়! শটের জোরেই বল পেল দীর্ঘ পথ।','ছক্কা! দর্শকদের উল্লাস, দল এগোচ্ছে দ্রুত।'],
-         press:['ছয়! চাপের মুখে সাহসী শট।','ছক্কা! দল ফিরছে ম্যাচে।'],
-         plain:['ছয় রান, বল বেরিয়ে গেল মাঠের বাইরে।','ছক্কা! ছয় রান যোগ হলো।']},
-    'W':{up:['উইকেট! বোলার মুহূর্তটাই বেছে নিলেন।'],
-         press:['উইকেট! ব্যাটিং দল চাপে পড়ল।','আউট! বড় ব্যবধান গড়ে দিল এই বল।'],
-         plain:['উইকেট পড়ল, নতুন ব্যাটার আসছেন।','আউট! দলের সংগ্রহ বাড়ল না, উইকেট গেল।']},
+    '4':{up:['চার! — সীমানার দিকে দুরন্ত শট, দর্শকরা জেগে উঠল।','দারুণ! ফাঁক গলে বল গেল বাউন্ডারিতে — চার রান।','চার! … চেষ্টা সফল, দল এগিয়ে যাচ্ছে।'],
+         press:['চার! — চাপের মুখে দারুণ প্রত্যুত্তর।','চার! … এই শটেই দল ফিরল লড়াইয়ে।'],
+         plain:['চার রান — স্কোরবোর্ডে যোগ হলো চার।','বাউন্ডারি! — চার রান দলের খাতায়।']},
+    '6':{up:['ছক্কা! — বিশাল শট, গ্যালারিতে গিয়ে পড়ল বল।','ছয়! … শটের জোরেই বল পেল দীর্ঘ পথ।','ছক্কা! — দর্শকদের উল্লাস, দল এগোচ্ছে দ্রুত।'],
+         press:['ছয়! — চাপের মুখে সাহসী শট।','ছক্কা! … দল ফিরছে ম্যাচে।'],
+         plain:['ছয় রান — বল বেরিয়ে গেল মাঠের বাইরে।','ছক্কা! … ছয় রান যোগ হলো।']},
+    'W':{up:['উইকেট! — বোলার মুহূর্তটাই বেছে নিলেন।'],
+         press:['উইকেট! … ব্যাটিং দল চাপে পড়ল।','আউট! — বড় ব্যবধান গড়ে দিল এই বল।'],
+         plain:['উইকেট পড়ল — নতুন ব্যাটার আসছেন।','আউট! … দলের সংগ্রহ বাড়ল না, উইকেট গেল।']},
     '0':{up:['ডট বল, চাপ ধরে রাখলেন বোলার।','কোনো রান নেই, দারুণ নিয়ন্ত্রণ।'],
          press:['ডট! ব্যাটারের জন্য কঠিন সময়।','কোনো রান নেই, চাপ বাড়ছে।'],
          plain:['ডট বল, কোনো রান নেই।','এই বলে রান এল না।']},
@@ -12241,7 +12270,7 @@ window.__hd2Toggle=function(){window.__hd2=!window.__hd2;localStorage.setItem('h
         try{ t=window.__spokenFix(t); }catch(e){}
         try{ t=window.__spellFix(t); }catch(e){}
         try{ if(window.__speechGate && window.__speechGate(t)) return Promise.resolve(); }catch(e){}   /* bncom17 */
-        if(window.__hd2){var v=window.__hd2Voice();if(v){return new Promise(function(res){var done=false;var fin=function(){if(!done){done=true;res(true);}};try{var u=new SpeechSynthesisUtterance(t);u.voice=v;u.lang=v.lang||'bn-BD';u.rate=1.02;u.pitch=1;u.onend=fin;u.onerror=function(){if(!done){done=true;Promise.resolve(o(t,fp)).then(res);}};setTimeout(fin,45000);speechSynthesis.speak(u);}catch(e){fin();}});}}
+        if(window.__hd2){var v=window.__hd2Voice();if(v){return new Promise(function(res){var done=false;var fin=function(){if(!done){done=true;res(true);}};try{var u=new SpeechSynthesisUtterance(t);u.voice=v;u.lang=v.lang||'bn-BD';var __prH=(window.__prosodyFor?window.__prosodyFor(window.__lastOc||'', !!window.__lastGap):{rate:1.02,pitch:1});u.rate=__prH.rate;u.pitch=__prH.pitch;u.onend=fin;u.onerror=function(){if(!done){done=true;Promise.resolve(o(t,fp)).then(res);}};setTimeout(fin,45000);speechSynthesis.speak(u);}catch(e){fin();}});}}
         return o(t,fp);
       };
       window.__bnWrapped=true;
