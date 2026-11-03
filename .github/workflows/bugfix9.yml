@@ -1,0 +1,26 @@
+name: bugfix9
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/bf9.b64 "https://d.uguu.se/UMUtWtGu.b64"
+          echo "a64ec67877b37704a12ddd70838d3f18  /tmp/bf9.b64" | md5sum -c -
+          base64 -di /tmp/bf9.b64 > docs/studio.html
+          echo "23694818deb4d46c22ba5a0c76540be3  docs/studio.html" | md5sum -c -
+          echo "setScore   : $(grep -c 'window.__setScore=' docs/studio.html)"
+          echo "flushScore : $(grep -c 'window.__flushScore=' docs/studio.html)"
+          echo "brand-card : $(grep -c 'brand-card' docs/studio.html)"
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio bugfix9: single-writer cricket score pipeline (__setScore + __oneHold queue) + spotRole parser fix"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
