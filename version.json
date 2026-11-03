@@ -1,6 +1,6 @@
 {
-  "versionCode": 27,
-  "versionName": "2.9.8",
-  "apk": "https://github.com/mylivetvbd/mylivetv/releases/download/v2.9.8/MyLiveTV-v2.9.8.apk",
-  "notes": "🖼️ ছোট জানালায় (মিনিমাইজ) স্টুডিওর ছবি-কথা ঩খন চালু থাকে • 📤 বন্ধুকে অ্যাপ পাঠাও — ইন্টারনেট ছাড়াই"
+  "versionCode": 29,
+  "versionName": "2.9.10",
+  "apk": "https://github.com/mylivetvbd/mylivetv/releases/download/v2.9.10/MyLiveTV-v2.9.10.apk",
+  "notes": "🔧 Start.io অ্যাপ আইডি (209804683) ম্যানিফেস্টে স্ট্রিং রিসোর্স হিসেবে যোগ করা হয়েছে — আইকন ও অ্যাপ অক্ষত"
 }
