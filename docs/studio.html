@@ -6119,6 +6119,19 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     function __brkSlides(mode){
       var sl=[];
       try{
+        /* bncom30: আপকামিং ম্যাচের কার্ড — উপরে শিরোনাম, নিচে টিকিং কাউন্টডাউন */
+        if(mode==='upcoming'){
+          var _um=(typeof selectedMatch!=='undefined'&&selectedMatch)?selectedMatch:{};
+          var _uh=teamBn(_um.t1),_ua=teamBn(_um.t2);
+          sl.push('<div style="padding:20px 24px;text-align:center;font-family:inherit;">'
+            +'<div style="font-weight:900;font-size:17px;letter-spacing:.5px;color:#fde047;">\u23F3 পরবর্তী ম্যাচ \u2014 শুরু হতে বাকি</div>'
+            +'<div id="brkCd" style="font-weight:900;font-size:40px;margin:8px 0 6px;color:#ffffff;">--:--:--</div>'
+            +'<div style="font-weight:800;font-size:24px;color:#ffffff;">'+_uh+' বনাম '+_ua+'</div>'
+            +'<div style="font-size:15px;opacity:.85;margin-top:6px;color:#e2e8f0;">'+String(_um.leagueName||'ক্রিকেট ম্যাচ')+'</div>'
+            +'<div style="font-size:13px;opacity:.7;margin-top:12px;color:#cbd5e1;">\u266B মিউজিক চলছে \u00B7 ধারাভাষ্য চলছে</div>'
+            +'</div>');
+          return sl;
+        }
         if(mode==='soccer'){
           var XI=window.__socXI||{h:[],a:[]};var kit=window.__socKit||{};
           var hN=(document.getElementById('socHomeName')||{}).textContent||'দল ১';
@@ -6151,7 +6164,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     window.__brkShow=function(mode){try{
       if(window.__brkActive===mode)return;
       window.__brkActive=mode;
-      try{ if((mode==='cricket'||mode==='soccer')&&window.__brkMusicStart)window.__brkMusicStart(); }catch(_ebm){}   /* bncom25: ফুটবল বিরতিতেও */
+      try{ if((mode==='cricket'||mode==='soccer'||mode==='upcoming')&&window.__brkMusicStart)window.__brkMusicStart(); }catch(_ebm){}   /* bncom25: ফুটবল বিরতিতেও */
       var root=document.getElementById('studioRoot')||document.body;
       var el=document.getElementById('brkStage');
       if(!el){el=document.createElement('div');el.id='brkStage';
@@ -6164,7 +6177,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           _bc.style.cssText='position:absolute;right:8px;bottom:6px;font:600 7px inherit;color:#cbd5e1;opacity:.62;z-index:59;pointer-events:none;';
           _bc.textContent='\u266a Rock Hybrid \u2014 Kevin MacLeod (CC BY 3.0)';
           el.appendChild(_bc); }
-        if(_bc)_bc.style.display=((mode==='cricket'||mode==='soccer')?'block':'none');   /* bncom25 */
+        if(_bc)_bc.style.display=((mode==='cricket'||mode==='soccer'||mode==='upcoming')?'block':'none');   /* bncom25 */
       }catch(_ebc){}   /* CC BY 3.0 ক্রেডিট */
       var idx=0;
       var show=function(){try{
@@ -6176,6 +6189,16 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       }catch(e){}};
       show();
       clearInterval(window.__brkTimer);window.__brkTimer=setInterval(show,8000);
+      /* bncom30: আপকামিং কার্ডে প্রতি সেকেন্ডে কাউন্টডাউন আপডেট */
+      try{
+        clearInterval(window.__brkCdTimer); window.__brkCdTimer=null;
+        if(mode==='upcoming'){
+          var _cdTick=function(){ try{ var el=document.getElementById('brkCd'); if(!el)return;
+            var c=upcomingCountdown((typeof selectedMatch!=='undefined'&&selectedMatch)?selectedMatch:{});
+            el.textContent=c.display; }catch(e){} };
+          _cdTick(); window.__brkCdTimer=setInterval(_cdTick,1000);
+        }
+      }catch(_ecd){}
       try{if(mode==='soccer'){camMode=2;var S=window.__soc3;if(S){S.on=false;S.carrierP=null;S.fly=null;}try{[].concat(socHomePlayers,socAwayPlayers).forEach(function(p){p.visible=false;});}catch(_e2){}}}catch(e){}
     }catch(e){}};
     window.__brkStop=function(){try{
@@ -6183,6 +6206,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       try{ if(window.__brkMusicStop)window.__brkMusicStop(); }catch(_ebm2){}   /* bncom23: মিউজিক বন্ধ */
       if(_wasSoc)try{[].concat(socHomePlayers,socAwayPlayers).forEach(function(p){p.visible=true;});}catch(_e3){}
       clearInterval(window.__brkTimer);
+      try{clearInterval(window.__brkCdTimer);window.__brkCdTimer=null;}catch(_ecd2){}
       var el=document.getElementById('brkStage');if(el)el.style.display='none';
     }catch(e){}};
     window.__soc3Fire=function(kind,side,pl){try{
@@ -6639,7 +6663,27 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       'Inter': { bn:'ইন্টার মিলান', j1:0x1d4ed8, j2:0x0f172a, p:0x0f172a, bg:'#1e3a8a' },
       'AC Milan': { bn:'এসি মিলান', j1:0xb91c1c, j2:0x0f172a, p:0x0f172a, bg:'#991b1b' },
       'Inter Miami': { bn:'ইন্টার মায়ামি', j1:0xf472b6, j2:0x0f172a, p:0x0f172a, bg:'#db2777' },
-      'Al Nassr': { bn:'আল নাসর', j1:0xfacc15, j2:0x1d4ed8, p:0x1d4ed8, bg:'#ca8a04' }
+      'Al Nassr': { bn:'আল নাসর', j1:0xfacc15, j2:0x1d4ed8, p:0x1d4ed8, bg:'#ca8a04' },
+      /* bncom30: পাকিস্তানের ঘরোয়া দল (Quaid-e-Azam Trophy) — শুধু নাম-মেলানোর ডেটা */
+      'Karachi Region Blues': { bn:'করাচি রিজিওন ব্লুজ', j1:0x1d4ed8, j2:0x93c5fd, p:0x1e3a8a, bg:'#1d4ed8', pattern:'side' },
+      'Karachi Region Whites': { bn:'করাচি রিজিওন হোয়াইটস', j1:0xe5e7eb, j2:0x1d4ed8, p:0x334155, bg:'#64748b', pattern:'side' },
+      'Sialkot Region Blues': { bn:'সিয়ালকোট রিজিওন ব্লুজ', j1:0x0369a1, j2:0xfbbf24, p:0x075985, bg:'#0369a1', pattern:'side' },
+      'Sialkot Region Whites': { bn:'সিয়ালকোট রিজিওন হোয়াইটস', j1:0xf1f5f9, j2:0x0369a1, p:0x475569, bg:'#64748b', pattern:'side' },
+      'Lahore Region Blues': { bn:'লাহোর রিজিওন ব্লুজ', j1:0x1e40af, j2:0x60a5fa, p:0x1e3a8a, bg:'#1e40af', pattern:'side' },
+      'Lahore Region Whites': { bn:'লাহোর রিজিওন হোয়াইটস', j1:0xf8fafc, j2:0x1e40af, p:0x334155, bg:'#64748b', pattern:'side' },
+      'Lahore Region Greens': { bn:'লাহোর রিজিওন গ্রিনস', j1:0x16a34a, j2:0xfacc15, p:0x14532d, bg:'#15803d', pattern:'side' },
+      'Multan Region': { bn:'মুলতান রিজিওন', j1:0x7c3aed, j2:0xfbbf24, p:0x4c1d95, bg:'#6d28d9' },
+      'Faisalabad Region': { bn:'ফয়সালাবাদ রিজিওন', j1:0xb91c1c, j2:0xfde047, p:0x7f1d1d, bg:'#b91c1c' },
+      'Rawalpindi Region': { bn:'রাওয়ালপিন্ডি রিজিওন', j1:0x0f766e, j2:0xfacc15, p:0x134e4a, bg:'#0f766e' },
+      'Peshawar Region': { bn:'পেশোয়ার রিজিওন', j1:0x0891b2, j2:0xf97316, p:0x155e75, bg:'#0891b2' },
+      'Abbottabad Region': { bn:'অ্যাবোটাবাদ রিজিওন', j1:0x4d7c0f, j2:0xfbbf24, p:0x365314, bg:'#4d7c0f' },
+      'Islamabad Region': { bn:'ইসলামাবাদ রিজিওন', j1:0x065f46, j2:0xf8fafc, p:0x064e3b, bg:'#065f46' },
+      'Hyderabad Region': { bn:'হায়দরাবাদ রিজিওন', j1:0x9a3412, j2:0xfacc15, p:0x7c2d12, bg:'#9a3412' },
+      'Quetta Region': { bn:'কোয়েটা রিজিওন', j1:0x4338ca, j2:0xfbbf24, p:0x312e81, bg:'#4338ca' },
+      'AJK Region': { bn:'এজেকে রিজিওন', j1:0x15803d, j2:0xf8fafc, p:0x14532d, bg:'#15803d' },
+      'Bahawalpur Region': { bn:'বাহাওয়ালপুর রিজিওন', j1:0xa16207, j2:0xfde047, p:0x713f12, bg:'#a16207' },
+      'Larkana Region': { bn:'লারকানা রিজিওন', j1:0xbe123c, j2:0xfbbf24, p:0x881337, bg:'#be123c' },
+      'Dera Murad Jamali Region': { bn:'ডেরা মুরাদ জামালি রিজিওন', j1:0x334155, j2:0xf97316, p:0x1e293b, bg:'#334155' },
     };
 
     function parseHexCol(hexStr, fallbackHex) {
@@ -6663,7 +6707,24 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         ? { bn: name || 'দল ১', j1:0x047857, j2:0xfbbf24, p:0x064e3b, bg:'#047857' }
         : { bn: name || 'দল ২', j1:0x1d4ed8, j2:0xf97316, p:0x1e3a8a, bg:'#1d4ed8' };
     }
-    const teamBn = n => { const base = getTeamStyle(n, 0).bn || n || 'দল'; return /\b(women|womens|women's|ladies)\b/i.test(String(n||'')) && !/নারী/.test(base) ? base+' নারী' : base; };
+    /* bncom30: TEAM_MAP-এ না থাকা দলের নামও শব্দ-ধরে বাংলা — শুধু ফলব্যাকের জন্য।
+       teamBn / cleanForSpeech / getTeamStyle অপরিবর্তিত; ইংরেজি অবশিষ্ট থাকলে '' ফেরে (ল্যাটিন-গার্ড অটুট)। */
+    const BN_TEAM_WORDS = { 'karachi':'করাচি','sialkot':'সিয়ালকোট','lahore':'লাহোর','multan':'মুলতান',
+      'faisalabad':'ফয়সালাবাদ','rawalpindi':'রাওয়ালপিন্ডি','peshawar':'পেশোয়ার','abbottabad':'অ্যাবোটাবাদ',
+      'islamabad':'ইসলামাবাদ','hyderabad':'হায়দরাবাদ','quetta':'কোয়েটা','ajk':'এজেকে','bahawalpur':'বাহাওয়ালপুর',
+      'larkana':'লারকানা','dera murad jamali':'ডেরা মুরাদ জামালি','fata':'ফাটা','gilgit':'গিলগিট','azad':'আজাদ',
+      'region':'রিজিওন','blues':'ব্লুজ','whites':'হোয়াইটস','greens':'গ্রিনস','reds':'রেডস','gold':'গোল্ড',
+      'silver':'সিলভার','women':'নারী','under':'আন্ডার','emerging':'এমার্জিং','president':'প্রেসিডেন্ট',
+      'trophy':'ট্রফি','cup':'কাপ','league':'লিগ','plate':'প্লেট','division':'ডিভিশন','xi':'একাদশ' };
+    function bnTeamName(n){
+      const raw=String(n||'').trim(); if(!raw) return '';
+      const known=getTeamStyle(raw,0).bn;
+      if(known && /[\u0980-\u09FF]/.test(known)) return known;
+      const out=raw.toLowerCase().replace(/[.'’]/g,' ').split(/\s+/).filter(Boolean)
+        .map(w=>BN_TEAM_WORDS[w]||w).join(' ');
+      return /[A-Za-z]/.test(out) ? '' : out;
+    }
+    const teamBn = n => { const _st=getTeamStyle(n, 0).bn; const base = (_st && /[\u0980-\u09FF]/.test(_st)) ? _st : (bnTeamName(n) || _st || n || 'দল'); return /\b(women|womens|women's|ladies)\b/i.test(String(n||'')) && !/নারী/.test(base) ? base+' নারী' : base; };
 
     function applyTeamKit(p, style, keeper=false) {
       p.userData.jerseyMat.color.setHex(keeper ? 0xf59e0b : style.j1);
@@ -9718,11 +9779,12 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         if (!hasPlay && !selectedMatch.confirmedPlay && !['finished','stumps'].includes(selectedMatch.state)) {
           selectedMatch.state='upcoming';
           showCricketWaiting(selectedMatch);
+          try{ if(window.__brkShow)window.__brkShow('upcoming'); }catch(_eb){}   /* bncom30 */
           const count=upcomingCountdown(selectedMatch);
           if (!(window.__bnOn&&window.__bnOn()&&!window.__bnStale()) && !hostMicActive && !isSpeakingNow && Date.now()-lastSpeakTime>22000) {
             lastSpeakTime=Date.now(); isSpeakingNow=true; analysisStep++;
-            const safeHome=Object.keys(TEAM_MAP).some(k=>String(batEng).toLowerCase().includes(k.toLowerCase())) ? batBn : 'প্রথম দল';
-            const safeAway=Object.keys(TEAM_MAP).some(k=>String(bowlEng).toLowerCase().includes(k.toLowerCase())) ? bowlBn : 'দ্বিতীয় দল';
+            const safeHome=Object.keys(TEAM_MAP).some(k=>String(batEng).toLowerCase().includes(k.toLowerCase())) ? batBn : (bnTeamName(batEng)||'প্রথম দল');
+            const safeAway=Object.keys(TEAM_MAP).some(k=>String(bowlEng).toLowerCase().includes(k.toLowerCase())) ? bowlBn : (bnTeamName(bowlEng)||'দ্বিতীয় দল');
             const line=analysisStep%3===0 ? `${count.spoken} আপনারা ধৈর্য নিয়ে মাঠের হুল্লোড়ের সঙ্গে থাকুন।` :
               `${safeHome} বনাম ${safeAway} ম্যাচের অপেক্ষায় আছি আমরা। ${count.spoken} আপনাদের মতে কোন দল ভালো করবে? কমেন্টে জানাতে পারেন।`;
             document.getElementById('commText').textContent=line; await speakBangla(line); isSpeakingNow=false;
@@ -9733,6 +9795,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         if (hasPlay) {
           selectedMatch.confirmedPlay=true;
           if (selectedMatch.state === 'upcoming') selectedMatch.state='live';
+          try{ if(window.__brkStop&&window.__brkActive==='upcoming')window.__brkStop(); }catch(_eb){}   /* bncom30 */
         } else if (!sv.j && !sv.k) {
           document.getElementById('commText').textContent='স্কোর তথ্যের অপেক্ষায় আছি।';
           if (selectedMatch && selectedMatch.sport==='cricket') pollTimer=setTimeout(pollCrexCricket,liveFailures ? 500 : 1500);
