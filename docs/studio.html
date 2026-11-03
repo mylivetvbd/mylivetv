@@ -5820,24 +5820,36 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       set('uiBat1Name', en ? 'Awaiting Batter' : 'ব্যাটারের তথ্যের অপেক্ষা');
       set('uiBat1Runs', '');
       set('uiBowler', L.isBreak ? (en ? 'Innings Break' : 'ইনিংস বিরতি') : (en ? 'Awaiting Bowler' : 'বোলারের তথ্যের অপেক্ষা'));
+      const hSk = (window.__crexHud && (!window.__crexHud.mf || !L.mf || String(window.__crexHud.mf) === String(L.mf))) ? (window.__crexHud.strikerKey || '') : '';
+      let strikeSlot = -1;
+      if (L.bs2 && L.bs2.star && !L.outSlots[1] && L.hasS) strikeSlot = 1;
+      else if (L.bs1 && L.bs1.star && !L.outSlots[0] && L.hasQ) strikeSlot = 0;
+      else if (hSk && L.p2Fk && hSk === L.p2Fk && !L.outSlots[1] && L.hasS) strikeSlot = 1;
+      else if (hSk && L.p1Fk && hSk === L.p1Fk && !L.outSlots[0] && L.hasQ) strikeSlot = 0;
+      else if (!L.outSlots[0] && L.hasQ) strikeSlot = 0;
+      else if (!L.outSlots[1] && L.hasS) strikeSlot = 1;
       if (L.hasQ) {
         const p1 = en ? L.p1En : L.p1Bn;
-        set('uiBat0Name', L.outSlots[0] ? (en ? '— OUT —' : '— আউট —') : `${L.bs1.star ? '🏏' : '•'} ${p1}`);
+        set('uiBat0Name', L.outSlots[0] ? (en ? '— OUT —' : '— আউট —') : `${strikeSlot === 0 ? '🏏' : '•'} ${p1}`);
         set('uiBat0Runs', L.outSlots[0] ? '' : `${uiNum(L.bs1.r)} (${uiNum(L.bs1.b)})`);
       }
       if (L.hasS) {
         const p2 = en ? L.p2En : L.p2Bn;
-        set('uiBat1Name', L.outSlots[1] ? (en ? '— OUT —' : '— আউট —') : `${L.bs2.star ? '🏏' : '•'} ${p2}`);
+        set('uiBat1Name', L.outSlots[1] ? (en ? '— OUT —' : '— আউট —') : `${strikeSlot === 1 ? '🏏' : '•'} ${p2}`);
         set('uiBat1Runs', L.outSlots[1] ? '' : `${uiNum(L.bs2.r)} (${uiNum(L.bs2.b)})`);
+      }
+      {
+        const b0El = document.getElementById('uiBat0Name'), b1El = document.getElementById('uiBat1Name');
+        if (b0El && b0El.parentElement) b0El.parentElement.classList.toggle('active', strikeSlot !== 1);
+        if (b1El && b1El.parentElement) b1El.parentElement.classList.toggle('active', strikeSlot === 1);
       }
       const lgDisp = en ? L.lgEn : L.lgBn;
       const p1D = en ? L.p1En : L.p1Bn, p2D = en ? L.p2En : L.p2Bn;
       const curBatHud = (window.__crexHud && window.__crexHud.curBat)
         ? (en ? ((window.__crexHud.strikerKey && crexPlayerCache[window.__crexHud.strikerKey]) || window.__crexHud.curBat) : bnPlayerName(window.__crexHud.curBat))
         : '';
-      const strikerDisp = (L.bs2 && L.bs2.star && p2D && !L.outSlots[1]) ? p2D
-                        : (!L.outSlots[0] && p1D && L.hasQ) ? p1D
-                        : (p2D && L.hasS && !L.outSlots[1]) ? p2D
+      const strikerDisp = (strikeSlot === 1 && p2D) ? p2D
+                        : (strikeSlot === 0 && p1D) ? p1D
                         : curBatHud;
       set('spotRole', L.isFinished ? `${en ? 'Match Ended' : 'খেলা শেষ'} • ${lgDisp}`
                     : L.isBreak ? `${en ? 'Innings Break' : 'ইনিংস বিরতি'} • ${lgDisp}` : lgDisp);
@@ -5847,8 +5859,9 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
                     : (strikerDisp ? (en ? `🏏 On Strike: ${strikerDisp}` : `🏏 স্ট্রাইকে: ${strikerDisp}`)
                                    : (en ? 'Live Broadcast' : (L.countdown || L.bdTime || 'সরাসরি খেলা চলছে'))));
       if (L.hasC) {
-        if (en) set('uiBowler', `⚾ ${L.bwEn} (${L.bwOvDisp} Ov • ${L.bwRuns} Runs) • ${L.bowlEng}`);
-        else set('uiBowler', `⚾ ${bnPlayerName(L.bwBn)} (${bn(L.bwOvDisp)} ওভার • ${bn(L.bwRuns)} রান) • ${L.bowlBn}`);
+        const bwW = L.bwWkts != null ? L.bwWkts : 0;
+        if (en) set('uiBowler', `⚾ ${L.bwEn} (${bwW}/${L.bwRuns} • ${L.bwOvDisp} Ov)`);
+        else set('uiBowler', `⚾ ${bnPlayerName(L.bwBn)} (${bn(bwW)}/${bn(L.bwRuns)} • ${bn(L.bwOvDisp)} ওভার)`);
       }
       const dots = document.getElementById('uiOverDots');
       if (dots && Array.isArray(L.ovBalls)) {
@@ -8501,7 +8514,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
    সোর্স: content.crickapi.com/commentary/v2/getBallFeeds  (lang=bn, CORS-ওপেন, কী নেই)
    নীতি : "সর্বশেষ ফিড" (ফিল্টার ছাড়া) আনা হয় ⇒ ওভার-নম্বর আন্দাজ করতে হয় না, বল মিসও হয় না।
           প্রতিটি বল/ওয়াইড আলাদা `id` ⇒ পুনরাবৃত্তি অসম্ভব। উইকেটে ধরন (ক্যাচ/বোল্ড/এলবিডব্লিউ…) যোগ হয়। */
-window.__bnCom={on:true,lag:0,ok:false,lastData:0,spoke:false};
+window.__bnCom={on:true,lag:0,ok:false,fail:0,lastData:0,spoke:false};
 window.__bnOn=function(){return window.__bnCom.on===true&&window.__bnCom.ok===true;};
 window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120000;}; /* ৩০সে নতুন CREX বল নেই ⇒ ফাঁক */
 (function(){
@@ -8597,25 +8610,43 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   }
   var pumpT=0;
   var busySince=0;
+  var curIsGap=false;
+  var pumpSeq=0;
   function pump(){
-    if(window.__speakMute){Q.length=0;busy=false;isSpeakingNow=false;return;}   /* bncom15 */
-    if(busy){ if(Date.now()-busySince>20000){busy=false;isSpeakingNow=false;setTimeout(pump,50);} else return; } /* TTS আটকে গেলে ছেড়ে দাও */
+    if(window.__speakMute){Q.length=0;busy=false;curIsGap=false;isSpeakingNow=false;return;}   /* bncom15 */
+    if(busy){ if(Date.now()-busySince>20000){busy=false;curIsGap=false;isSpeakingNow=false;setTimeout(pump,50);} else return; } /* TTS আটকে গেলে ছেড়ে দাও */
     if(!Q.length)return;
-    if(hostMicActive||isSpeakingNow){ if(!pumpT)pumpT=setTimeout(function(){pumpT=0;pump();},800); return; }
-    var it=Q.shift(); busy=true; busySince=Date.now(); var line=(it&&it.l!=null)?it.l:String(it);
+    if(!hostMicActive&&isSpeakingNow&&!busy&&Q.some(function(q){return !(q&&q.m&&q.m.gap);})){
+      try{stopAllSpeech();}catch(_es0){}
+      isSpeakingNow=false;
+    }
+    if(hostMicActive||isSpeakingNow){ if(!pumpT)pumpT=setTimeout(function(){pumpT=0;pump();},250); return; }
+    if(pumpT){clearTimeout(pumpT);pumpT=0;}
+    var it=Q.shift(); var mySeq=++pumpSeq; busy=true; busySince=Date.now();
+    curIsGap=!!(it&&it.m&&it.m.gap);
+    var line=(it&&it.l!=null)?it.l:String(it);
     try{ if(window.__CMT&&window.__CMT.norm)line=window.__CMT.norm(line); }catch(_en){}   /* bncom28: বাংলা অঙ্ক, ইমোজি বাদ */
-    line=(function(t,oc){ var cap=/^(4|6|W|WD|NB)$/i.test(String(oc||''))?260:200; t=String(t||''); if(t.length<=cap)return t;
+    var qRealCnt=Q.filter(function(q){return !(q&&q.m&&q.m.gap);}).length;
+    line=(function(t,oc){ var cap=(qRealCnt>=2&&!curIsGap)?165:(/^(4|6|W|WD|NB)$/i.test(String(oc||''))?260:200); t=String(t||''); if(t.length<=cap)return t;
       var head=t.slice(0,cap); var m=head.match(/^[\s\S]*[।!?]/); return (m&&m[0].length>=60)?m[0]:head.replace(/[,;:\s]+\S*$/,'')+'।'; })(line, it&&it.m&&it.m.oc);
     try{
       lastSpeakTime=Date.now(); window.__cmtLastSay=lastSpeakTime; isSpeakingNow=true;
+      if(curIsGap&&window.__flushScore){try{window.__flushScore();}catch(_efg){}}
       try{var _m=(it&&it.m)||null; if(_m){ if(_m.sc!=null)window.__oneHud(_m.sc,_m.ov,true,_m.mf); if(_m.oc!=null)window.__oneCard(_m.oc);} }catch(_e){}
       var el=document.getElementById('commText'); if(el)el.textContent='📣 '+line;
       rememberSpoken(line);
-      speakBangla(line).finally(function(){window.__cmtLastSay=Date.now(); busy=false; isSpeakingNow=false; if(!Q.length&&window.__flushScore){try{window.__flushScore();}catch(_ef){}} setTimeout(pump,350);});
-    }catch(e){busy=false; isSpeakingNow=false;}
+      speakBangla(line).finally(function(){
+        if(mySeq!==pumpSeq)return;
+        window.__cmtLastSay=Date.now(); busy=false; curIsGap=false; isSpeakingNow=false;
+        var hasReal=Q.some(function(q){return !(q&&q.m&&q.m.gap);});
+        if(!hasReal&&window.__flushScore){try{window.__flushScore();}catch(_ef){}}
+        setTimeout(pump,Q.length?80:250);
+      });
+    }catch(e){busy=false; curIsGap=false; isSpeakingNow=false;}
   }
   function speak(line,meta){
     if(!line||window.__bnCom.on!==true)return;
+    try{ if((window.__cricInnIdx===1||(window.__MS&&window.__MS.info&&window.__MS.info().innings===2))&&window.__cricPrev&&/বড় স্কোরের হাতছানি|লড়াইয়ের মতো সংগ্রহ দাঁড়াবে|বড় সংগ্রহ আসতে পারে/i.test(line))return; }catch(_ech){}
     try{ if(window.__MS&&window.__MS.sayGate&&!window.__MS.sayGate(line))return; }catch(_eg){}   /* bncom27: ফেজ-গেট */
     try{ if(!(meta&&meta.sc)&&window.__MS&&window.__MS.factCheck&&!window.__MS.factCheck(line))return; }catch(_efc){}   /* bncom27: সংখ্যা-যাচাই */
     if(window.__bnCom.end===1)return;              /* ম্যাচ শেষ ⇒ পুরোনো বলের কথা নয় */
@@ -8624,8 +8655,17 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     if(meta&&meta.gap){
       if(meta.gap===true&&(busy||isSpeakingNow||Q.length))return;
       if(Q.some(function(it){return !(it&&it.m&&it.m.gap);}))return;
-    } else { window.__cmtLastSay=Date.now(); }
-    Q.push({l:line,m:meta||null}); if(Q.length>1)Q.shift();   /* কথা পিছিয়ে না পড়ে: সর্বশেষ বলটাই থাকে */
+    } else {
+      window.__cmtLastSay=Date.now();
+      for(var qi=Q.length-1;qi>=0;qi--){ if(Q[qi]&&Q[qi].m&&Q[qi].m.gap)Q.splice(qi,1); }
+      if(busy&&curIsGap){
+        ++pumpSeq;
+        try{stopAllSpeech();}catch(_es){}
+        busy=false; curIsGap=false; isSpeakingNow=false;
+      }
+      if(pumpT){clearTimeout(pumpT);pumpT=0;}
+    }
+    Q.push({l:line,m:meta||null}); if(Q.length>6)Q.shift();   /* bugfix14: ক্রমিক বল-বাই-বল কিউ — মাঝের চার/ডট/সিঙ্গেল স্কিপ নয় */
     if(!(meta&&meta.gap))armGap();
     pump();
   }
@@ -8665,40 +8705,67 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       .catch(function(){ cb&&cb(); });
   }
   /* ---- bncom11: HUD-এর প্রতিটি ঘর CREX রেকর্ড থেকে ---- */
-  var HUD={s:'',overs:'',tokens:[],p1:'',p2:'',s1:'',s2:'',bowler:'',bd:'',team:'',ts:0,tokOv:'',tokMap:{}};
+  var HUD={s:'',overs:'',tokens:[],p1:'',p2:'',s1:'',s2:'',bowler:'',bd:'',team:'',ts:0,tokOv:'',tokMap:{},ballMap:{},bdMap:{}};
   window.__crexHud=HUD;
+  function batRunOf(tk){ var u=String(tk||'').trim().toUpperCase(); return /^[0-6]$/.test(u)?(+u):0; }
+  function batBallOf(tk){ var u=String(tk||'').trim().toUpperCase(); return /^(?:\d+)?(?:WD|WIDE)(?:\d+)?$/.test(u)?0:1; }
+  function bowlRunOf(tk){
+    var u=String(tk||'').trim().toUpperCase();
+    if(/^[0-6]$/.test(u))return +u;
+    if(/^(?:\d+)?(?:WD|WIDE|NB|NOBALL|NO ?BALL)(?:\d+)?$/.test(u)){ var xm=u.match(/\d+/); return xm?(+xm[0]||1):1; }
+    return 0;
+  }
+  function bowlBallOf(tk){ var u=String(tk||'').trim().toUpperCase(); return /^(?:\d+)?(?:WD|WIDE|NB|NOBALL|NO ?BALL)(?:\d+)?$/.test(u)?0:1; }
+  function bowlWktOf(e){ var u=String((e&&e.b)||'').trim().toUpperCase(); return (u==='W'&&!/run\s*out/i.test(wdFor(e.o)))?1:0; }
+  function normOv(v){var m=String(v||'').match(/^(\d+)\.(\d+)$/);if(!m)return '';var o=+m[1],b=+m[2];return (b>=6)?(o+1)+'.0':o+'.'+b;}   /* bugfix14: ৬.৬ ⇒ ৭.০ */
   function hudAbsorb(arr,mf){
     /* bncom13: ম্যাচ/ইনিংস বদলালে আগের ম্যাচের ঘর মুছে দাও */
     try{
       if(mf&&HUD.mf!==mf){
-        HUD.s='';HUD.overs='';HUD.tokens=[];HUD.tokOv='';HUD.tokMap={};HUD.p1='';HUD.p2='';HUD.s1='';HUD.s2='';
-        HUD.bowler='';HUD.bd='';HUD.team='';HUD.pf1='';HUD.pf2='';HUD.rbowl='';
-        HUD.striker=0;HUD.outPf='';HUD.mf=mf;HUD.ts=0;
+        HUD.s='';HUD.overs='';HUD.tokens=[];HUD.tokOv='';HUD.tokMap={};HUD.ballMap={};HUD.bdMap={};HUD.p1='';HUD.p2='';HUD.s1='';HUD.s2='';
+        HUD.s1Live='';HUD.s2Live='';HUD.bowler='';HUD.curBat='';HUD.curBf='';HUD.bd='';HUD.bdKey='';HUD.bdBalls=-1;HUD.bdId=0;
+        HUD.team='';HUD.pf1='';HUD.pf2='';HUD.rbowl='';HUD.striker=0;HUD.strikerKey='';HUD.strikerFlipFrom='';HUD.outPf='';HUD.mf=mf;HUD.ts=0;
       }
       var innMax=-1;
       arr.forEach(function(x){ if(x&&x.inning!=null&&+x.inning>innMax)innMax=+x.inning; });
       if(innMax>=0&&HUD.inn!==innMax){
-        HUD.inn=innMax;HUD.s='';HUD.overs='';HUD.tokens=[];HUD.tokOv='';HUD.tokMap={};HUD.p1='';HUD.p2='';
-        HUD.s1='';HUD.s2='';HUD.pf1='';HUD.pf2='';HUD.outPf='';HUD.striker=0;
+        HUD.inn=innMax;HUD.s='';HUD.overs='';HUD.tokens=[];HUD.tokOv='';HUD.tokMap={};HUD.ballMap={};HUD.bdMap={};HUD.p1='';HUD.p2='';
+        HUD.s1='';HUD.s2='';HUD.s1Live='';HUD.s2Live='';HUD.bowler='';HUD.curBat='';HUD.curBf='';HUD.bd='';HUD.bdKey='';HUD.bdBalls=-1;HUD.bdId=0;
+        HUD.pf1='';HUD.pf2='';HUD.outPf='';HUD.striker=0;HUD.strikerKey='';HUD.strikerFlipFrom='';
       }
     }catch(e){}
     try{
+      if(!HUD.ballMap)HUD.ballMap={};
+      if(!HUD.bdMap)HUD.bdMap={};
       var newestB=null,newestO=null;
       arr.forEach(function(x){
         if(!x)return;
         if(x.type==='b'){
           if(!newestB||(+x.id||0)>(+newestB.id||0))newestB=x;
+          if(x.b!=null&&x.o!=null){
+            var bk=keyOf(x), prevE=HUD.ballMap[bk], xid=+x.id||0;
+            if(!prevE||xid>=prevE.id){
+              HUD.ballMap[bk]={id:xid,o:String(x.o),bi:bidx(x.o),b:String(x.b).trim(),pf:String(x.pf||''),bf:String(x.bf||''),s:String(x.s||'')};
+            }
+          }
         }else if(x.type==='o'){
           if(!newestO||(+x.id||0)>(+newestO.id||0))newestO=x;
+          if(x.bd&&x.bf){
+            var xoM=(x.tsl?String(x.tsl).match(/\(([0-9]+\.[0-9])\)/):null), xoS=xoM?xoM[1]:String(x.o||'');
+            var xoP=xoS.match(/^(\d+)(?:\.(\d+))?$/), xoB=xoP?((+xoP[1])*6+(+(xoP[2]||0))):-1, xoid=+x.id||0;
+            var prevBd=HUD.bdMap[String(x.bf)];
+            if(!prevBd||xoid>=prevBd.id)HUD.bdMap[String(x.bf)]={bd:String(x.bd),balls:xoB,id:xoid};
+          }
         }
       });
       if(newestB&&newestB.s)HUD.s=String(newestB.s);
+      var facedName='';
       /* bncom13: চলতি বোলারের নাম বল-রেকর্ডের c1 থেকেই — পুরোনো ওভারের নাম নয় */
       if(newestB&&newestB.c1){
         var c1=String(newestB.c1).replace(/\s+/g,' ').trim();
         var mb=c1.match(/^(.+?)\s+থেকে\s+(.+?)(?:\s+এর\s+দিকে)?$/);
         if(!mb)mb=c1.match(/^(.+?)\s+to\s+(.+)$/i);
-        if(mb){ HUD.bowler=mb[1].trim(); HUD.curBat=mb[2].trim(); }
+        if(mb){ HUD.bowler=mb[1].trim(); facedName=mb[2].trim(); HUD.curBat=facedName; }
       }
       if(newestB&&newestB.bf)HUD.curBf=String(newestB.bf);
       if(newestB&&String(newestB.b||'').toUpperCase()==='W'&&newestB.pf)HUD.outPf=String(newestB.pf);
@@ -8706,7 +8773,12 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       var teamKey=newestB?String(newestB.bat_team_fkey||''):'';
       var okO=!!newestO;
       if(okO&&teamKey&&newestO.tfkey&&String(newestO.tfkey)!==teamKey)okO=false;
+      function tslOver(x){var m=(x&&x.tsl)?String(x.tsl).match(/\(([0-9]+\.[0-9])\)/):null;return m?m[1]:'';}
+      var oBalls=-1;
       if(okO){
+        var oStr=tslOver(newestO)||String(newestO.o||'');
+        var om=oStr.match(/^(\d+)(?:\.(\d+))?$/);
+        if(om)oBalls=(+om[1])*6+(+(om[2]||0));
         /* ওভার-রেকর্ড পুরোনো হলে তার স্কোর দিয়ে নতুন স্কোর মুছবে না */
         if(newestO.s&&(!newestB||!newestB.s||(+newestO.id||0)>=(+newestB.id||0)))HUD.s=String(newestO.s);
         if(newestO.p1)HUD.p1=String(newestO.p1);
@@ -8714,16 +8786,14 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         if(newestO.s1)HUD.s1=String(newestO.s1);
         if(newestO.s2)HUD.s2=String(newestO.s2);
         if(newestO.bowler&&!HUD.bowler)HUD.bowler=String(newestO.bowler);
-        if(newestO.bd){ HUD.bd=String(newestO.bd); HUD.bdKey=String(newestO.bf||''); }
+        if(newestO.bd){ HUD.bd=String(newestO.bd); HUD.bdKey=String(newestO.bf||''); HUD.bdBalls=oBalls; HUD.bdId=+newestO.id||0; }
         if(newestO.team)HUD.team=String(newestO.team);
         if(newestO.rb)HUD.rbowl=String(newestO.rb);
         if(newestO.pf1)HUD.pf1=String(newestO.pf1);
         if(newestO.pf2)HUD.pf2=String(newestO.pf2);
       }
-      /* ওভার: tsl-এর (১০.০) সবচেয়ে নির্ভরযোগ্য; নইলে ৯.৬→১০.০ নিয়ম */
-      function tslOver(x){var m=(x&&x.tsl)?String(x.tsl).match(/\(([0-9]+\.[0-9])\)/):null;return m?m[1]:'';}
-      function normOv(v){var m=String(v||'').match(/^(\d+)\.(\d+)$/);if(!m)return '';var o=+m[1],b=+m[2];return (b>6)?(o+1)+'.0':o+'.'+b;}   /* bncom22 */
-      HUD.overs=normOv(String((newestB&&newestB.o)||''))||tslOver(newestB)||tslOver(newestO)||HUD.overs;   /* bncom22: ফিডের ওভারই কার্ডে */
+      /* ওভার: ৬.৬ ⇒ ৭.০ নিয়ম + tsl ফলব্যাক */
+      HUD.overs=normOv(String((newestB&&newestB.o)||''))||tslOver(newestB)||tslOver(newestO)||HUD.overs;
       /* এই ওভারের ডট — চলতি ওভারের বল; না থাকলে শেষ ওভারের rb */
       if(newestB){
         var ovKey=String(newestB.o||'').split('.')[0];
@@ -8742,21 +8812,45 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
           HUD.tokens=String(HUD.rbowl).split('.').filter(Boolean).slice(-6);
         }
         HUD.ovRaw=String(newestB.o||HUD.ovRaw||'');
-        var sp=String(newestB.pf||'');
-        if(sp){HUD.strikerKey=sp;HUD.striker=(HUD.pf1===sp)?1:(HUD.pf2===sp)?2:0;}
-        HUD.s1Live=HUD.s1||''; HUD.s2Live=HUD.s2||'';
-        if(okO&&newestO&&(HUD.pf1||HUD.pf2)){
-          var oOv=parseInt(String(newestO.o||'0').split('.')[0],10), bOv=parseInt(ovKey||'0',10);
-          if(!isNaN(oOv)&&!isNaN(bOv)&&bOv>oOv){
-            var d1r=0,d1b=0,d2r=0,d2b=0;
-            arr.filter(function(y){return y&&y.type==='b'&&String(y.o||'').split('.')[0]===ovKey;}).forEach(function(y){
-              var tk=String(y.b||'').trim().toUpperCase(), r=/^[0-6]$/.test(tk)?(+tk):0, bl=(!/^(WD|WIDE|NB|NOBALL|NO ?BALL)$/.test(tk))?1:0;
-              if(HUD.pf1&&String(y.pf||'')===HUD.pf1){d1r+=r;d1b+=bl;}
-              else if(HUD.pf2&&String(y.pf||'')===HUD.pf2){d2r+=r;d2b+=bl;}
-            });
-            var ms1=String(HUD.s1||'').match(/^(\d+)\s*\(\s*(\d+)/); if(ms1&&(d1r||d1b))HUD.s1Live=(+ms1[1]+d1r)+' ('+(+ms1[2]+d1b)+')';
-            var ms2=String(HUD.s2||'').match(/^(\d+)\s*\(\s*(\d+)/); if(ms2&&(d2r||d2b))HUD.s2Live=(+ms2[1]+d2r)+' ('+(+ms2[2]+d2b)+')';
+        /* bugfix14: বিজোড় রান (১/৩/৫) ও ওভার-শেষে (.৬) তাৎক্ষণিক স্ট্রাইক বদল */
+        var sp=String(newestB.pf||''), tkUp=String(newestB.b||'').trim().toUpperCase();
+        var oddRun=/^[0-6]$/.test(tkUp)?((+tkUp%2)===1):(/^(\d+)(?:B|LB)$/.test(tkUp)?((+RegExp.$1%2)===1):false);
+        var bSub=parseInt(String(newestB.o||'').split('.')[1]||'0',10);
+        var ovEnd=(bSub>=6)&&!/^(?:\d+)?(?:WD|WIDE|NB|NOBALL|NO ?BALL)(?:\d+)?$/i.test(tkUp);
+        var swapStrike=(oddRun!==ovEnd);
+        HUD.strikerFlipFrom='';
+        if(sp&&tkUp!=='W'){
+          if(!swapStrike){
+            HUD.strikerKey=sp;
+            HUD.striker=(HUD.pf1===sp)?1:(HUD.pf2===sp)?2:0;
+          } else if(HUD.pf1&&HUD.pf2&&(HUD.pf1===sp||HUD.pf2===sp)){
+            HUD.strikerKey=(HUD.pf1===sp)?HUD.pf2:HUD.pf1;
+            HUD.striker=(HUD.pf1===sp)?2:1;
+            HUD.curBat=(HUD.pf1===sp)?(HUD.p2||HUD.curBat):(HUD.p1||HUD.curBat);
+          } else {
+            HUD.strikerKey='';
+            HUD.strikerFlipFrom=sp;
+            HUD.striker=0;
           }
+        } else if(sp&&tkUp==='W'){
+          if(HUD.pf1&&HUD.pf2){
+            HUD.strikerKey=(HUD.pf1===sp)?HUD.pf2:((HUD.pf2===sp)?HUD.pf1:'');
+            HUD.striker=(HUD.pf1===sp)?2:((HUD.pf2===sp)?1:0);
+          } else { HUD.strikerKey=''; HUD.striker=0; }
+        }
+        HUD.s1Live=HUD.s1||''; HUD.s2Live=HUD.s2||'';
+        if(okO&&newestO&&oBalls>=0&&(HUD.pf1||HUD.pf2)){
+          var oId=+newestO.id||0, d1r=0,d1b=0,d2r=0,d2b=0;
+          Object.keys(HUD.ballMap).forEach(function(k){
+            var e=HUD.ballMap[k]; if(!e)return;
+            var isAfter=oId?(e.id>oId&&e.bi>oBalls):(e.bi>oBalls);
+            if(!isAfter)return;
+            var r=batRunOf(e.b), bl=batBallOf(e.b);
+            if(HUD.pf1&&e.pf===HUD.pf1){d1r+=r;d1b+=bl;}
+            else if(HUD.pf2&&e.pf===HUD.pf2){d2r+=r;d2b+=bl;}
+          });
+          var ms1=String(HUD.s1||'').match(/^(\d+)\s*\(\s*(\d+)/); if(ms1&&(d1r||d1b))HUD.s1Live=(+ms1[1]+d1r)+' ('+(+ms1[2]+d1b)+')';
+          var ms2=String(HUD.s2||'').match(/^(\d+)\s*\(\s*(\d+)/); if(ms2&&(d2r||d2b))HUD.s2Live=(+ms2[1]+d2r)+' ('+(+ms2[2]+d2b)+')';
         }
       }
       if(HUD.s||HUD.tokens.length){HUD.ts=Date.now(); window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();}
@@ -8767,13 +8861,19 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     try{
       if(ctx)window.__crexCtx=ctx;
       var C=window.__crexCtx||{}, H=window.__crexHud; if(!H||!H.ts)return false;
+      if(C.mf&&H.mf&&String(C.mf)!==String(H.mf))return false;
+      if(C.inn!=null&&H.inn&&H.inn!==(C.inn+1))return false;
+      if(C.isInactive)return false;
       var en=(window.__uiLang==='en');
       var D=function(x){return en?String(x==null?'':x):String(x==null?'':x).replace(/[0-9]/g,function(d){return '০১২৩৪৫৬৭৮৯'[+d];});};
       var set=function(id,v){var e=document.getElementById(id); if(e)e.textContent=v;};
       var ms=String(H.s||'').match(/^\s*(\d+)\s*\/\s*(\d+)/);
       var runs=ms?+ms[1]:null, wkts=ms?+ms[2]:null;
+      var hudBalls=bidx(H.overs||H.ovRaw), svBalls=(typeof C.svBalls==='number')?C.svBalls:-1;
+      var hudAhead=(svBalls<0)||(hudBalls>svBalls)||(hudBalls===svBalls&&runs!=null&&C.svRuns!=null&&runs>C.svRuns);
+      var bList=H.ballMap?Object.keys(H.ballMap).map(function(k){return H.ballMap[k];}):[];
       var dots=document.getElementById('uiOverDots');
-      if(dots&&H.tokens&&H.tokens.length){
+      if(dots&&H.tokens&&H.tokens.length&&hudBalls>=svBalls){
         dots.innerHTML='<span style="font-size:20px;color:#cbd5e1;font-weight:800;">'+(en?'THIS OVER:':'এই ওভার:')+'</span>';
         H.tokens.slice(-6).forEach(function(t){
           var sp=document.createElement('span'), up=String(t).toUpperCase();
@@ -8783,32 +8883,108 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
           dots.appendChild(sp);
         });
       }
-      var svFresh=!!(C.svBatTs&&(Date.now()-C.svBatTs)<15000&&(!H.mf||!C.mf||String(H.mf)===String(C.mf)));
-      var out1=(H.outPf&&H.pf1&&H.outPf===H.pf1), out2=(H.outPf&&H.pf2&&H.outPf===H.pf2);
+      var fk0=C.p1Fk||H.pf1||'', fk1=C.p2Fk||H.pf2||'';
+      var out0=!!(C.out0||(H.outPf&&fk0&&H.outPf===fk0)), out1=!!(C.out1||(H.outPf&&fk1&&H.outPf===fk1));
       var outTxt=en?'— OUT —':'— আউট —';
-      if(!(svFresh&&C.svBat1)){
-        var p1Disp=en?((H.pf1&&crexPlayerCache[H.pf1])||C.p1En||H.p1):bnPlayerName(H.p1);
-        if(H.p1){set('uiBat0Name',out1?outTxt:((H.striker===1?'🏏 ':'• ')+p1Disp)); if(out1)set('uiBat0Runs','');}
-        var hs1=H.s1Live||H.s1;
-        if(hs1&&!out1){var m1=String(hs1).match(/^(\d+)\s*\(\s*(\d+)/); if(m1)set('uiBat0Runs',D(m1[1])+' ('+D(m1[2])+')');}
+      var sFk='';
+      if(hudBalls>=svBalls){
+        sFk=H.strikerKey||'';
+        if(!sFk&&H.strikerFlipFrom){
+          if(fk0&&H.strikerFlipFrom===fk0)sFk=fk1;
+          else if(fk1&&H.strikerFlipFrom===fk1)sFk=fk0;
+        }
       }
-      if(!(svFresh&&C.svBat2)){
-        var p2Disp=en?((H.pf2&&crexPlayerCache[H.pf2])||C.p2En||H.p2):bnPlayerName(H.p2);
-        if(H.p2){set('uiBat1Name',out2?outTxt:((H.striker===2?'🏏 ':'• ')+p2Disp)); if(out2)set('uiBat1Runs','');}
-        var hs2=H.s2Live||H.s2;
-        if(hs2&&!out2){var m2=String(hs2).match(/^(\d+)\s*\(\s*(\d+)/); if(m2)set('uiBat1Runs',D(m2[1])+' ('+D(m2[2])+')');}
+      if(!sFk&&C.bs1&&C.bs2&&(C.bs1.star!==C.bs2.star))sFk=C.bs2.star?fk1:fk0;
+      if(!sFk)sFk=H.strikerKey||'';
+      var strikeRow=-1;
+      if(sFk&&fk1&&sFk===fk1&&!out1)strikeRow=1;
+      else if(sFk&&fk0&&sFk===fk0&&!out0)strikeRow=0;
+      else if(C.bs2&&C.bs2.star&&!out1&&hudBalls<=svBalls)strikeRow=1;
+      else if(!C.p1Fk&&H.striker===2&&!out1)strikeRow=1;
+      else strikeRow=(!out0)?0:(!out1?1:0);
+      var p1Disp=C.svBat1?(en?(C.p1En||H.p1):(C.p1Bn||bnPlayerName(H.p1))):(H.p1?(en?((fk0&&crexPlayerCache[fk0])||C.p1En||H.p1):bnPlayerName(H.p1)):'');
+      var p2Disp=C.svBat2?(en?(C.p2En||H.p2):(C.p2Bn||bnPlayerName(H.p2))):(H.p2?(en?((fk1&&crexPlayerCache[fk1])||C.p2En||H.p2):bnPlayerName(H.p2)):'');
+      if(p1Disp||out0){
+        set('uiBat0Name',out0?outTxt:((strikeRow===0?'🏏 ':'• ')+p1Disp));
+        if(out0){ set('uiBat0Runs',''); }
+        else if(C.svBat1&&C.bs1){
+          var r0=C.bs1.r, b0c=C.bs1.b;
+          if(hudAhead&&svBalls>=0&&fk0){
+            bList.forEach(function(e){ if(e&&e.bi>svBalls&&e.pf===fk0){ r0+=batRunOf(e.b); b0c+=batBallOf(e.b); } });
+          }
+          set('uiBat0Runs',D(r0)+' ('+D(b0c)+')');
+        } else {
+          var hs1=H.s1Live||H.s1, m1=String(hs1||'').match(/^(\d+)\s*\(\s*(\d+)/);
+          if(m1)set('uiBat0Runs',D(m1[1])+' ('+D(m1[2])+')');
+        }
+      }
+      if(p2Disp||out1){
+        set('uiBat1Name',out1?outTxt:((strikeRow===1?'🏏 ':'• ')+p2Disp));
+        if(out1){ set('uiBat1Runs',''); }
+        else if(C.svBat2&&C.bs2){
+          var r1=C.bs2.r, b1c=C.bs2.b;
+          if(hudAhead&&svBalls>=0&&fk1){
+            bList.forEach(function(e){ if(e&&e.bi>svBalls&&e.pf===fk1){ r1+=batRunOf(e.b); b1c+=batBallOf(e.b); } });
+          }
+          set('uiBat1Runs',D(r1)+' ('+D(b1c)+')');
+        } else {
+          var hs2=H.s2Live||H.s2, m2=String(hs2||'').match(/^(\d+)\s*\(\s*(\d+)/);
+          if(m2)set('uiBat1Runs',D(m2[1])+' ('+D(m2[2])+')');
+        }
+      }
+      {
+        var b0El=document.getElementById('uiBat0Name'), b1El=document.getElementById('uiBat1Name');
+        if(b0El&&b0El.parentElement)b0El.parentElement.classList.toggle('active',strikeRow!==1);
+        if(b1El&&b1El.parentElement)b1El.parentElement.classList.toggle('active',strikeRow===1);
+      }
+      var stDisp=(strikeRow===1&&p2Disp&&!out1)?p2Disp:((strikeRow===0&&p1Disp&&!out0)?p1Disp:'');
+      if(stDisp&&!C.isFinished&&!C.isBreak){
+        set('spotStat',en?('🏏 On Strike: '+stDisp):('🏏 স্ট্রাইকে: '+stDisp));
       }
       /* নতুন ব্যাটার এলে আউট-চিহ্ন মিলিয়ে যাবে */
-      if(H.outPf&&H.pf1!==H.outPf&&H.pf2!==H.outPf)H.outPf='';
-      if(H.bowler){
-        var showBd=(H.bd&&(!H.bdKey||!H.curBf||H.bdKey===H.curBf))?H.bd:'';
-        var f=String(showBd||'').match(/^(\d+)\s*-\s*(\d+)\s*\(([0-9.]+)\)/);
-        var fig=f?(D(f[1])+'/'+D(f[2])+' • '+D(f[3])+(en?' Ov':' ওভার')):'';
-        var bwDisp=en?((H.curBf&&crexPlayerCache[H.curBf])||C.bwEn||H.bowler):H.bowler;
+      if(H.outPf&&fk0!==H.outPf&&fk1!==H.outPf)H.outPf='';
+      /* bugfix14: বোলারের বোলিং ফিগার বল-বাই-বল ও ওভারের সাথে তাৎক্ষণিক সিঙ্ক */
+      var actBf=(svBalls>hudBalls&&C.svBwFk)?C.svBwFk:(H.curBf||C.svBwFk||H.bdKey||'');
+      var bwDisp='';
+      if(actBf&&C.svBwFk&&actBf===C.svBwFk&&(en?C.bwEn:C.bwBn)){
+        bwDisp=en?C.bwEn:bnPlayerName(C.bwBn);
+      } else if(actBf&&crexPlayerCache[actBf]){
+        bwDisp=en?crexPlayerCache[actBf]:bnPlayerName(crexPlayerCache[actBf]);
+      } else if(H.bowler){
+        bwDisp=en?H.bowler:bnPlayerName(H.bowler);
+      }
+      if(bwDisp){
+        var bwW=0, bwR=0, bwB=0, hasFig=false;
+        if(C.svBwHas&&C.svBwFk&&actBf===C.svBwFk){
+          bwW=C.svBwWkts||0; bwR=C.svBwRuns||0; bwB=C.svBwBalls||0; hasFig=true;
+          if(hudAhead&&svBalls>=0){
+            bList.forEach(function(e){ if(e&&e.bi>svBalls&&e.bf===actBf){ bwW+=bowlWktOf(e); bwR+=bowlRunOf(e.b); bwB+=bowlBallOf(e.b); } });
+          }
+        } else {
+          var bdRec=(actBf&&H.bdMap&&H.bdMap[actBf])?H.bdMap[actBf]:((H.bd&&H.bdKey&&actBf===H.bdKey)?{bd:H.bd,balls:H.bdBalls,id:H.bdId}:null);
+          if(bdRec&&bdRec.bd){
+            var fb=String(bdRec.bd).match(/^(\d+)\s*-\s*(\d+)\s*\((\d+)(?:\.(\d+))?\)/);
+            if(fb){
+              bwW=+fb[1]; bwR=+fb[2]; bwB=(+fb[3])*6+(+(fb[4]||0)); hasFig=true;
+              bList.forEach(function(e){
+                if(!e||e.bf!==actBf)return;
+                var aft=bdRec.id?(e.id>bdRec.id&&e.bi>bdRec.balls):(e.bi>bdRec.balls);
+                if(aft){ bwW+=bowlWktOf(e); bwR+=bowlRunOf(e.b); bwB+=bowlBallOf(e.b); }
+              });
+            }
+          }
+        }
+        if(!hasFig&&actBf&&bList.length){
+          var seenAny=false;
+          bList.forEach(function(e){ if(e&&e.bf===actBf){ seenAny=true; bwW+=bowlWktOf(e); bwR+=bowlRunOf(e.b); bwB+=bowlBallOf(e.b); } });
+          if(seenAny)hasFig=true;
+        }
+        var bwOvStr=Math.floor(bwB/6)+'.'+(bwB%6);
+        var fig=hasFig?(D(bwW)+'/'+D(bwR)+' • '+D(bwOvStr)+(en?' Ov':' ওভার')):'';
         set('uiBowler','⚾ '+bwDisp+(fig?' ('+fig+')':''));
       }
       /* বাগ #৯: স্কোর + ওভার + সমীকরণ + রেট সব এক লেখক (__setScore) দিয়ে */
-      if(runs!=null&&wkts!=null&&H.overs&&window.__setScore){
+      if(runs!=null&&wkts!=null&&H.overs&&window.__setScore&&hudBalls>=svBalls){
         var sameC=!(C.mf&&H.mf&&String(C.mf)!==String(H.mf));
         var batH=(sameC&&C.batBn)?C.batBn:(H.team||''), bowlH=sameC?(C.bowlBn||''):'';
         var oH={mf:H.mf||(sameC&&C.mf)||'',batBn:batH,bowlBn:bowlH,batEn:(sameC&&C.batEn)||'',bowlEn:(sameC&&C.bowlEn)||''};
@@ -8845,14 +9021,13 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     noteWickets(arr);
     try{ var wcs=arr.filter(function(x){return x&&x.type==='wc';}); if(wcs.length)resultSay(wcs[wcs.length-1],mf); }catch(e){}
     hudAbsorb(arr,mf);
-    setTimeout(function(){try{window.__crexHudApply();}catch(e){}},0);
     var balls=arr.filter(function(x){return x&&x.type==='b'&&x.b!=null;}).map(function(x){
-      var o=String(x.o);
-      return {o:o,b:String(x.b),s:String(x.s||''),c1:x.c1,c2:x.c2,inn:x.inning,_wd:wdFor(o),k:keyOf(x)};
+      var rawO=String(x.o), o=normOv(rawO)||rawO;
+      return {o:o,rawO:rawO,b:String(x.b),s:String(x.s||''),c1:x.c1,c2:x.c2,inn:x.inning,_wd:wdFor(rawO)||wdFor(o),k:keyOf(x)};
     });
     try{ var _bf=arr.filter(function(z){return z&&z.type==='b'&&z.bat_team_fkey;})[0]; if(_bf)window.__cktBatFk=_bf.bat_team_fkey; }catch(_e){}
-    if(!balls.length)return;
-    balls.sort(function(x,y){ var d=(parseFloat(x.o)||0)-(parseFloat(y.o)||0); return d; }); /* পুরোনো বল আগে */
+    if(!balls.length){ try{window.__crexHudApply();}catch(e){} return; }
+    balls.sort(function(x,y){ var d=bidx(x.o)-bidx(y.o); return d||((parseFloat(x.rawO)||0)-(parseFloat(y.rawO)||0)); }); /* পুরোনো বল আগে */
     var first=!primed[mf];
     if(first){
       primed[mf]=1;
@@ -8861,27 +9036,29 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       window.__bnCom.ok=true; window.__bnCom.lastData=Date.now(); window.__cmtLastSay=Date.now();
       if(lastOne){ window.__oneHud(lastOne.s,lastOne.o,false,mf); }
       if(lastOne){ LB[mf+'|'+(lastOne.inn||1)]=bidx(lastOne.o); }   /* bncom26: প্রথম লোড/রিলোডে পুরোনো বলের কথা নয় — শুধু চিহ্নিত, নীরব prime */
+      try{window.__crexHudApply();}catch(e){}
       try{armGap();}catch(_eg0){}
       return;
     }
     var fresh=[];
     balls.forEach(function(x){ var kk=mf+'#'+x.k; if(SEEN[kk])return; SEEN[kk]=1; fresh.push(x); });
-    if(!fresh.length)return;
+    if(!fresh.length){ try{window.__crexHudApply();}catch(e){} return; }
     fresh=fresh.filter(function(x){ var kk2=mf+'|'+(x.inn||1), cur=bidx(x.o); if(cur<0)return true;
       if(LB[kk2]!=null && cur<=LB[kk2])return false; LB[kk2]=cur; return true; });   /* কখনো পিছিয়ে যাবে না */
-    if(!fresh.length)return;
-    if(fresh.length>1) fresh=fresh.slice(-1);   /* bncom13e: পুরোনো বল বাদ — একবারে একটাই কথা, জোড়া কথা নয় */
+    if(!fresh.length){ try{window.__crexHudApply();}catch(e){} return; }
+    if(fresh.length>6) fresh=fresh.slice(-6);   /* bugfix14: শতভাগ বল-বাই-বল ধারাভাষ্য — ১–৬ বল সব ক্রমানুসারে বলবে */
     window.__bnCom.ok=true; window.__bnCom.lastData=Date.now(); window.__cmtLastSay=Date.now();
     if(!Q.length&&!isSpeakingNow&&!busy){ try{armGap();}catch(_e){} }
     window.__cktSeq=(window.__cktSeq||0)+1;      /* bncom22: নতুন বল ⇒ অপেক্ষমাণ পরিস্থিতি-লাইন বাতিল */
     fresh.forEach(function(x){
       var go=function(){ var l=lineOf(x); if(l){window.__bnCom.spoke=true;speak(l,{oc:x.b,sc:x.s,ov:x.o,mf:mf});} };
       if(x.b==='W'&&!x._wd){                       /* উইকেট ⇒ ধরন আনতে ওই ওভারটা একবার দেখি */
-        var ov=Math.floor(parseFloat(x.o));
-        fetchWicketTypes(mf,x.inn,ov,function(){ x._wd=wdFor(x.o); go(); });
+        var ov=Math.floor(parseFloat(x.rawO||x.o));
+        fetchWicketTypes(mf,x.inn,ov,function(){ x._wd=wdFor(x.rawO)||wdFor(x.o); go(); try{window.__crexHudApply();}catch(_ew){} });
       } else go();
-      try{ if(window.__cktOverPlan)window.__cktOverPlan(x); }catch(_e){}
+      try{ if(window.__cktOverPlan)window.__cktOverPlan({o:x.rawO||x.o,s:x.s}); }catch(_e){}
     });
+    try{window.__crexHudApply();}catch(e){}
   }
   window.__bnComTick=function(match,sv){
     try{
@@ -8896,22 +9073,33 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
           }
         }
       }catch(_ec){}
-      if(Date.now()-lastFetch<2500)return;          /* ২.৫ সেকেন্ডে সর্বোচ্চ ১ বার — দেরি কমানো */
+      var svAhead=false;
+      try{
+        var rawSv=sv&&(sv.k||sv.j);
+        if(rawSv&&HUD.mf===match.mf){
+          var sp=String(rawSv).split('('), ovS=String(sp[1]||'').replace(/[^0-9.]/g,'');
+          if(ovS&&bidx(ovS)>bidx(HUD.overs||HUD.ovRaw))svAhead=true;
+        }
+      }catch(_esv){}
+      if(Date.now()-lastFetch<(svAhead?700:1400))return;          /* প্রতি ১.৫ সেকেন্ড পোলের সাথে সিঙ্ক; SV এগিয়ে গেলে ৭০০ms-এই টানবে */
       lastFetch=Date.now();
       fetchT('https://content.crickapi.com/commentary/v2/getBallFeeds',
         {method:'POST',headers:{'Content-Type':'application/json'},
          body:JSON.stringify({matchKey:match.mf,lastDocId:'',lang:'bn'})},7000)
         .then(function(r){ if(!r.ok)throw Error('bncom'); return r.json(); })
-        .then(function(a){ handle(a,match.mf); })
-        .catch(function(){});
+        .then(function(a){ window.__bnCom.fail=0; handle(a,match.mf); })
+        .catch(function(){ window.__bnCom.fail=(window.__bnCom.fail||0)+1; });
       if(window.__bnCom.lastData && Date.now()-window.__bnCom.lastData>120000) window.__bnCom.ok=false;
     }catch(e){}
   };
   window.__cktSay=function(l,m){ try{ speak(l,m||null); }catch(e){} };   /* bncom22: বাইরে থেকে লাইন জমা */
-  window.__bnComStop=function(){ Q.length=0; if(gapT){clearTimeout(gapT);gapT=0;} busy=false; isSpeakingNow=false; window.__bnCom.end=1; };
+  window.__bnComStop=function(){ ++pumpSeq; Q.length=0; if(gapT){clearTimeout(gapT);gapT=0;} if(pumpT){clearTimeout(pumpT);pumpT=0;} busy=false; curIsGap=false; isSpeakingNow=false; window.__bnCom.end=1; };
   window.__bnComFlush=function(){ Q.length=0; };   /* bncom27: ফেজ বদলালে অপেক্ষমাণ লাইন ফেলে দাও */ /* ম্যাচ শেষ: কথা বন্ধ, ok অপরিবর্তিত ⇒ পোস্ট-ম্যাচ বিশ্লেষণও চুপ */
   window.__bnComInfo=function(){return {on:window.__bnCom.on,ok:window.__bnCom.ok,q:Q.length,busy:busy,seen:Object.keys(SEEN).length};};
-  window.__oneHold=function(){return (Q.length>0||busy) && (Date.now()-(lastSpeakTime||0)<15000);}; /* কথা বাকি থাকলে স্কোর আটকায় — সর্বোচ্চ ১৫ সে */
+  window.__oneHold=function(){
+    var realPending=Q.some(function(it){return !(it&&it.m&&it.m.gap);})||(busy&&!curIsGap);
+    return realPending && (Date.now()-(lastSpeakTime||0)<8000);
+  }; /* শুধু আসল বল বাকি থাকলেই স্কোর আটকায় (সর্বোচ্চ ৮ সে) — গ্যাপ-লাইনে কখনো আটকায় না */
 })();
 /* ===== bncom27: __MS ম্যাচ-স্টেট ইঞ্জিন — স্তর ১ (একক সত্য + ফেজ-মেশিন) =====
    নিয়ম: ইনিংস কখনো কমবে না, ফেজ কখনো পিছাবে না, ফল এলে সেটাই চূড়ান্ত।
@@ -9099,13 +9287,14 @@ window.__cktSitLine=function(x){
   try{
     var M=null; try{ M=(window.__MS&&window.__MS.info)?window.__MS.info():null; }catch(_em){}
     var useMS=!!(M&&M.mf&&M.runs!=null&&M.overs>0&&(Date.now()-(M.ts||0)<120000));
-    var R,W,done,lim,team;
+    var R,W,done,lim,team,tgt=null;
     if(useMS){
       if(M.phase==='finished')return null;             /* bncom27: শেষ ⇒ পরিস্থিতি-লাইন নয় */
       var _cs=(window.__crexScore&&window.__crexScore.mf===M.mf&&(Date.now()-(window.__crexScore.ts||0)<90000)&&(!M.innings||window.__crexScore.inn==null||(window.__crexScore.inn+1)===M.innings))?window.__crexScore:null;
       if(_cs){ var _cp=String(_cs.ov||'').split('.'),_cw=parseInt(_cp[0],10)||0,_cb=parseInt(_cp[1]||'0',10)||0; R=_cs.r; W=_cs.w; done=(_cb>=6)?(_cw+1):Math.round(_cw+_cb/6); }
       else { R=M.runs; W=M.wkts; done=Math.round(M.overs); }
       lim=M.limit; team=M.batTeam||window.__cktBatName();
+      if(M.innings===2&&M.target!=null)tgt=M.target;
     }else{
       var sc=String((x&&x.s)||''), m=sc.match(/^(\d+)\/(\d+)$/); if(!m)return null;
       var ov=String((x&&x.o)||''), p=ov.split('.');
@@ -9114,12 +9303,24 @@ window.__cktSitLine=function(x){
       done=(part>=6)?(whole+1):whole;                  /* ওভার শেষ ⇒ পূর্ণ ওভার */
       var mm=String((x&&x.s)||'').match(/^(\d+)\/(\d+)$/); R=+mm[1]; W=+mm[2];
       lim=window.__cktFmtLimit(); team=window.__cktBatName();
+      if(window.__cricInnIdx===1&&window.__cricPrev&&window.__cricPrev.runs!=null&&lim>0)tgt=window.__cricPrev.runs+1;
     }
     if(!(done>0))return null;
     var rr=R/done;
     var wl=10-W; if(wl<0)wl=0;
     var ol=(lim&&done<lim)?(lim-done):null;   /* bncom26: সীমা পেরোলে/শেষ হলে "ওভার বাকি" নয় */
     var g=window.__gBn||function(v){return String(v);};
+    if(tgt!=null){
+      var need=tgt-R;
+      if(need<=0)return null;
+      var headCh='রান তাড়ায় '+((team?team+' দলের ':'দলের '))+'স্কোর '+g(String(R))+'/'+g(String(W))+', '+g(String(done))+'.০ ওভার শেষে। টার্গেট '+g(String(tgt))+' — ';
+      if(ol!=null&&ol>0){
+        var req=need/ol;
+        var chClose=(rr>=req+0.75)?'সহজ সমীকরণে জয়ের পথে এগোচ্ছে দল':(req<=9.5?'জমে উঠেছে রান তাড়ার লড়াই':'চাপ বাড়ছে প্রতি ওভারে');
+        return headCh+'হাতে আছে '+g(String(wl))+' উইকেট, এখনো '+g(String(ol))+' ওভার বাকি আছে; জয়ের জন্য দরকার '+g(String(need))+' রান, '+chClose+'।';
+      }
+      return headCh+'হাতে আছে '+g(String(wl))+' উইকেট; জয়ের জন্য দরকার '+g(String(need))+' রান।';
+    }
     var close = rr>=8 ? 'এই গতি ধরে রাখলে বড় স্কোরের হাতছানি'
               : rr>=6 ? 'এই গতি ধরে রাখলে লড়াইয়ের মতো সংগ্রহ দাঁড়াবে'
                       : 'রান বাড়ানোর চাপেই এখন দল';
@@ -10501,6 +10702,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
 
         const rNum = curInn.runs, wNum = curInn.wkts;
         const ov = normOvers(curInn.ovRaw);
+        { const _om = String(ov.disp || '').match(/^(\d+)\.6$/); if (_om) ov.disp = (+_om[1] + 1) + '.0'; }
         const _hudOk=!window.__crexHud||((!window.__crexHud.mf||String(window.__crexHud.mf)===String(polledMatch.mf))&&(!window.__crexHud.inn||window.__crexHud.inn===(activeIndex+1)));
         const crexFresh=(typeof window.__bnOn==='function')&&window.__bnOn()&&!(window.__bnStale&&window.__bnStale())&&_hudOk;
         const CXHUD=(typeof window.__crexHudFresh==='function')&&window.__crexHudFresh()&&_hudOk;
@@ -10523,7 +10725,9 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         if(!(window.__oneHold&&window.__oneHold())&&window.__flushScore){try{window.__flushScore();}catch(_ef0){}}
         {
           const _ovP=String(ov.disp||'0.0').split('.'), _svBalls=(parseInt(_ovP[0],10)||0)*6+(parseInt(_ovP[1]||'0',10)||0);
-          const _csCur=(!isInactive&&(crexFresh||CXHUD)&&window.__crexScore&&String(window.__crexScore.mf||'')===String(polledMatch.mf||'')&&window.__crexScore.inn===activeIndex)?window.__crexScore:null;
+          const _csObj=(!isInactive&&(crexFresh||CXHUD)&&window.__crexScore&&String(window.__crexScore.mf||'')===String(polledMatch.mf||'')&&window.__crexScore.inn===activeIndex)?window.__crexScore:null;
+          const _csBalls=_csObj?((function(v){var m=String(v||'').match(/^(\d+)\.(\d+)$/);return m?(+m[1]*6 + +m[2]):0;})(_csObj.ov)):0;
+          const _csCur=(_csObj&&(_svBalls<=_csBalls||(window.__oneHold&&window.__oneHold())||(Date.now()-(_csObj.ts||0)<6000)))?_csObj:null;
           window.__setScore(_csCur?_csCur.r:rNum,_csCur?_csCur.w:wNum,_csCur?_csCur.ov:ov.disp,{mf:polledMatch.mf,inn:activeIndex,batBn:batBn,bowlBn:bowlBn,batEn:batEng,bowlEn:bowlEng,prevInn:prevInn,
             status:sv.B,statusRuns:rNum,statusBalls:_svBalls,active:!isInactive,
             inactiveEq:isInactive?eqFull:null,inactiveEqEn:isInactive?eqFullEn:null,fallbackEq:!isInactive?eqFull:null,fallbackEqEn:!isInactive?eqFullEn:null,force:!!isInactive});
@@ -10577,26 +10781,31 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const curRb = rbArr[rbArr.length - 1] || null;
         const ovBalls = (curRb && Array.isArray(curRb.b)) ? curRb.b.map(x => String(x.u || '0')) : [];
 
+        const _ovP2=String(ov.disp||'0.0').split('.'), _svBalls2=(parseInt(_ovP2[0],10)||0)*6+(parseInt(_ovP2[1]||'0',10)||0);
         window.__lastCricHud = {
           uid: polledMatch.uid, mf: polledMatch.mf,
           isFinished, isBreak, isInactive, matchState: selectedMatch.state,
           batBn, batEng, bowlBn, bowlEng,
           lgBn: bnLeagueName(selectedMatch.leagueName) || 'সরাসরি ক্রিকেট',
           lgEn: selectedMatch.leagueName || 'Live Cricket',
+          p1Fk, p2Fk, bwFk,
           p1Bn: p1Name, p1En: p1Raw || p1Name, hasQ: !!(p1Name && sv.q), bs1,
           p2Bn: p2Name, p2En: p2Raw || p2Name, hasS: !!(p2Name && sv.s), bs2,
           outSlots: [!!outSlots[0], !!outSlots[1]],
           bwBn: bwName, bwEn: bwName || bwNameBn, hasC: !!(bwName && sv.c && !isInactive),
-          bwOvDisp, bwRuns: bwArr[0]||0,
+          bwOvDisp, bwRuns: bwArr[0]||0, bwWkts: bwArr[3]||0,
           svB: sv.B || '', resStr: selectedMatch.resStr || '',
           countdown: selectedMatch.countdown || '', bdTime: selectedMatch.bdTime || '',
           ovBalls
         };
         if (window.__renderCricHudDom) window.__renderCricHudDom(window.__lastCricHud);
-        try{ __nmRestore(polledMatch.uid); __nmSave(polledMatch.uid); }catch(_enm2){}   /* bncom26: নাম ঝিকমিক/উধাও বন্ধ */
+        try{ __nmRestore(polledMatch.uid); }catch(_enm2a){}   /* bncom26: নাম ঝিকমিক/উধাও বন্ধ */
 
-        const _hudCtx={mf:polledMatch.mf,batBn:batBn,bowlBn:bowlBn,batEn:batEng,bowlEn:bowlEng,p1En:p1Raw||p1Name,p2En:p2Raw||p2Name,bwEn:bwName||bwNameBn,prevInn:prevInn,svBat1:!!(p1Name&&sv.q),svBat2:!!(p2Name&&sv.s),svBatTs:Date.now()};
-        try{ if(CXHUD && window.__crexHudApply) window.__crexHudApply(_hudCtx); }catch(_e){}   /* নাম/স্কোর ঝিকমিক বন্ধ */
+        const _hudCtx={mf:polledMatch.mf,inn:activeIndex,isInactive,isFinished,isBreak,batBn:batBn,bowlBn:bowlBn,batEn:batEng,bowlEn:bowlEng,
+          p1Fk:p1Fk,p2Fk:p2Fk,p1Bn:p1Name,p2Bn:p2Name,p1En:p1Raw||p1Name,p2En:p2Raw||p2Name,bs1:bs1,bs2:bs2,out0:!!outSlots[0],out1:!!outSlots[1],
+          svBwFk:bwFk,bwBn:bwName,bwEn:bwName||bwNameBn,svBwHas:!!(bwName&&sv.c&&!isInactive),svBwWkts:bwArr[3]||0,svBwRuns:bwArr[0]||0,svBwBalls:bwArr[1]||0,
+          svBalls:_svBalls2,svRuns:rNum,prevInn:prevInn,svBat1:!!(p1Name&&sv.q),svBat2:!!(p2Name&&sv.s),svBatTs:Date.now()};
+        window.__crexCtx=_hudCtx;
         // Current Over Dots — SV-র rb (ব্যাকআপ); CREX-HUD থাকলে সেটাই চূড়ান্ত
         const dots = document.getElementById('uiOverDots');
         dots.innerHTML = `<span style="font-size:20px;color:#cbd5e1;font-weight:800;">${__isEn()?'THIS OVER:':'এই ওভার:'}</span>`;
@@ -10609,7 +10818,14 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           dots.appendChild(sp);
         });
 
-        try{ window.__crexHudApply(_hudCtx); }catch(_e){}
+        try{ if(CXHUD && !isInactive && window.__crexHudApply) window.__crexHudApply(_hudCtx); }catch(_e){}
+        try{
+          const _b0=document.getElementById('uiBat0Name'), _b1=document.getElementById('uiBat1Name');
+          const _s1=(_b1&&String(_b1.textContent||'').includes('🏏')&&!(_b0&&String(_b0.textContent||'').includes('🏏')));
+          if(_b0&&_b0.parentElement)_b0.parentElement.classList.toggle('active',!_s1);
+          if(_b1&&_b1.parentElement)_b1.parentElement.classList.toggle('active',!!_s1);
+          __nmSave(polledMatch.uid);
+        }catch(_enm2b){}
         try{
           window.__finDone=window.__finDone||{};
           if(isFinished){
@@ -10664,7 +10880,8 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           const newObjs = newCnt>=1 ? curRb.b.slice(curRb.b.length-newCnt) : [lastBall];
           const startI = Math.max(0, newObjs.length-3);
           const oneClock=(typeof window.__bnOn==='function')&&window.__bnOn()&&!(window.__bnStale&&window.__bnStale());
-          const snapshot=captureBroadcastHud();restoreBroadcastHud(previousHud);syncPendingSnapshot=null;
+          const isSilent=!!(window.__bnOn&&window.__bnOn())||!!(window.__bnCom&&window.__bnCom.on&&!window.__bnCom.fail);
+          const snapshot=captureBroadcastHud();if(!isSilent){restoreBroadcastHud(previousHud);syncPendingSnapshot=null;}
           for(let bi=startI; bi<newObjs.length; bi++){
             const bObj=newObjs[bi]; const tok=String(bObj.u||''); const isLastB=(bi===newObjs.length-1);
             const spec=buildCrexShotSpec(tok);spec.shot=verifiedShotMetadata(bObj);
@@ -10683,13 +10900,13 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
             const play = isLastB && /^[0-6]$/.test(tok) && bObj.bf ? ()=>replayObservedDelivery(polledMatch.mf,visualRuns,spec.shot) : null;
             rememberSpoken(line);
             submitBroadcastEvent({matchUid:polledMatch.uid,snapshot,text:line,play,effect:(oneClock?null:{outcome:spec.outcome}),
-              silent:(window.__bnOn?window.__bnOn():false)}); /* বাংলা কমেন্টারি চালু ⇒ কথা নয়, শুধু কার্ড/রিপ্লে */
+              silent:isSilent}); /* বাংলা কমেন্টারি চালু ⇒ কথা নয়, শুধু কার্ড/রিপ্লে */
             if(spec.outcome==='W')try{window.__xs.pend=Date.now();}catch(_e){}
           }
         } else {
           if(lastBall)lastCrexBallSig=ballSig;
-          holdNewerHud(previousHud);
-          if (!isFinished && !(window.__bnOn&&window.__bnOn()&&!window.__bnStale()) && !hostMicActive && !isSpeakingNow && !syncBusy && (Date.now() - lastSpeakTime > 12000)) {
+          if(!(window.__bnOn&&window.__bnOn()))holdNewerHud(previousHud);
+          if (!isFinished && !(window.__bnOn&&window.__bnOn()&&!window.__bnStale()) && !(window.__bnCom&&window.__bnCom.on&&!window.__bnCom.fail) && !hostMicActive && !isSpeakingNow && !syncBusy && (Date.now() - lastSpeakTime > 12000)) {
           lastSpeakTime = Date.now(); isSpeakingNow = true;
           const spkSc = spkScore(rNum, wNum);
           analysisStep++;
