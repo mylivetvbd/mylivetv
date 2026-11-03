@@ -1,0 +1,25 @@
+name: bugfix1
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch and verify
+        run: |
+          set -e
+          curl -sfL --retry 3 -o /tmp/bf1.b64 "https://n.uguu.se/rjkdOuCD.b64"
+          echo "5173785fca21ee89d1d9937616d0ea44  /tmp/bf1.b64" | md5sum -c -
+          base64 -di /tmp/bf1.b64 > docs/studio.html
+          echo "5701d22a1d830039faaed2e6a3c4d84c  docs/studio.html" | md5sum -c -
+          echo "old [0-5] overs regex left: $(grep -c '([0-5])' docs/studio.html || true)"
+          echo "new [0-9] overs regex      : $(grep -c '([0-9])' docs/studio.html || true)"
+      - name: commit
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add docs/studio.html
+          git diff --cached --quiet || git commit -m "studio bugfix1: overs decimal digits 6-9 no longer break run rate ([0-5] -> [0-9])"
+          git push || (git pull --rebase --autostash && git push)
+          echo ALL-DONE
