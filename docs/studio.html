@@ -9545,7 +9545,8 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       const format=cricketKitVariant(info.format), players=[
         [info.p1Fk,info.p1Name,info.batFk,'ব্যাটার'],[info.p2Fk,info.p2Name,info.batFk,'ব্যাটার'],[info.bwFk,info.bwName,info.bowlFk,'বোলার']
       ];
-      const sig=JSON.stringify([players,format,!!window.__cardsHold]);
+      const outArr=Array.isArray(info.outSlots)?info.outSlots:[];
+      const sig=JSON.stringify([players,format,!!window.__cardsHold,outArr]);
       if(host.getAttribute('data-ucv-sig')===sig)return;
       if(ucvSlots.length!==3){
         ucvSlots.length=0;host.replaceChildren();
@@ -9568,6 +9569,15 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const raw=players[i][0];let name=players[i][1];const team=players[i][2];let label=players[i][3];const slot=ucvSlots[i];
         let id=safeCricketAssetKey(raw),tk=safeCricketAssetKey(team);
         if(cardsHold){slot.card.style.display='none';continue;}                 /* শুধু বিরতি/ফল ⇒ সব ছবি ওঠে */
+        if(outArr[i]){                                                          /* বাগ #৮: শুধু আউট ব্যাটারের ছবি যায়, কার্ড-জায়গা থাকে */
+          slot.card.style.display='';
+          if(slot.kit)slot.kit.style.visibility='hidden';
+          if(slot.head)slot.head.style.visibility='hidden';
+          slot.ball.style.display='none'; slot.av.style.display='none';
+          if(slot.txt.textContent!==name)slot.txt.textContent=name||'';
+          if(slot.role.textContent!=='আউট')slot.role.textContent='আউট';
+          continue;
+        }
         if(!id||!tk){const L=ucvLast[i];if(L){id=L.id;tk=L.tk;name=name||L.name;label=label||L.label;}}  /* এক পোলের ফাঁক ⇒ ছবি থাকে */
         if(!id||!tk){slot.card.style.display='none';continue;}
         ucvLast[i]={id:id,tk:tk,name:name||'',label:label||''};
@@ -9580,7 +9590,8 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         /* bncom14: প্রত্যেক খেলোয়াড়ের ইলাস্ট্রেশন-মুখ আগের মতোই — বোলার-ব্যাটার সবাই */
         const headUrl=`https://cricketvectors.akamaized.net/players/org/${encodeURIComponent(id)}.png`;
         if(slot.head.getAttribute('data-u')!==headUrl){slot.head.setAttribute('data-u',headUrl);window.__imgSwap?window.__imgSwap(slot.head,headUrl):slot.head.src=headUrl;}
-        slot.head.style.display=''; slot.av.style.display='none'; slot.ball.style.display='none';
+        slot.head.style.display=''; slot.head.style.visibility=''; slot.av.style.display='none'; slot.ball.style.display='none';
+        if(slot.kit)slot.kit.style.visibility='';
         try{ window.__ipfBind && window.__ipfBind(slot.head, id, tk); }catch(_e){}
         if(slot.txt.textContent!==name)slot.txt.textContent=name;
         if(slot.role.textContent!==label)slot.role.textContent=label;
@@ -9848,13 +9859,17 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         // Asterisk on a player ID marks an out batter in observed snapshots.
         // Keep the score visible but do not present an out batter as active.
         const playersSafe = Boolean(identity && identity.playersVerified && !String(sv.p || '').includes('*'));
+        /* বাগ #৮: উইকেটে CREX আউট ব্যাটারের কী-তে '*' বসায় ⇒ আগে তিন কার্ডই মুছে যেত।
+           এখন '*' শুধু ওই ব্যাটারের কার্ড লুকায়, বাকিরা থাকে। playersSafe অপরিবর্তিত (কথা/অ্যানিমেশন-গেট)। */
+        const outSlots = String(sv.p || '').split('.').map(k => /\*\s*$/.test(String(k || '')));
+        const cardsSafe = Boolean(identity && identity.playersVerified && outSlots.filter(Boolean).length < 2);
         const breakStatus = String(sv.B || '');
         const isBreak = /innings break|lunch|tea break|stumps|drinks break|rain delay|rain break|time out/i.test(breakStatus);
         const isFinished = /\b(won|drawn|tied|no result|abandoned)\b/i.test(breakStatus);
         const isInactive = isBreak || isFinished;
-        const pPair = playersSafe ? crexPlayerKeys(sv.p) : [];
+        const pPair = (cardsSafe || playersSafe) ? crexPlayerKeys(sv.p) : [];
         const p1Fk = pPair[0] || '', p2Fk = pPair[1] || '';
-        const bwFk = playersSafe ? String(sv.b || '') : '';
+        const bwFk = (cardsSafe || playersSafe) ? String(sv.b || '') : '';
         const sfFk = String(sv.sf || selectedMatch.leagueKey || '').replace('^','');
 
         const latestRb=Array.isArray(sv.rb) && sv.rb.length ? sv.rb[sv.rb.length-1] : null;
@@ -9875,7 +9890,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         }
         const batObj = crexTeamCache[batFk] || { n: selectedMatch.t1 || 'Team 1', sn: batFk || 'T1', uc: '' };
         const bowlObj = crexTeamCache[bowlFk] || { n: selectedMatch.t2 || 'Team 2', sn: bowlFk || 'T2', uc: '' };
-        if(hasPlay)setCricketPlayersVisible(playersSafe && !isInactive);
+        if(hasPlay)setCricketPlayersVisible(cardsSafe && !isInactive);
         if (crexSeriesCache[sfFk] && crexSeriesCache[sfFk].n) selectedMatch.leagueName = crexSeriesCache[sfFk].n;
 
         const batEng = batObj.n, bowlEng = bowlObj.n;
@@ -9966,7 +9981,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const p1Name = bnPlayerName(crexPlayerCache[p1Fk] || '');
         const p2Name = bnPlayerName(crexPlayerCache[p2Fk] || '');
         const bwName = crexPlayerCache[bwFk] || '';
-        updateCricketVisuals({safe:playersSafe && hasPlay && !isInactive, batFk,bowlFk,p1Fk,p2Fk,bwFk,p1Name:bnPlayerName(p1Name),p2Name:bnPlayerName(p2Name),bwName:bnPlayerName(bwName),format:sv.fo || polledMatch.fo});
+        updateCricketVisuals({safe:cardsSafe && hasPlay && !isInactive, outSlots:outSlots, batFk,bowlFk,p1Fk,p2Fk,bwFk,p1Name:bnPlayerName(p1Name),p2Name:bnPlayerName(p2Name),bwName:bnPlayerName(bwName),format:sv.fo || polledMatch.fo});
         try{ window.__speakMute=!!isInactive; }catch(_e){}
         try{
           if(isFinished){
