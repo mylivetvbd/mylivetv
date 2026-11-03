@@ -9660,7 +9660,12 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     function __ucmImpl(data) {
       const host=document.getElementById('cricketMetrics');if(!host)return;
       const x=computeCricketMetrics(data);host.replaceChildren();
-      if(!x.rate)return;
+      if(!x.rate){                                    /* বাগ #৯: পুরোনো রেট আটকে থাকত ⇒ এখন স্পষ্ট ড্যাশ */
+        const ph=document.createElement('span');
+        ph.append(document.createTextNode('বর্তমান রান রেট: '));
+        const dash=document.createElement('strong');dash.textContent='—';ph.append(dash);
+        host.append(ph);return;
+      }
       const add=(label,value)=>{let span=document.createElement('span');span.append(document.createTextNode(label+' '));let b=document.createElement('strong');b.textContent=value;span.appendChild(b);host.appendChild(span);};
       add('বর্তমান রান রেট:',bn(x.rate));
       if(x.need&&x.need.balls){add('প্রয়োজনীয় রান রেট:',bn(x.need.rate));add('জিততে:',`${bn(x.need.balls)} বলে ${bn(x.need.runs)} রান`);}
@@ -10000,7 +10005,14 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           const verifiedRoster=decodeCrexRoster(rosterForPictures.data);
           if(verifiedRoster)prefetchVerifiedSquad(polledMatch,verifiedRoster,sv.fo || polledMatch.fo,[p1Fk,p2Fk,bwFk]);
         }
-        if(!crexFresh)updateCricketMetrics({runs:rNum,overs:curInn.ovRaw,status:sv.B,active:!isInactive,inningsIndex:activeIndex});
+        /* বাগ #৯: রেট-লাইন এখন স্ট্রিপের সঙ্গেই চলে — টাটকা CREX-স্কোর থাকলে সেটাই, নইলে sv;
+           আর __oneHold গেটে ⇒ কথা চলাকালীন রেটও এক ধাপ পিছিয়ে থাকে (স্ট্রিপের সঙ্গে মিল) */
+        try{
+          const _cs=(window.__crexScore&&window.__crexScore.ts&&(Date.now()-window.__crexScore.ts)<90000
+            &&(!window.__crexScore.mf||!polledMatch.mf||String(window.__crexScore.mf)===String(polledMatch.mf)))?window.__crexScore:null;
+          const _mr=_cs?_cs.r:rNum, _mo=_cs?String(_cs.ov||''):curInn.ovRaw;
+          if(!(window.__oneHold&&window.__oneHold()))updateCricketMetrics({runs:_mr,overs:_mo,status:sv.B,active:!isInactive,inningsIndex:activeIndex});
+        }catch(_em){}
         try{void __xsCheck(activeIndex,batEng);}catch(_e){}
         try{ if(isFinished){ if(window.__bnComStop)window.__bnComStop(); } else { window.__bnCom.end=0; window.__bnComTick(polledMatch,sv); } }catch(_e){}
         void preparePlayerNames([p1Name,p2Name,bwName]);
