@@ -47,7 +47,7 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
     /* অপশন B: ব্র্যান্ড + স্পটলাইট এক কার্ডে */
     .brand-card {
       position: fixed; top: 10px; left: 12px; z-index: 40;
-      width: 330px; box-sizing: border-box;
+      width: 420px; max-width: calc(100vw - 24px); box-sizing: border-box;
       background: linear-gradient(160deg, rgba(9,20,38,0.95), rgba(12,26,48,0.96));
       border: 1px solid rgba(251,146,60,0.55); border-radius: 13px;
       overflow: hidden; box-shadow: 0 10px 28px rgba(0,0,0,0.6); backdrop-filter: blur(8px);
@@ -56,10 +56,10 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
       display: flex; align-items: center; gap: 8px; cursor: pointer;
       background: rgba(251,146,60,0.10);
       border-bottom: 1px solid rgba(251,146,60,0.28);
-      padding: 7px 12px;
+      padding: 8px 13px;
     }
-    .brand-name { font-weight: 900; font-size: 26px; color: #fb923c; letter-spacing: .2px; }
-    .brand-sport { font-size: 16px; color: #cbd5e1; margin-left: auto; }
+    .brand-name { font-weight: 900; font-size: 32px; color: #fb923c; letter-spacing: .2px; white-space: nowrap; }
+    .brand-sport { font-size: 17px; color: #cbd5e1; margin-left: auto; white-space: nowrap; }
     .brand-card .live-pill { font-size: 18px !important; padding: 3px 9px; }
     .live-pill {
       background: #dc2626; color: #fff; font-size: 10.5px; font-weight: 900;
@@ -333,9 +333,9 @@ html,body{background:#000!important}
 .live-pill{font-size:24px!important}
 .hud-btn{font-size:18px!important;padding:8px 14px!important}
 .player-spotlight{max-width:560px!important;height:auto!important;max-height:none!important;align-items:flex-start!important}
-.spot-role{font-size:22px!important;line-height:1.25!important}
-.spot-name{font-size:30px!important;line-height:1.22!important;overflow-wrap:anywhere;word-break:normal}
-.spot-stat{font-size:22px!important;line-height:1.25!important;overflow-wrap:anywhere}
+.spot-role{font-size:25px!important;font-weight:800!important;color:#fcd34d!important;line-height:1.24!important}
+.spot-name{font-size:28px!important;line-height:1.24!important;margin-top:2px!important;overflow-wrap:anywhere;word-break:normal}
+.spot-stat{font-size:24px!important;font-weight:800!important;color:#6ee7b7!important;line-height:1.25!important;margin-top:3px!important;overflow-wrap:anywhere}
 .comm-text{font-size:38px!important;line-height:1.45!important}
 .team-badge{font-size:21px!important;width:auto!important;min-width:60px!important;height:44px!important;padding:0 12px!important;border-radius:10px!important;letter-spacing:1px!important}
 .bowler-cell{font-size:24px!important;gap:9px!important}
@@ -7596,7 +7596,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         var eq=g('uiEquation');var nd=(eq.match(/জয়ের জন্য\s*([০-৯0-9]+)\s*রান/)||eq.match(/([০-৯0-9]+)\s*রান দরকার/)||[])[1]||'';var chase=(window.__cricInnIdx===1)||/রান দরকার|জয়ের জন্য/.test(eq);if(chase&&!nd&&window.__cricPrev&&window.__cricCur){var _nn=(window.__cricPrev.runs+1)-window.__cricCur.runs;if(_nn>0)nd=String(_nn);}
         var opM=eq.match(/\(([^:()]+):\s*([০-৯0-9]+\s*\/\s*[০-৯0-9]+)\)/);var opp=opM?opM[1].trim():'';var osc=opM?opM[2].replace(/\s+/g,''):'';var tg=(eq.match(/টার্গেট\s*([০-৯0-9]+)/)||[])[1]||'';if(!tg&&chase&&window.__cricPrev)tg=String(window.__cricPrev.runs+1);if(!osc&&window.__cricPrev)osc=window.__cricPrev.runs+'/'+window.__cricPrev.wkts;var wait=/অপেক্ষা/.test(g('uiBat0Name'))||/অপেক্ষা/.test(g('uiBowler'));
         var brk=/বিরতি/.test(g('uiBowler'))||/বিরতি/.test(g('spotRole'));
-        var srEl=document.getElementById('spotRole'),sr0=(srEl&&srEl.childNodes&&srEl.childNodes[0]&&srEl.childNodes[0].nodeType===3)?String(srEl.childNodes[0].nodeValue||''):g('spotRole');var tm='';var srM=sr0.split('(')[0].match(/(?:স্ট্রাইকে|ইনিংস বিরতি|খেলা শেষ)\s*•\s*(.+)$/);if(srM)tm=srM[1].trim();
+        var srEl=document.getElementById('spotRole'),sr0=(srEl&&srEl.childNodes&&srEl.childNodes[0]&&srEl.childNodes[0].nodeType===3)?String(srEl.childNodes[0].nodeValue||''):g('spotRole');var tm=(typeof __scState!=='undefined'&&__scState&&__scState.ctx&&__scState.ctx.batBn)||'';if(!tm){var srM=sr0.split('(')[0].match(/(?:স্ট্রাইকে|ইনিংস বিরতি|খেলা শেষ)\s*•\s*(.+)$/);if(srM)tm=srM[1].trim();}if(!tm){var snM=g('spotName').split(' বনাম ')[0].trim();if(snM&&snM!==g('spotName'))tm=snM;}
         return {sport:'cricket',phase:brk?'break':(wait?'wait':(chase?'chase':'first')),team:tm||'ব্যাটিং দল',runs:m?m[1]:'',wkts:m?m[2]:'',overs:ov,need:nd,tgt:tg,opp:opp,oscore:osc};
       }catch(e){return null;}
     };
@@ -7850,8 +7850,6 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           if(need>0)eq+=' • টার্গেট '+bn(tgt)+' • জয়ের জন্য '+bn(need)+' রান দরকার';
         }
         eqEl.textContent=eq;
-        var spEl=document.getElementById('spotStat');
-        if(spEl&&(C.spotEq||/রান রেট/.test(spEl.textContent||'')))spEl.textContent=eq;
       } else if(C.fallbackEq){
         eqEl.textContent=C.fallbackEq;
       }
@@ -8389,6 +8387,20 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         HUD.ovRaw=String(newestB.o||HUD.ovRaw||'');
         var sp=String(newestB.pf||'');
         if(sp){HUD.strikerKey=sp;HUD.striker=(HUD.pf1===sp)?1:(HUD.pf2===sp)?2:0;}
+        HUD.s1Live=HUD.s1||''; HUD.s2Live=HUD.s2||'';
+        if(okO&&newestO&&(HUD.pf1||HUD.pf2)){
+          var oOv=parseInt(String(newestO.o||'0').split('.')[0],10), bOv=parseInt(ovKey||'0',10);
+          if(!isNaN(oOv)&&!isNaN(bOv)&&bOv>oOv){
+            var d1r=0,d1b=0,d2r=0,d2b=0;
+            arr.filter(function(y){return y&&y.type==='b'&&String(y.o||'').split('.')[0]===ovKey;}).forEach(function(y){
+              var tk=String(y.b||'').trim().toUpperCase(), r=/^[0-6]$/.test(tk)?(+tk):0, bl=(!/^(WD|WIDE|NB|NOBALL|NO ?BALL)$/.test(tk))?1:0;
+              if(HUD.pf1&&String(y.pf||'')===HUD.pf1){d1r+=r;d1b+=bl;}
+              else if(HUD.pf2&&String(y.pf||'')===HUD.pf2){d2r+=r;d2b+=bl;}
+            });
+            var ms1=String(HUD.s1||'').match(/^(\d+)\s*\(\s*(\d+)/); if(ms1&&(d1r||d1b))HUD.s1Live=(+ms1[1]+d1r)+' ('+(+ms1[2]+d1b)+')';
+            var ms2=String(HUD.s2||'').match(/^(\d+)\s*\(\s*(\d+)/); if(ms2&&(d2r||d2b))HUD.s2Live=(+ms2[1]+d2r)+' ('+(+ms2[2]+d2b)+')';
+          }
+        }
       }
       if(HUD.s||HUD.tokens.length){HUD.ts=Date.now(); window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();}
     }catch(e){}
@@ -8413,13 +8425,20 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
           dots.appendChild(sp);
         });
       }
+      var svFresh=!!(C.svBatTs&&(Date.now()-C.svBatTs)<15000&&(!H.mf||!C.mf||String(H.mf)===String(C.mf)));
       var out1=(H.outPf&&H.pf1&&H.outPf===H.pf1), out2=(H.outPf&&H.pf2&&H.outPf===H.pf2);
-      if(H.p1){set('uiBat0Name',out1?'— আউট —':((H.striker===1?'🏏 ':'• ')+bnPlayerName(H.p1))); if(out1)set('uiBat0Runs','');}
-      if(H.s1){var m1=String(H.s1).match(/^(\d+)\s*\(\s*(\d+)/); if(m1)set('uiBat0Runs',D(m1[1])+' ('+D(m1[2])+')');}
-      if(H.p2){set('uiBat1Name',out2?'— আউট —':((H.striker===2?'🏏 ':'• ')+bnPlayerName(H.p2))); if(out2)set('uiBat1Runs','');}
+      if(!(svFresh&&C.svBat1)){
+        if(H.p1){set('uiBat0Name',out1?'— আউট —':((H.striker===1?'🏏 ':'• ')+bnPlayerName(H.p1))); if(out1)set('uiBat0Runs','');}
+        var hs1=H.s1Live||H.s1;
+        if(hs1&&!out1){var m1=String(hs1).match(/^(\d+)\s*\(\s*(\d+)/); if(m1)set('uiBat0Runs',D(m1[1])+' ('+D(m1[2])+')');}
+      }
+      if(!(svFresh&&C.svBat2)){
+        if(H.p2){set('uiBat1Name',out2?'— আউট —':((H.striker===2?'🏏 ':'• ')+bnPlayerName(H.p2))); if(out2)set('uiBat1Runs','');}
+        var hs2=H.s2Live||H.s2;
+        if(hs2&&!out2){var m2=String(hs2).match(/^(\d+)\s*\(\s*(\d+)/); if(m2)set('uiBat1Runs',D(m2[1])+' ('+D(m2[2])+')');}
+      }
       /* নতুন ব্যাটার এলে আউট-চিহ্ন মিলিয়ে যাবে */
       if(H.outPf&&H.pf1!==H.outPf&&H.pf2!==H.outPf)H.outPf='';
-      if(H.s2){var m2=String(H.s2).match(/^(\d+)\s*\(\s*(\d+)/); if(m2)set('uiBat1Runs',D(m2[1])+' ('+D(m2[2])+')');}
       if(H.bowler){
         var showBd=(H.bd&&(!H.bdKey||!H.curBf||H.bdKey===H.curBf))?H.bd:'';
         var f=String(showBd||'').match(/^(\d+)\s*-\s*(\d+)\s*\(([0-9.]+)\)/);
@@ -8430,7 +8449,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       if(runs!=null&&wkts!=null&&H.overs&&window.__setScore){
         var sameC=!(C.mf&&H.mf&&String(C.mf)!==String(H.mf));
         var batH=(sameC&&C.batBn)?C.batBn:(H.team||''), bowlH=sameC?(C.bowlBn||''):'';
-        var oH={mf:H.mf||(sameC&&C.mf)||'',batBn:batH,bowlBn:bowlH,spotEq:!!(sameC&&C.batBn&&H.tokens&&H.tokens.length)};
+        var oH={mf:H.mf||(sameC&&C.mf)||'',batBn:batH,bowlBn:bowlH};
         if(sameC&&('prevInn' in C))oH.prevInn=C.prevInn;
         window.__setScore(runs,wkts,String(H.overs),oH);
       }
@@ -9821,13 +9840,13 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     }
     /* bncom26: প্লেয়ার-নাম স্থির — পোল/যাচাই সাময়িক ব্যর্থ হলে "তথ্যের অপেক্ষা" নয়, আগের নামই থাকে */
     var __nmHold={uid:'',txt:{}};
-    function __nmPh(t){ return /অপেক্ষা|যাচাই চলছে/.test(String(t||'')); }
+    function __nmPh(t){ return /অপেক্ষা|যাচাই চলছে|সরাসরি খেলা চলছে/.test(String(t||'')); }
     function __nmWeak(t){ return __nmPh(t)||/ বনাম /.test(String(t||'')); }   /* দল-বনাম-দল ⇒ নামের চেয়ে দুর্বল */
     function __nmSave(uid){
       try{
         if(!uid)return;
         if(__nmHold.uid!==uid)__nmHold={uid:uid,txt:{}};
-        ['uiBat0Name','uiBat1Name','uiBowler','spotName'].forEach(function(k){
+        ['uiBat0Name','uiBat1Name','uiBowler','spotStat'].forEach(function(k){
           var e=document.getElementById(k); if(!e)return;
           var t=e.textContent||''; if(!t||__nmWeak(t))return; __nmHold.txt[k]=t;
         });
@@ -9837,10 +9856,10 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       try{
         if(!uid||__nmHold.uid!==uid)return false;
         var any=false;
-        var brk=!!window.__brkActive;   /* ইনিংস বিরতিতে দল-নামই সঠিক ⇒ নাম ফেরানো নয় */
+        var brk=!!window.__brkActive||/শেষ/.test((document.getElementById('spotRole')||{}).textContent||'');   /* ইনিংস বিরতি/ম্যাচ শেষে স্ট্যাটাসই সঠিক */
         Object.keys(__nmHold.txt).forEach(function(k){
           var e=document.getElementById(k); if(!e)return;
-          if(brk&&k==='spotName')return;
+          if(brk&&k==='spotStat')return;
           if(__nmWeak(e.textContent||'')){ e.textContent=__nmHold.txt[k]; any=true; }
         });
         return any;
@@ -10159,37 +10178,32 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         document.getElementById('uiBat1Runs').textContent='';
         document.getElementById('uiBowler').textContent=isBreak ? 'ইনিংস বিরতি' : 'বোলারের তথ্যের অপেক্ষা';
         if (p1Name && sv.q) {
-          document.getElementById('uiBat0Name').textContent = `${bs1.star ? '🏏' : '•'} ${p1Name}`;
-          document.getElementById('uiBat0Runs').textContent = `${bn(bs1.r)} (${bn(bs1.b)})`;
-          const onS = bs2.star && p2Name ? { n:p2Name, r:bs2.r, b:bs2.b, f4:bnds[2]||0, f6:bnds[3]||0 }
-                                         : { n:p1Name, r:bs1.r, b:bs1.b, f4:bnds[0]||0, f6:bnds[1]||0 };
-          {
-            const srEl=document.getElementById('spotRole');
-            if(srEl){
-              srEl.textContent = isFinished ? `খেলা শেষ • ${batBn}` : isBreak ? `ইনিংস বিরতি • ${batBn}` : `স্ট্রাইকে • ${batBn}`;
-              if(!isFinished && !isBreak && selectedMatch.leagueName){       /* বাগ #৪: লিগ-নাম আলাদা ছোট লাইনে */
-                const lgEl=document.createElement('span'); lgEl.className='lg'; lgEl.textContent=bnLeagueName(selectedMatch.leagueName);
-                srEl.append(lgEl);
-              }
-            }
-          }
-          document.getElementById('spotName').textContent = onS.n;
-          document.getElementById('spotStat').textContent = `${bn(onS.r)}* (${bn(onS.b)} বল)`;
-        } else {
-          document.getElementById('spotRole').textContent = isBreak ? 'ইনিংস বিরতি' : bnLeagueName(selectedMatch.leagueName);
-          document.getElementById('spotName').textContent = `${batBn} বনাম ${bowlBn}`;
-          document.getElementById('spotStat').textContent = isBreak ? 'পরবর্তী ইনিংসের অপেক্ষায়' : (selectedMatch.countdown || selectedMatch.bdTime);
+          document.getElementById('uiBat0Name').textContent = outSlots[0] ? '— আউট —' : `${bs1.star ? '🏏' : '•'} ${p1Name}`;
+          document.getElementById('uiBat0Runs').textContent = outSlots[0] ? '' : `${bn(bs1.r)} (${bn(bs1.b)})`;
         }
         if (p2Name && sv.s) {
-          document.getElementById('uiBat1Name').textContent = `${bs2.star ? '🏏' : '•'} ${p2Name}`;
-          document.getElementById('uiBat1Runs').textContent = `${bn(bs2.r)} (${bn(bs2.b)})`;
+          document.getElementById('uiBat1Name').textContent = outSlots[1] ? '— আউট —' : `${bs2.star ? '🏏' : '•'} ${p2Name}`;
+          document.getElementById('uiBat1Runs').textContent = outSlots[1] ? '' : `${bn(bs2.r)} (${bn(bs2.b)})`;
+        }
+        {
+          const lgDisp = bnLeagueName(selectedMatch.leagueName) || 'সরাসরি ক্রিকেট';
+          const strikerDisp = (bs2.star && p2Name && !outSlots[1]) ? p2Name
+                            : (!outSlots[0] && p1Name && sv.q) ? p1Name
+                            : (p2Name && sv.s && !outSlots[1]) ? p2Name
+                            : ((window.__crexHud && window.__crexHud.curBat) ? bnPlayerName(window.__crexHud.curBat) : '');
+          document.getElementById('spotRole').textContent = isFinished ? `খেলা শেষ • ${lgDisp}` : isBreak ? `ইনিংস বিরতি • ${lgDisp}` : lgDisp;
+          document.getElementById('spotName').textContent = `${batBn} বনাম ${bowlBn}`;
+          document.getElementById('spotStat').textContent = isFinished ? (statusBn(sv.B || selectedMatch.resStr || '') || 'ম্যাচ সমাপ্ত')
+            : isBreak ? 'পরবর্তী ইনিংসের অপেক্ষায়'
+            : (strikerDisp ? `🏏 স্ট্রাইকে: ${strikerDisp}` : (selectedMatch.countdown || selectedMatch.bdTime || 'সরাসরি খেলা চলছে'));
         }
         if (bwName && sv.c && !isInactive) {
           document.getElementById('uiBowler').textContent = `⚾ ${bwName} (${bn(bwOvDisp)} ওভার • ${bn(bwFig)}) • ${bowlBn}`;
         }
         try{ __nmRestore(polledMatch.uid); __nmSave(polledMatch.uid); }catch(_enm2){}   /* bncom26: নাম ঝিকমিক/উধাও বন্ধ */
 
-        try{ if(CXHUD && window.__crexHudApply) window.__crexHudApply({mf:polledMatch.mf,batBn:batBn,bowlBn:bowlBn,prevInn:prevInn}); }catch(_e){}   /* নাম/স্কোর ঝিকমিক বন্ধ */
+        const _hudCtx={mf:polledMatch.mf,batBn:batBn,bowlBn:bowlBn,prevInn:prevInn,svBat1:!!(p1Name&&sv.q),svBat2:!!(p2Name&&sv.s),svBatTs:Date.now()};
+        try{ if(CXHUD && window.__crexHudApply) window.__crexHudApply(_hudCtx); }catch(_e){}   /* নাম/স্কোর ঝিকমিক বন্ধ */
         // Current Over Dots — SV-র rb (ব্যাকআপ); CREX-HUD থাকলে সেটাই চূড়ান্ত
         const dots = document.getElementById('uiOverDots');
         dots.innerHTML = '<span style="font-size:20px;color:#cbd5e1;font-weight:800;">এই ওভার:</span>';
@@ -10205,7 +10219,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           dots.appendChild(sp);
         });
 
-        try{ window.__crexHudApply({mf:polledMatch.mf,batBn:batBn,bowlBn:bowlBn,prevInn:prevInn}); }catch(_e){}
+        try{ window.__crexHudApply(_hudCtx); }catch(_e){}
         const lastBall = curRb && Array.isArray(curRb.b) ? curRb.b[curRb.b.length - 1] : null;
         const latestTok = lastBall ? String(lastBall.u ?? '') : '';
         if(selectedMatch!==polledMatch)return;
