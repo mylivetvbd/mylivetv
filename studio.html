@@ -5893,7 +5893,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         set('socClockTxt', en ? count.displayEn : count.display);
         set('socStatsLine', en ? 'Awaiting Kick-off' : 'ম্যাচ শুরুর অপেক্ষা');
         set('spotRole', S.lgTitle);
-        set('spotName', en ? `${S.hEng} vs ${S.aEng}` : `${S.hBn} বনাম ${S.aBn}`);
+        set('spotName', `${teamShort(S.hEng)} vs ${teamShort(S.aEng)}`);
         set('spotStat', en ? count.displayEn : count.display);
         return;
       }
@@ -5912,7 +5912,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       }
       set('socStatsLine', en ? S.statEn : S.statBn);
       set('spotRole', `⚽ ${S.lgTitle}`);
-      set('spotName', en ? `${S.hEng} ${S.hSc} - ${S.aSc} ${S.aEng}` : `${S.hBn} ${bn(S.hSc)} - ${bn(S.aSc)} ${S.aBn}`);
+      set('spotName', `${teamShort(S.hEng)} ${en ? S.hSc : bn(S.hSc)} - ${en ? S.aSc : bn(S.aSc)} ${teamShort(S.aEng)}`);
       set('spotStat', S.stState === 'post' ? (en ? 'Full-Time • Match Ended' : 'ফুল-টাইম • ম্যাচ সমাপ্ত')
                     : S.stState === 'in' ? (en ? `Match Clock: ${S.dispClock || 'LIVE'}` : `ম্যাচ ঘড়ি: ${bn(S.dispClock || 'লাইভ')}`)
                     : (en ? 'Scheduled Match' : (S.countdown || S.bdTime)));
@@ -7116,6 +7116,11 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     }
     /* পরিচিত নামের শব্দ — ট্রান্সলিটারেশনের আগে দেখা হয় (সঠিক বানানের জন্য) */
     const BN_WORD_TR={united:'ইউনাইটেড',city:'সিটি',real:'রিয়াল',club:'ক্লাব',cricket:'ক্রিকেট',king:'কিং',kings:'কিংস',star:'স্টার',stars:'স্টার্স',sports:'স্পোর্টস',academy:'অ্যাকাডেমি',fc:'এফসি',sc:'এসসি',east:'ইস্ট',west:'ওয়েস্ট',north:'নর্থ',south:'সাউথ',eastern:'ইস্টার্ন',western:'ওয়েস্টার্ন',northern:'নর্দার্ন',southern:'সাদার্ন',royal:'রয়্যাল',royals:'রয়্যালস',challengers:'চ্যালেঞ্জার্স',warriors:'ওয়ারিয়র্স',riders:'রাইডার্স',tigers:'টাইগার্স',strikers:'স্ট্রাইকার্স',capitals:'ক্যাপিটালস',victorians:'ভিক্টোরিয়ান্স',qalandars:'কলন্দর',zalmi:'জালমি',gladiators:'গ্ল্যাডিয়েটর্স',bolts:'বোল্টস',patriots:'প্যাট্রিয়টস',blasters:'ব্লাস্টার্স',thunders:'থান্ডার্স',thunder:'থান্ডার',legends:'লেজেন্ডস',superstars:'সুপারস্টার্স',sultans:'সুলতানস',falcons:'ফ্যালকনস',sydney:'সিডনি',mumbai:'মুম্বাই',indians:'ইন্ডিয়ান্স',emirates:'এমিরেটস',cape:'কেপ',sunrisers:'সানরাইজার্স',marvels:'মার্ভেলস',sixers:'সিক্সার্স',giants:'জায়ান্টস',knight:'নাইট',knights:'নাইটস',nassr:'নাসর',abu:'আবু',dhabi:'ধাবি',desert:'ডেজার্ট',vipers:'ভাইপার্স',gulf:'গালফ',madrid:'মাদ্রিদ',manchester:'ম্যানচেস্টার',kandy:'ক্যান্ডি',jaffna:'জাফনা',colombo:'কলম্বো',dambulla:'দাম্বুলা',galle:'গল',dhaka:'ঢাকা',khulna:'খুলনা',rangpur:'রংপুর',comilla:'কুমিল্লা',chittagong:'চট্টগ্রাম',chattogram:'চট্টগ্রাম',barishal:'বরিশাল',barisal:'বরিশাল',sylhet:'সিলেট',rajshahi:'রাজশাহী',durbar:'দুর্বার',fortune:'ফরচুন',biratnagar:'বিরাটনগর',janakpur:'জনকপুর',nepal:'নেপাল',pokhara:'পোখারা',lumbini:'লুম্বিনী',kathmandu:'কাঠমান্ডু',chitwan:'চিতওয়ান',karnali:'কর্ণালী',sudurpaschim:'সুদূরপশ্চিম',avengers:'অ্যাভেঞ্জার্স',avenger:'অ্যাভেঞ্জার',lions:'লায়ন্স',lion:'লায়ন',rhinos:'রাইনোস',gurkhas:'গোর্খাস',gorkhas:'গোর্খাস',yaks:'ইয়াকস',titans:'টাইটানস',rangers:'রেঞ্জার্স',panthers:'প্যান্থার্স',stallions:'স্ট্যালিয়নস',dolphins:'ডলফিনস',eagles:'ঈগলস',hurricanes:'হারিকেনস',scorchers:'স্কর্চার্স',renegades:'রেনেগেডস',heat:'হিট',chargers:'চার্জার্স',daredevils:'ডেয়ারডেভিলস',tuskers:'টাস্কার্স',invincibles:'ইনভিন্সিবলস',originals:'অরিজিনালস',phoenix:'ফিনিক্স',rockets:'রকেটস',chennai:'চেন্নাই',kolkata:'কলকাতা',bengaluru:'বেঙ্গালুরু',bangalore:'বেঙ্গালুরু',delhi:'দিল্লি',punjab:'পাঞ্জাব',rajasthan:'রাজস্থান',gujarat:'গুজরাট',lucknow:'লখনউ',hobart:'হোবার্ট',perth:'পার্থ',adelaide:'অ্যাডিলেড',brisbane:'ব্রিসবেন',melbourne:'মেলবোর্ন',paarl:'পার্ল',pretoria:'প্রিটোরিয়া',durban:'ডারবান',joburg:'জোবার্গ'};
+    function teamShort(n, fb='TBD'){
+      const raw=String(n||'').replace(/[^A-Za-z0-9 ]/g,' ').trim(); if(!raw) return fb;
+      const w=raw.split(/\s+/); if(w.length===1) return w[0].slice(0,3).toUpperCase();
+      return w.map(x=>x[0]).join('').slice(0,4).toUpperCase();
+    }
     function bnTeamName(n){
       const raw=String(n||'').trim(); if(!raw) return '';
       const known=getTeamStyle(raw,0).bn;
@@ -7747,7 +7752,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       document.getElementById('uiOvers').parentElement.style.display='none';
       document.getElementById('uiEquation').textContent=en?count.displayEn:count.display;
       document.getElementById('spotRole').textContent=en?(m.leagueName || 'Cricket Match'):(bnLeagueName(m.leagueName) || 'ক্রিকেট ম্যাচ');
-      document.getElementById('spotName').textContent=en?`${m.t1||'Team 1'} vs ${m.t2||'Team 2'}`:`${teamBn(m.t1)} বনাম ${teamBn(m.t2)}`;
+      document.getElementById('spotName').textContent=`${teamShort(m.t1,'Team 1')} vs ${teamShort(m.t2,'Team 2')}`;
       document.getElementById('spotStat').textContent=en?count.displayEn:count.display;
       document.getElementById('uiBat0Name').textContent=en?'Awaiting Playing XI':'একাদশের অপেক্ষায়';
       document.getElementById('uiBat1Name').textContent=en?'Match yet to start':'ম্যাচ এখনও শুরু হয়নি';
@@ -10542,7 +10547,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       document.getElementById('uiBat0Runs').textContent='';document.getElementById('uiBat1Runs').textContent='';
       document.getElementById('uiBowler').textContent=en?'Validating Bowler':'বোলারের তথ্য যাচাই চলছে';document.getElementById('uiOverDots').textContent='';
       document.getElementById('spotRole').textContent=en?(m.leagueName||'Cricket'):(bnLeagueName(m.leagueName)||m.leagueName||'ক্রিকেট');
-      document.getElementById('spotName').textContent=en?(m.title||'Cricket Match'):(m.t1&&m.t2?`${teamBn(m.t1)} বনাম ${teamBn(m.t2)}`:(m.title||'ম্যাচ'));
+      document.getElementById('spotName').textContent=en?(m.title||'Cricket Match'):(m.t1&&m.t2?`${teamShort(m.t1)} vs ${teamShort(m.t2)}`:(m.title||'ম্যাচ'));
       document.getElementById('spotStat').textContent=en?'Awaiting verified feed':'দল ও স্কোর যাচাইয়ের অপেক্ষা';
     }
     function showEntityValidationPending(match) {
@@ -11133,7 +11138,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           document.getElementById('socClockTxt').textContent=en?count.displayEn:count.display;
           document.getElementById('socStatsLine').textContent=en?'Awaiting Kick-off':'ম্যাচ শুরুর অপেক্ষা';
           document.getElementById('spotRole').textContent=lgTitle;
-          document.getElementById('spotName').textContent=en?`${hEng} vs ${aEng}`:`${hBn} বনাম ${aBn}`;
+          document.getElementById('spotName').textContent=`${teamShort(hEng)} vs ${teamShort(aEng)}`;
           document.getElementById('spotStat').textContent=en?count.displayEn:count.display;
           if (!hostMicActive && !isSpeakingNow && Date.now()-lastSpeakTime>25000) {
             lastSpeakTime=Date.now();isSpeakingNow=true;
