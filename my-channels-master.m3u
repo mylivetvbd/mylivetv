@@ -17857,3 +17857,8 @@ https://live-3.otcnet.ru/Balapan/index.m3u8
 http://213.91.179.28:8000/play/a0ct
 #EXTINF:-1 tvg-logo="https://i.imgur.com/EO6cYUI.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",God Stands TV Hindi
 https://online.godstands.tv:5443/WebRTCApp/streams/HindiStreaming.m3u8
+
+#EXTINF:-1 tvg-logo="https://i.imgur.com/EVtWQLd.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",MCM Top (France)
+http://185.228.163.146:8000/play/a00g/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/bTf7A9J.png" group-title="🎬 মুভি (গ্লোবাল) 2",CineStar Action Bulgaria
+http://213.91.179.28:8000/play/a06b
