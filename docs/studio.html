@@ -8693,6 +8693,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       lastSpeakTime=Date.now(); window.__cmtLastSay=lastSpeakTime; isSpeakingNow=true;
       if(curIsGap&&window.__flushScore){try{window.__flushScore();}catch(_efg){}}
       try{var _m=(it&&it.m)||null; if(_m){ if(_m.sc!=null)window.__oneHud(_m.sc,_m.ov,true,_m.mf); if(_m.oc!=null)window.__oneCard(_m.oc);} }catch(_e){}
+      try{ var _vp=(it&&it.m&&it.m.__pid!=null)?it.m.__pid:null; if(_vp!=null&&window.__visByPid&&window.__visByPid[_vp]){ var _vfn=window.__visByPid[_vp]; delete window.__visByPid[_vp]; _vfn(); } }catch(_ev){}   /* বল বলার মুহূর্তে সেই বলের কার্ড */
       var el=document.getElementById('commText'); if(el)el.textContent='📣 '+line;
       rememberSpoken(line);
       /* feat17: prosody context + boundary suspense delay 250ms (watchdogs intact 20s/45s) */
@@ -8713,6 +8714,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     }catch(e){busy=false; curIsGap=false; isSpeakingNow=false;}
   }
   function speak(line,meta){
+    if(meta&&!meta.gap&&window.__curPollId)meta.__pid=window.__curPollId;   /* কার্ড-স্ন্যাপশট এই বলের সাথে বাঁধা */
     if(!line||window.__bnCom.on!==true)return;
     try{ if((window.__cricInnIdx===1||(window.__MS&&window.__MS.info&&window.__MS.info().innings===2))&&window.__cricPrev&&/বড় স্কোরের হাতছানি|লড়াইয়ের মতো সংগ্রহ দাঁড়াবে|বড় সংগ্রহ আসতে পারে/i.test(line))return; }catch(_ech){}
     try{ if(window.__MS&&window.__MS.sayGate&&!window.__MS.sayGate(line))return; }catch(_eg){}   /* bncom27: ফেজ-গেট */
@@ -10845,7 +10847,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const p2Name = bnPlayerName(p2Raw);
         const bwName = crexPlayerCache[bwFk] || '';
         const bwNameBn = bnPlayerName(bwName);
-        updateCricketVisuals({safe:cardsSafe && hasPlay && !isInactive, outSlots:outSlots, batFk,bowlFk,p1Fk,p2Fk,bwFk,p1Name:bnPlayerName(p1Name),p2Name:bnPlayerName(p2Name),bwName:bwNameBn,p1En:p1Raw||p1Name,p2En:p2Raw||p2Name,bwEn:bwName||bwNameBn,format:sv.fo || polledMatch.fo});
+        const __visA = function(){ updateCricketVisuals({safe:cardsSafe && hasPlay && !isInactive, outSlots:outSlots, batFk,bowlFk,p1Fk,p2Fk,bwFk,p1Name:bnPlayerName(p1Name),p2Name:bnPlayerName(p2Name),bwName:bwNameBn,p1En:p1Raw||p1Name,p2En:p2Raw||p2Name,bwEn:bwName||bwNameBn,format:sv.fo || polledMatch.fo}); };
         try{ window.__speakMute=!!isInactive; }catch(_e){}
         try{
           if(isFinished){
@@ -10868,6 +10870,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         }
         /* বাগ #৯: updateCricketMetrics এখন __setScore-এর ভেতর থেকেই একসাথে চলে */
         try{void __xsCheck(activeIndex,batEng);}catch(_e){}
+        const __pid = (window.__curPollId = (window.__curPollId||0)+1);   /* এই পোলের বলগুলো এই আইডি পায় */
         try{ if(isFinished){ if(window.__bnComStop)window.__bnComStop(); } else { window.__bnCom.end=0; window.__bnComTick(polledMatch,sv); } }catch(_e){}
         void preparePlayerNames([p1Name,p2Name,bwName]);
 
@@ -10879,6 +10882,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const ovBalls = (curRb && Array.isArray(curRb.b)) ? curRb.b.map(x => String(x.u || '0')) : [];
 
         const _ovP2=String(ov.disp||'0.0').split('.'), _svBalls2=(parseInt(_ovP2[0],10)||0)*6+(parseInt(_ovP2[1]||'0',10)||0);
+        const __visB = function(){
         window.__lastCricHud = {
           uid: polledMatch.uid, mf: polledMatch.mf,
           isFinished, isBreak, isInactive, matchState: selectedMatch.state,
@@ -10897,11 +10901,13 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         };
         if (window.__renderCricHudDom) window.__renderCricHudDom(window.__lastCricHud);
         try{ __nmRestore(polledMatch.uid); }catch(_enm2a){}   /* bncom26: নাম ঝিকমিক/উধাও বন্ধ */
+        };
 
         const _hudCtx={mf:polledMatch.mf,inn:activeIndex,isInactive,isFinished,isBreak,batBn:batBn,bowlBn:bowlBn,batEn:batEng,bowlEn:bowlEng,
           p1Fk:p1Fk,p2Fk:p2Fk,p1Bn:p1Name,p2Bn:p2Name,p1En:p1Raw||p1Name,p2En:p2Raw||p2Name,bs1:bs1,bs2:bs2,out0:!!outSlots[0],out1:!!outSlots[1],
           svBwFk:bwFk,bwBn:bwName,bwEn:bwName||bwNameBn,svBwHas:!!(bwName&&sv.c&&!isInactive),svBwWkts:bwArr[3]||0,svBwRuns:bwArr[0]||0,svBwBalls:bwArr[1]||0,
           svBalls:_svBalls2,svRuns:rNum,prevInn:prevInn,svBat1:!!(p1Name&&sv.q),svBat2:!!(p2Name&&sv.s),svBatTs:Date.now()};
+        const __visC = function(){
         window.__crexCtx=_hudCtx;
         // Current Over Dots — SV-র rb (ব্যাকআপ); CREX-HUD থাকলে সেটাই চূড়ান্ত
         const dots = document.getElementById('uiOverDots');
@@ -10916,6 +10922,13 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         });
 
         try{ if(CXHUD && !isInactive && window.__crexHudApply) window.__crexHudApply(_hudCtx); }catch(_e){}
+        };
+        const __vHeld = !!(window.__oneHold && window.__oneHold());   /* বল বাকি থাকলে কার্ড এখনই নয় — ঐ বল কথায় এলে দেখাবে */
+        const __vAll = function(){ __visA(); __visB(); __visC(); };
+        window.__visByPid = window.__visByPid || {};
+        window.__visByPid[__pid] = __vAll;
+        for (const __k in window.__visByPid) { if (+__k < __pid - 30) delete window.__visByPid[__k]; }
+        if (!__vHeld) { __vAll(); delete window.__visByPid[__pid]; }
         try{
           const _b0=document.getElementById('uiBat0Name'), _b1=document.getElementById('uiBat1Name');
           const _s1=(_b1&&String(_b1.textContent||'').includes('🏏')&&!(_b0&&String(_b0.textContent||'').includes('🏏')));
