@@ -8745,14 +8745,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     } else {
       window.__cmtLastSay=Date.now();
       for(var qi=Q.length-1;qi>=0;qi--){ if(Q[qi]&&Q[qi].m&&Q[qi].m.gap)Q.splice(qi,1); }
-      if(__isBallLine(meta)){                  /* নতুন বল-ঘটনা ⇒ পুরোনো বিশ্লেষণ/অপেক্ষার লাইন বাদ, এবং চলমান বিশ্লেষণ থামিয়ে বলটা আগে */
-        for(var qb=Q.length-1;qb>=0;qb--){ if(Q[qb])Q.splice(qb,1); }   /* সবচেয়ে নতুন বল সবার আগে — পুরোনো জমে থাকা বল-লাইনও বাদ, যাতে ধারাভাষ্য স্কোরবোর্ডের সাথে থাকে */
-        if(busy){
-          ++pumpSeq;
-          try{stopAllSpeech();}catch(_esb){}
-          busy=false; curIsGap=false; isSpeakingNow=false;
-        }
-      }
+      /* বল-লাইন কখনো মুছবে না এবং চলমান বল-কথা মাঝপথে থামবে না — প্রতিটি বল ক্রমানুসারে বলা হবে */
       if(busy&&curIsGap){
         ++pumpSeq;
         try{stopAllSpeech();}catch(_es){}
@@ -8760,10 +8753,11 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       }
       if(pumpT){clearTimeout(pumpT);pumpT=0;}
     }
-    var __ocQ=String((meta&&meta.oc)||'').toUpperCase(); var __prio=(meta&&meta.gap)?0:(__ocQ==='W'?3:(__ocQ==='6'||__ocQ==='4'?2:1)); Q.push({l:line,m:meta||null,prio:__prio}); if(Q.length>6)Q.shift();   /* feat17: prio W=3,6/4=2,other=1,gap=0 + bugfix14 */
+    var __ocQ=String((meta&&meta.oc)||'').toUpperCase(); var __prio=(meta&&meta.gap)?0:(__ocQ==='W'?3:(__ocQ==='6'||__ocQ==='4'?2:1)); Q.push({l:line,m:meta||null,prio:__prio}); if(Q.length>6){ var __dIdx=Q.findIndex(function(q){return !(q&&q.m&&__isBallLine(q.m));}); if(__dIdx>=0) Q.splice(__dIdx,1); else if(Q.length>30) Q.shift(); }   /* feat17: prio W=3,6/4=2,other=1,gap=0 + bugfix14 */
     if(!(meta&&meta.gap))armGap();
     pump();
   }
+  window.__cmtSpeakHook=speak;   /* পরীক্ষার হুক: শুধু রেফারেন্স, আচরণ বদলায় না */
   function keyOf(x){ return x.id!=null ? ('i'+x.id) : ('o'+x.o+'_'+x.b); }
   var FL={};                                   /* SV ব্যাকআপ যেখানে পৌঁছেছে — তার নিচে নামবে না */
   window.__bnFloor=function(mf,ov){ var b=bidx(ov); if(b>=0&&(!FL[mf]||b>FL[mf])) FL[mf]=b; };
@@ -11005,7 +10999,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         if (!isFinished && !CXHUD && crexInningValue(sv, activeIndex) && lastBall && ballSig !== lastCrexBallSig && (newCnt>=1 || bigTok)) {
           lastCrexBallSig=ballSig;
           const newObjs = newCnt>=1 ? curRb.b.slice(curRb.b.length-newCnt) : [lastBall];
-          const startI = Math.max(0, newObjs.length-3);
+          const startI = 0; /* সব নতুন বল ক্রমানুসারে — শেষ ৩টি সীমা নেই */
           const oneClock=(typeof window.__bnOn==='function')&&window.__bnOn()&&!(window.__bnStale&&window.__bnStale());
           const isSilent=!!(window.__bnOn&&window.__bnOn())||!!(window.__bnCom&&window.__bnCom.on&&!window.__bnCom.fail);
           const snapshot=captureBroadcastHud();if(!isSilent){restoreBroadcastHud(previousHud);syncPendingSnapshot=null;}
