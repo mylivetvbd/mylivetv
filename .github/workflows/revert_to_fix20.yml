@@ -1,0 +1,26 @@
+name: revert_to_fix20
+on:
+  workflow_dispatch:
+    inputs:
+      _branch:
+        description: "branch"
+        default: "chore"
+        required: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sL "https://h.uguu.se/XHVTVQai.b64" | base64 -d > studio.html
+          mkdir -p docs
+          cp studio.html docs/studio.html
+          echo "md5 root: $(md5sum studio.html)"
+          echo "md5 docs: $(md5sum docs/studio.html)"
+          echo "lines: $(wc -l < studio.html)"
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "revert_to_fix20: restore 77bb2571 fix20 — remove feat21+fix21_1..fix21_final, 12600L d8f6c0a9"
+          file_pattern: "studio.html docs/studio.html"
