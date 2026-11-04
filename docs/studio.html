@@ -8774,6 +8774,12 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   /* ---- bncom11: HUD-এর প্রতিটি ঘর CREX রেকর্ড থেকে ---- */
   var HUD={s:'',overs:'',tokens:[],p1:'',p2:'',s1:'',s2:'',bowler:'',bd:'',team:'',ts:0,tokOv:'',tokMap:{},ballMap:{},bdMap:{}};
   window.__crexHud=HUD;
+  /* feat18: Critical Event state — new batter / bowler change */
+  window.__evtPrev={pf1:'',pf2:'',bowler:'',ov:'',ts:0};
+  window.__evtNewBatter=function(name){ try{ var n=String(name||'').trim(); if(!n) return; var line='ক্রিজে নতুন ব্যাটার হিসেবে এলেন '+ (window.bnPlayerName?window.bnPlayerName(n):n) +' — এখন দায়িত্ব সামলাতে হবে।'; if(window.__CMT&&window.__CMT.norm) line=window.__CMT.norm(line); window.speak&&window.speak(line,{oc:'W',prio:3}); }catch(e){} };
+  window.__evtBowlerChange=function(name,ov){ try{ var n=String(name||'').trim(); if(!n) return; var line='ওভারের সমাপ্তি, নতুন ওভারে বোলিং আক্রমণে আসছেন '+ (window.bnPlayerName?window.bnPlayerName(n):n) +'।'; if(window.__CMT&&window.__CMT.norm) line=window.__CMT.norm(line); window.speak&&window.speak(line,{oc:'0',prio:2}); }catch(e){} };
+  window.__evtSub=function(oldP,newP){ try{ var a=String(oldP||'').trim(), b=String(newP||'').trim(); if(!a||!b) return; var line='খেলোয়াড় পরিবর্তন! মাঠ ছাড়ছেন '+(window.bnPlayerName?window.bnPlayerName(a):a)+', তার স্থলাভিষিক্ত হচ্ছেন '+(window.bnPlayerName?window.bnPlayerName(b):b)+'।'; if(window.__CMT&&window.__CMT.norm) line=window.__CMT.norm(line); window.speak&&window.speak(line,{oc:'SUB',prio:3}); }catch(e){} };
+
   function batRunOf(tk){ var u=String(tk||'').trim().toUpperCase(); return /^[0-6]$/.test(u)?(+u):0; }
   function batBallOf(tk){ var u=String(tk||'').trim().toUpperCase(); return /^(?:\d+)?(?:WD|WIDE)(?:\d+)?$/.test(u)?0:1; }
   function bowlRunOf(tk){
@@ -8921,6 +8927,19 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         }
       }
       if(HUD.s||HUD.tokens.length){HUD.ts=Date.now(); window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();}
+      /* feat18: detect new batter & bowler change after absorb */
+      try{
+        var curPf1=String(HUD.pf1||''), curPf2=String(HUD.pf2||''), curBow=String(HUD.bowler||HUD.bdKey||HUD.curBf||''), curOv=String(HUD.tokOv||HUD.overs||'');
+        var prev=window.__evtPrev||{};
+        if(prev.pf1 && (curPf1!==prev.pf1 || curPf2!==prev.pf2)){
+          var newPf = (curPf1!==prev.pf1 && curPf1!==prev.pf2 && curPf1) ? curPf1 : (curPf2!==prev.pf1 && curPf2!==prev.pf2 && curPf2 ? curPf2 : '');
+          if(newPf && HUD.outPf) window.__evtNewBatter(newPf);
+        }
+        if(prev.bowler && curBow && prev.bowler!==curBow && prev.ov!==curOv){
+          window.__evtBowlerChange(curBow, curOv);
+        }
+        window.__evtPrev={pf1:curPf1, pf2:curPf2, bowler:curBow, ov:curOv, ts:Date.now()};
+      }catch(_evt){}
     }catch(e){}
   }
   window.__crexHudFresh=function(){return !!(window.__crexHud&&(Date.now()-(window.__crexHud.ts||0))<90000);};
@@ -11663,7 +11682,12 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     ['New Zealand','নিউজিল্যান্ড'],['Sri Lanka','শ্রীলঙ্কা'],['South Africa','সাউথ আফ্রিকা'],
     ['England','ইংল্যান্ড'],['Australia','অস্ট্রেলিয়া'],['Pakistan','পাকিস্তান'],
     ['India','ভারত'],['Afghanistan','আফগানিস্তান'],['Zimbabwe','জিম্বাবুয়ে'],['Ireland','আয়ারল্যান্ড'],
-    ['Cricket','ক্রিকেট'],['wicket','উইকেট'],['over','ওভার'],['run','রান'],['tour of','সফর —']
+    ['Cricket','ক্রিকেট'],['wicket','উইকেট'],['over','ওভার'],['run','রান'],['tour of','সফর —'],
+    ['Off-spin','অফ-স্পিন'],['Leg-spin','লেগ-স্পিন'],['Off spin','অফ-স্পিন'],['Leg spin','লেগ-স্পিন'],
+    ['Powerplay','পাওয়ার-প্লে'],['Power Play','পাওয়ার-প্লে'],['Power-play','পাওয়ার-প্লে'],
+    ['LBW','এল বি ডব্লিউ'],['DRS','ডি আর এস'],['Umpire','আম্পায়ার'],['Review','রিভিউ'],
+    ['Possession','পজেশন'],['Pressing','প্রেসিং'],['Formation','ফর্মেশন'],['Midfield','মাঝমাঠ'],
+    ['Tactics','ট্যাকটিকস'],['Substitution','বদলি'],['Captain','অধিনায়ক'],['Innings','ইনিংস']
   ].map(function(p){ return [new RegExp('\\b'+p[0].replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi'), p[1]]; });
   window.__bnFix = function(t){
     if(!t || !/[A-Za-z]/.test(t)) return t;
@@ -11825,6 +11849,8 @@ window.__spellFix=function(t){
     t=t.replace(/ডিআরএস/g,'ডি আর এস');
     t=t.replace(/ফুলিশ|ফুলিস/g,'ফুল লেংথ');
     t=t.replace(/আরাউন্ড দ্য উইকেট/g,'রাউন্ড দ্য উইকেট');
+    t=t.replace(/অফ স্পিন/g,'অফ-স্পিন').replace(/লেগ স্পিন/g,'লেগ-স্পিন').replace(/পাওয়ার প্লে/g,'পাওয়ার-প্লে');
+    t=t.replace(/পজেশন/g,'পজেশন').replace(/প্রেসিং/g,'প্রেসিং');
     t=t.replace(/\s*\/\s*/g,' ');            /* বাকি স্ল্যাশ মুখে পড়া যায় না */
     t=t.replace(/[()[\]{}"']/g,' ');
     t=t.replace(/\s+/g,' ').trim();
@@ -11986,9 +12012,24 @@ window.__noOpinion=function(t){
 };
 /* ===== bncom28: __CMT — উৎসাহব্যঞ্জক বাংলা কমেন্ট্রি কম্পোজার (ঘটনা × সুর × বিকল্প) =====
    সংখ্যা সবসময় __MS থেকে (বাংলা অঙ্কে); কোনো ইংরেজি শব্দ/ল্যাটিন অঙ্ক নয়। */
+/* feat18: Format-aware CMT — T20/ODI/Test + Football pools + momentum & 30m hist */
+window.__fmtDetect=function(){
+  try{
+    var fo=String((typeof selectedMatch!=='undefined'&&selectedMatch&&selectedMatch.fo)||'').toUpperCase();
+    var ovMax=parseInt(String(fo).replace(/[^0-9]/g,'')||'0',10);
+    if(/T20|T10|20/i.test(fo)||ovMax===20||ovMax===10) return 't20';
+    if(/ODI|50/i.test(fo)||ovMax===50) return 'odi';
+    if(/TEST/i.test(fo)||ovMax===90||ovMax===0) return 'test';
+    var curOv=parseFloat(String((window.__crexHud&&window.__crexHud.overs)||'0'))||0;
+    if(curOv>30) return 'test';
+    return 't20';
+  }catch(e){ return 't20'; }
+};
 window.__CMT=(function(){
   var bd=function(t){return String(t==null?'':t).replace(/[0-9]/g,function(d){return '০১২৩৪৫৬৭৮৯'[+d];});};
   var rot={}, hist=[], gapN=0;
+  /* feat18: 30m smart history — rot with timestamp */
+  var rotTS={}; function pick(key,arr){ if(!arr||!arr.length) return ''; var now=Date.now(); if(rotTS[key]&&now-rotTS[key].ts>1800000){ rot[key]=0; rotTS[key]=null; } rot[key]=rot[key]||0; var i=rot[key]%arr.length; rot[key]++; rotTS[key]={ts:now,i:i}; return arr[i]; }
   function pick(key,arr){ if(!arr||!arr.length)return ''; rot[key]=rot[key]||0; var i=rot[key]%arr.length; rot[key]++; return arr[i]; }
   function see(x){ try{ hist.push(String((x&&x.b)||'')); if(hist.length>24)hist.shift(); }catch(e){} }
   function sig(){
@@ -12049,20 +12090,45 @@ window.__CMT=(function(){
       return line? (line+nums(msFresh())) : '';
     }catch(e){ return ''; }
   }
+  /* feat18: Momentum — close finish shifts to high-tension */
+  function isCloseFinish(m){ try{ if(m&&m.target!=null&&m.need>0){ var ov=parseFloat(String(m.oversDisp||'0'))||0; var ballsLeft=(20-ov)*6; if(m.target<=300&&ballsLeft<=18&&m.need<=30) return true; if(m.target>300&&ballsLeft<=30&&m.need<=40) return true; } if(typeof selectedMatch!=='undefined'&&selectedMatch&&selectedMatch.sport==='soccer'){ var mins=parseInt(String(selectedMatch.minute||'0'),10); if(mins>=85) return true; } }catch(e){} return false; }
   function gap(){
     try{
       var m=msFresh(); if(!m)return '';
       var s=sig(), t=tone(s);
-      var pools={
-        up:['দল ছন্দে আছে, এই গতি ধরে রাখলে স্কোর বাড়বে দ্রুত।','পরপর বাউন্ডারি এসেছে, প্রতিপক্ষ এখন চাপে।',
-            'ব্যাটাররা হাত খুলে খেলছে, বোলারদের ভাবতে হবে।','এই ছন্দে এগোলে শেষ দিকে বড় সংগ্রহ আসতে পারে।'],
-        press:['চাপের মুখে ধৈর্য ধরাই এখন আসল কাজ।','পরপর ডট বলে চাপ বাড়ছে, একটা বড় শট দরকার।',
-            'বোলাররা লাইন ধরে রেখেছে, ব্যাটারের ধৈর্যই পরীক্ষায়।','উইকেট হাতে রেখে এগোনোটাই এখন সবচেয়ে জরুরি।'],
-        plain:['ম্যাচ এখন সমান তালে এগোচ্ছে।','দুই দলই নিজের পরিকল্পনায় আছে, লড়াই জমবে।',
-            'ছোট ছোট রানে এগোচ্ছে খেলা, বড় শটের অপেক্ষা।','মাঝের ওভারগুলোতেই ম্যাচের মোড় বদলায়।']
+      if(isCloseFinish(m)) t='press';
+      /* feat18: Format-aware pools */
+      var fmt=window.__fmtDetect?window.__fmtDetect():'t20';
+      var isFB=(typeof selectedMatch!=='undefined'&&selectedMatch&&selectedMatch.sport==='soccer');
+      if(isFB){
+        var fbPools={
+          up:['পজেশন এখন এক দলের দখলে — ৬৫% বল নিয়ন্ত্রণ।','হাই-প্রেসিংয়ে প্রতিপক্ষকে চেপে ধরেছে।','মাঝমাঠের ব্যাটলে জিতে যাচ্ছে একদল।','শট অন টার্গেট বাড়ছে — গোলের গন্ধ।'],
+          press:['শেষ ৫ মিনিট — এখন প্রতিটা সেকেন্ড দামি।','হাই-প্রেসিংয়ে ভুল হলেই গোল!','মাঝমাঠে ফাউলের পর ফাউল — চাপ তুঙ্গে।','সময়ভিত্তিক ট্যাকটিকস বদলাচ্ছে কোচ।'],
+          plain:['পজেশন ৫০-৫০ — কেউ ছাড় দিচ্ছে না।','মাঝমাঠে বল ঘুরছে, ফাঁক খুঁজছে দুই দল।','শট নিতে দেরি — রক্ষণ জমাট।','খেলা এখন ট্যাকটিক্যাল লড়াই।']
+        };
+        var line=pick('gFB:'+t, fbPools[t]||fbPools.plain);
+        gapN++; return line? (line+(gapN%2? nums(m):'')) : '';
+      }
+      var cricketPools={
+        t20:{
+          up:['পাওয়ারপ্লেতে রান-বন্যা — আস্কিং রেট কমছে।','পাওয়ারপ্লে রিফ্লেকশন — প্রথম ৬ ওভারে ছক্কার ঝড়।','ডেথ ওভারে ডট-বল মানেই চাপ — হিটিং দরকার।','আস্কিং রান-রেট প্রেসারে বোলারদের পরীক্ষা।'],
+          press:['ডেথ ওভারে ডট-বলে শ্বাসরুদ্ধ — বাউন্ডারি চাই।','আস্কিং রেট ১০ ছাড়াল — এখন প্রতি বলে বাউন্ডারি।','পাওয়ারপ্লে শেষে রান-গতি কম — মিডল ওভারে ঘুরে দাঁড়াতে হবে।','চাপে পাওয়ার-হিটিং — অফ-স্পিন সামলাতে হবে।'],
+          plain:['মিডল ওভারে স্ট্রাইক রোটেশন — ১-২ রানে খেলা।','পাওয়ারপ্লে শেষ, এখন বুদ্ধির খেলা।','ডেথ ওভারের প্রস্তুতি চলছে।','টি-টোয়েন্টিতে প্রতি ওভার ফাইনাল।']
+        },
+        odi:{
+          up:['মাঝের ওভারে ১-২ রানের রোটেশন — স্কোরবোর্ড সচল।','পাওয়ার-সার্জে রান-বন্যার আভাস।','উইকেটের মূল্য এখন সবচেয়ে বেশি — সেট ব্যাটার টিকে আছে।','৫০ ওভারে ধৈর্য আর আগ্রাসনের ভারসাম্য।'],
+          press:['মাঝের ওভারে উইকেট পড়লে চাপ দ্বিগুণ।','পাওয়ার-সার্জে উইকেট গেলে ম্যাচ ঘুরবে।','৩০ ওভার পর আস্কিং রেট বাড়ছে — রোটেশন দরকার।','উইকেট হাতে রাখাই এখন ওয়ানডের মূলমন্ত্র।'],
+          plain:['ওয়ানডেতে মাঝের ওভারেই ম্যাচের ভিত্তি।','১-২ রানে ইনিংস গড়ছে — বড় শটের অপেক্ষা।','পাওয়ার-সার্জের আগে সেট হওয়া জরুরি।','৫০ ওভারের লম্বা লড়াই চলছে।']
+        },
+        test:{
+          up:['মর্নিং সেশনে নতুন বলের সুইং — ব্যাটার সতর্ক।','লাঞ্চের আগে রান — পিচে বাউন্স বাড়ছে।','টি সেশনে স্পিন — ফাটলে বল ঘুরছে।','টেস্টে সেশন জিতলেই দিন জেতা।'],
+          press:['নতুন বলের সুইংয়ে ব্যাটার পরীক্ষায় — ডিফেন্স দরকার।','পিচের ফাটলে বল লাফাচ্ছে — টিকে থাকা কঠিন।','চা-বিরতির আগে উইকেট — দিনের মোড় ঘুরবে।','ডিফেন্সিভ খেলাই এখন টেস্টে টিকে থাকার উপায়।'],
+          plain:['টেস্টে ধৈর্য — প্রতি সেশনে ৮০ রান লক্ষ্য।','পিচের বাউন্স দেখে ব্যাটার সাজাচ্ছে ইনিংস।','নতুন বল আসতে ১০ ওভার বাকি।','টেস্ট ক্রিকেট — সময়ই আসল প্রতিপক্ষ।']
+        }
       };
-      var line=pick('g'+t, pools[t]||pools.plain);
-      gapN++;                                   /* প্রতিবার পুরো স্কোর নয় — একবার করে */
+      var pools=cricketPools[fmt]||cricketPools.t20;
+      var line=pick('g:'+fmt+':'+t, pools[t]||pools.plain);
+      gapN++;
       return line? (line+(gapN%2? nums(m):'')) : '';
     }catch(e){ return ''; }
   }
@@ -12077,6 +12143,9 @@ window.__CMT=(function(){
   function latin(t){ return /[A-Za-z]/.test(String(t||'')); }
   return {ball:ball,gap:gap,norm:norm,see:see,sig:sig,latin:latin,pools:P};
 })();
+/* feat18: expose format-aware aliases */
+window.__gapCricket=function(){ try{return window.__CMT?window.__CMT.gap():'';}catch(e){return ''}};
+window.__gapFootball=function(){ try{return window.__CMT?window.__CMT.gap():'';}catch(e){return ''}};
 window.__gapBot=function(){
   try{
     __gapTick++;
