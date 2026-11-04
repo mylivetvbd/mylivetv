@@ -5823,9 +5823,9 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       set('liveBadgeTxt', en ? (L.isFinished ? 'ENDED' : L.isBreak ? 'BREAK' : L.matchState === 'live' ? 'LIVE' : 'BREAK')
                              : (L.isFinished ? 'শেষ' : L.isBreak ? 'বিরতি' : L.matchState === 'live' ? 'LIVE' : 'বিরতি'));
       set('uiOversUnit', en ? 'Ov' : 'ওভার');
-      set('uiBat0Name', en ? 'Awaiting Batter' : 'ব্যাটারের তথ্যের অপেক্ষা');
+      (function(){ var nm=''; try{ var rc=crexRosterCache&&crexRosterCache.get&&L&&L.mf&&crexRosterCache.get(L.mf); var d=rc&&(rc.data||rc); var lt=d&&(d.lt||d.lt); if(lt&&L.pf1Fk){ var ent=lt[L.pf1Fk]||lt[String(L.pf1Fk).toUpperCase()]; if(ent) nm=ent.name||ent.n||''; } }catch(e){} set('uiBat0Name', nm|| (en ? 'Awaiting Batter' : '—')); })();
       set('uiBat0Runs', '');
-      set('uiBat1Name', en ? 'Awaiting Batter' : 'ব্যাটারের তথ্যের অপেক্ষা');
+      (function(){ var nm=''; try{ var rc=crexRosterCache&&crexRosterCache.get&&L&&L.mf&&crexRosterCache.get(L.mf); var d=rc&&(rc.data||rc); var lt=d&&(d.lt||d.lt); if(lt&&L.pf2Fk){ var ent=lt[L.pf2Fk]||lt[String(L.pf2Fk).toUpperCase()]; if(ent) nm=ent.name||ent.n||''; } }catch(e){} set('uiBat1Name', nm|| (en ? 'Awaiting Batter' : '—')); })();
       set('uiBat1Runs', '');
       set('uiBowler', L.isBreak ? (en ? 'Innings Break' : 'ইনিংস বিরতি') : (en ? 'Awaiting Bowler' : 'বোলারের তথ্যের অপেক্ষা'));
       const hSk = (window.__crexHud && (!window.__crexHud.mf || !L.mf || String(window.__crexHud.mf) === String(L.mf))) ? (window.__crexHud.strikerKey || '') : '';
@@ -8219,7 +8219,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       if(score){ sub.push('স্কোর '+bn(score)); subEn.push('Score '+score); }
       var line=sub.filter(Boolean).join(' · '), lineEn=subEn.filter(Boolean).join(' · ');
       if(inningsDone){ line+=' • পরবর্তী ইনিংসের অপেক্ষায়'; lineEn+=' • Next Innings Shortly'; }
-      return {tag:'মাঠে বিরতি', title:title, sub:line, tagEn:'MATCH BREAK', titleEn:titleEn, subEn:lineEn};
+      var isInningsBreak=/প্রথম ইনিংসের সমাপ্তি|Innings Break/i.test(title+titleEn); return {tag:(isInningsBreak?'': 'মাঠে বিরতি'), title:title, sub:line, tagEn:(isInningsBreak?'': 'MATCH BREAK'), titleEn:titleEn, subEn:lineEn};
     }
     window.__cricketBreakInfo=__cricketBreakInfo;
     window.__matchPhaseUi=function(phase,ctx){
@@ -8235,7 +8235,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         } else if(phase==='break'){
           try{ if(window.__MS&&window.__MS.phase()==='finished')return; }catch(_eb2){}   /* bncom27: শেষে বিরতি-কার্ড নয় */
           window.__cardsHold=true;
-          window.__mscShow({tag:en?(ctx.tagEn||'MATCH BREAK'):'মাঠে বিরতি',title:en?(ctx.titleEn||'Innings Break'):(ctx.title||'প্রথম ইনিংস শেষ'),sub:en?(ctx.subEn||'Play paused'):(ctx.sub||'মাঠে বিরতি চলছে')});
+          window.__mscShow({tag:en?((/প্রথম ইনিংসের সমাপ্তি|Innings Break/i.test((ctx.title||'')+(ctx.titleEn||'')))?'': (ctx.tagEn||'MATCH BREAK')):((/প্রথম ইনিংসের সমাপ্তি|Innings Break/i.test((ctx.title||'')+(ctx.titleEn||'')))?'': 'মাঠে বিরতি'),title:en?(ctx.titleEn||'Innings Break'):(ctx.title||'প্রথম ইনিংসের সমাপ্তি - ইনিংস বিরতি'),sub:en?(ctx.subEn||'Play paused'):(ctx.sub||'মাঠে বিরতি চলছে')});
         } else {
           window.__cardsHold=false;window.__mscHide();
         }
@@ -10670,7 +10670,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       clearCricketVisuals();
       setCricketPlayersVisible(false);
       renderCricketPendingDom(match);
-      document.getElementById('commText').textContent='দল ও খেলোয়াড়ের তথ্য নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত।';
+      document.getElementById('commText').textContent=''; try{ window.__showFallbackIfNeeded&&window.__showFallbackIfNeeded(); }catch(e){}
       try{ __nmRestore(match&&match.uid); }catch(_enm){}   /* bncom26: নাম উধাও হবে না */
     }
 
