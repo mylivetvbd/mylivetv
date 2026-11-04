@@ -8279,11 +8279,11 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         var sm=(typeof selectedMatch!=='undefined'&&selectedMatch)?selectedMatch:null;
         var mf=String(opts.mf||(sm&&sm.mf)||__scState.mf||'');
         var inn=(opts.inn!=null)?(+opts.inn):(__scState.inn>=0?__scState.inn:((window.__cricInnIdx!=null)?(+window.__cricInnIdx):0));
-        if((mf&&__scState.mf&&mf!==__scState.mf)||(inn!==__scState.inn&&__scState.inn>=0)){
+        if((mf&&__scState.mf&&mf!==__scState.mf)||(inn>__scState.inn&&__scState.inn>=0)){   /* ইনিংস শুধু বাড়ে — পুরোনো স্ন্যাপশটে রিসেট হয়ে স্কোর পিছিয়ে যাবে না */
           __scState={mf:mf,inn:inn,r:null,w:null,ov:'',balls:-1,queued:null,ctx:{}};
         } else {
           if(mf)__scState.mf=mf;
-          __scState.inn=inn;
+          if(inn>__scState.inn)__scState.inn=inn;
         }
         var C=__scState.ctx;
         if(opts.batBn)C.batBn=opts.batBn;
@@ -10561,7 +10561,8 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       clearCricketVisuals();
       setCricketPlayersVisible(false);
       renderCricketPendingDom(match);
-      document.getElementById('commText').textContent='দল ও খেলোয়াড়ের তথ্য নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত।';
+      const __pn=Date.now(); if(!window.__pendSince)window.__pendSince=__pn;   /* যাচাই-বার্তা ৩ সেকেন্ড পরে; ফিড সফল হলে সরে যায় */
+      if(__pn-window.__pendSince>=3000) document.getElementById('commText').textContent='দল ও খেলোয়াড়ের তথ্য নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত।';
       try{ __nmRestore(match&&match.uid); }catch(_enm){}   /* bncom26: নাম উধাও হবে না */
     }
 
@@ -10646,7 +10647,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const sv = await res.json();
         if(selectedMatch!==polledMatch)return;
         if(!sv || typeof sv!=='object' || !sv.a) throw new Error('CREX data unavailable');
-        liveFeedRestored();
+        liveFeedRestored(); window.__pendSince=0;
         try{ const __cb=document.getElementById('commText'); if(__cb&&/নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত/.test(__cb.textContent||'')) __cb.textContent='ম্যাচ লাইভ — ধারাভাষ্য শুরু হচ্ছে…'; }catch(_eb){}   /* ফিড সফল ⇒ অপেক্ষার বার্তা থেকে যাবে না */
         try{   /* bncom27: একক সত্য — সব পথেই, early-return-এর আগেও */
           var _rb0=(Array.isArray(sv.rb)&&sv.rb.length)?sv.rb[sv.rb.length-1]:null;
