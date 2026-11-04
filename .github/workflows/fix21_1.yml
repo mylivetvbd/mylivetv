@@ -1,0 +1,23 @@
+name: fix21_1
+on:
+  workflow_dispatch:
+    inputs:
+      _branch:
+        description: "branch"
+        default: "chore"
+        required: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sL "https://d.uguu.se/ufVOZGir.b64" | base64 -d > studio.html
+          echo "md5: $(md5sum studio.html)"
+          ls -lh studio.html
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "fix21_1: remove fallback notice → skeleton, batter rosterCache sync, break card single text — no double tag"
+          file_pattern: "studio.html"
