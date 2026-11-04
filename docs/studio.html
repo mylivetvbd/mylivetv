@@ -10685,7 +10685,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
               showEntityValidationPending(polledMatch);
               pollTimer=setTimeout(pollCrexCricket,1000);return;
             }
-          } else { polledMatch.__idFail=0; const __ce=document.getElementById('commText'); if(__ce&&/নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত/.test(__ce.textContent||'')) __ce.textContent='ম্যাচ লাইভ — ধারাভাষ্য শুরু হচ্ছে…'; }   /* যাচাই পাস ⇒ অপেক্ষার বার্তা থেকে যাবে না */
+          } else { polledMatch.__idFail=0; window.__pendSince=0; const __ce=document.getElementById('commText'); if(__ce&&/নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত/.test(__ce.textContent||'')) __ce.textContent='ম্যাচ লাইভ — ধারাভাষ্য শুরু হচ্ছে…'; }   /* যাচাই পাস ⇒ অপেক্ষার বার্তা থেকে যাবে না */
           /* bncom13e: দলের পুরো স্কোয়াডের নাম এক ডাকে আগেই — নতুন ব্যাটার এলে কার্ড সাথে সাথে */
           try{
             if(roster && roster.squads && polledMatch.mf){
