@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Download latest release APK
         run: |
@@ -28,4 +30,4 @@ jobs:
           git add docs/MyLiveTV.apk
           git diff --cached --quiet || git commit -m "🌐 Website APK updated"
           git pull --rebase origin main || true
-          git push
+          git push origin HEAD:main
