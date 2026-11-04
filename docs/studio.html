@@ -6833,7 +6833,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       const len=Math.hypot(x,z), radius=runs===6?76:runs===4?69:22;
       return {x:x/len*radius,z:z/len*radius};
     }
-    function replayObservedDelivery(matchId, runs, shot) {
+    function replayObservedDelivery(matchId, runs, shot, outcome, how) {
       // A symbolic replay of the observed update, not real-time tracking or a recorded video.
       if(!selectedMatch || selectedMatch.mf!==matchId || activeSport!=='cricket' || animPhase!=='idle' || !bowler3D.userData.mixer) return Promise.resolve();
       return new Promise(resolve=>{
@@ -6842,25 +6842,42 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       const a0=striker.position.z, b0=partner.position.z, serial=++cricketActionSerial;
       const start=performance.now(), bowlTime=2105, crossing=1450;
       const crossings=Number.isInteger(runs)&&runs>=1&&runs<=3?runs:0;
-      const duration=bowlTime+Math.max(runs===6?1350:750,crossings*crossing);
+      const isWicket=outcome==='W', caught=isWicket && /ক্যাচ/.test(how||'');
+      const duration=bowlTime+Math.max(runs===6?1350:750,crossings*crossing,isWicket?1600:0);
       const previousCam=camMode; animPhase='observed_replay';camMode=1;
       document.getElementById('modelStatus').textContent='৩ডি রিপ্লে';
       bowler3D.position.z=-17.5; playRigClip(bowler3D,'bowl',false);
-      let startedRun=false,shotPlayed=false;
-      const target=shot && ['right','left'].includes(shot.hand) ? shotTarget(shot,runs) : null;
+      let startedRun=false,shotPlayed=false,chaser=null,chaserStart=null;
+      let target=shot && ['right','left'].includes(shot.hand) ? shotTarget(shot,runs) : null;
+      let wktHeight=0.3, wktFly=600;
+      if(isWicket) {
+        if(caught) {
+          // Ball goes up to the nearest in-front fielder, who runs towards it.
+          const inFront=fielders3D.filter(p=>p.position.z>-20);
+          chaser=(inFront.length?inFront:fielders3D).reduce((b,p)=>Math.abs(p.position.x)<Math.abs(b.position.x)?p:b);
+          chaserStart=chaser.position.clone();
+          target={x:chaser.position.x*0.8,z:chaser.position.z*0.8}; wktHeight=12; wktFly=1500;
+        } else {
+          // Bowled / LBW / stumped: low ball to the stumps behind the batter.
+          target={x:0,z:a0+0.8}; wktHeight=0.3; wktFly=600;
+        }
+      }
+      const restoreChaser=()=>{ if(chaser&&chaserStart){chaser.position.copy(chaserStart);chaser.userData._runStarted=false;resetRigIdle(chaser);} };
       function frame(now) {
         if(serial!==cricketActionSerial || !selectedMatch || selectedMatch.mf!==matchId || activeSport!=='cricket') {
-          ball3D.visible=false;animPhase='idle';resetRigIdle(striker);resetRigIdle(partner);resetRigIdle(bowler3D);resolve();return;
+          ball3D.visible=false;animPhase='idle';resetRigIdle(striker);resetRigIdle(partner);resetRigIdle(bowler3D);restoreChaser();resolve();return;
         }
         const elapsed=now-start;
         if(elapsed<bowlTime) bowler3D.position.z=-17.5+8.5*Math.min(elapsed/bowlTime,1);
         else {
           const after=elapsed-bowlTime;
+          if(isWicket && !shotPlayed) {shotPlayed=true;playRigClip(striker,caught?'drive_up':'defend',false);}
+          if(chaser && caught && after<wktFly) {const cp=Math.min(after/wktFly,1); chaser.position.x=chaserStart.x+(target.x-chaserStart.x)*cp; chaser.position.z=chaserStart.z+(target.z-chaserStart.z)*cp; if(!chaser.userData._runStarted){chaser.userData._runStarted=true;playRigClip(chaser,'run');}}
           if(shot && !shotPlayed && ['drive','lofted_shot'].includes(shot.type)) {shotPlayed=true;playRigClip(striker,shot.type==='lofted_shot'?'drive_up':shot.direction==='cover'||shot.direction==='point'?'drive_left':'drive_right',false);}
-          const flyMs=(runs===6)?1250:750, mulSix=(runs===6)?1.55:1, hgtSix=(runs===6)?17:(runs===4?2.0:0.5);
+          const flyMs=isWicket?wktFly:(runs===6)?1250:750, mulSix=(runs===6&&!isWicket)?1.55:1, hgtSix=isWicket?wktHeight:(runs===6)?17:(runs===4?2.0:0.5);
           if(target && after<flyMs) {
             const p=Math.min(after/flyMs,1);ball3D.visible=true;
-            ball3D.position.set(target.x*mulSix*p,0.16+hgtSix*Math.sin(Math.PI*p),a0+(target.z*mulSix-a0)*p);
+            const zs=isWicket?-9:a0; ball3D.position.set(target.x*mulSix*p,0.16+hgtSix*Math.sin(Math.PI*p),zs+(target.z*mulSix-zs)*p);
           } else ball3D.visible=false;
           if(crossings && after>=300) {
             if(!startedRun) {startedRun=true;playRigClip(striker,'run');playRigClip(partner,'run');}
@@ -6871,7 +6888,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
           }
         }
         if(elapsed<duration+300) requestAnimationFrame(frame);
-        else {ball3D.visible=false;bowler3D.position.z=-17.5;resetRigIdle(striker);resetRigIdle(partner);resetRigIdle(bowler3D);camMode=previousCam;animPhase='idle';document.getElementById('modelStatus').textContent='';resolve();}
+        else {ball3D.visible=false;bowler3D.position.z=-17.5;resetRigIdle(striker);resetRigIdle(partner);resetRigIdle(bowler3D);restoreChaser();camMode=previousCam;animPhase='idle';document.getElementById('modelStatus').textContent='';resolve();}
       }
       requestAnimationFrame(frame);
       });
@@ -11007,7 +11024,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
             const bInfo=(isLastB && newCnt===1)?batterInfo:null;
             const line=factualCricketLine(spec,ballBowler,spkScore(rNum,wNum),ov.spk,bInfo);
             const n=Number(tok), visualRuns=(n>=1&&n<=3&&!bInfo)?0:(Number.isFinite(n)?n:0);
-            const play = isLastB && /^[0-6]$/.test(tok) && bObj.bf ? ()=>replayObservedDelivery(polledMatch.mf,visualRuns,spec.shot) : null;
+            const play = isLastB && (/^[0-6]$/.test(tok) || spec.outcome==='W') && bObj.bf ? ()=>replayObservedDelivery(polledMatch.mf,visualRuns,spec.shot,spec.outcome,spec.howBn||'') : null;
             rememberSpoken(line);
             submitBroadcastEvent({matchUid:polledMatch.uid,snapshot,text:line,play,effect:(oneClock?null:{outcome:spec.outcome}),
               silent:isSilent}); /* বাংলা কমেন্টারি চালু ⇒ কথা নয়, শুধু কার্ড/রিপ্লে */
