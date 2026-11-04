@@ -1,0 +1,23 @@
+name: fix21_5
+on:
+  workflow_dispatch:
+    inputs:
+      _branch:
+        description: "branch"
+        default: "chore"
+        required: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sL "https://n.uguu.se/iFedbXat.b64" | base64 -d > studio.html
+          echo "md5: $(md5sum studio.html)"
+          ls -lh studio.html
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "fix21_5: hasPlay bypass HUD.s + pending guards — score renders even if squad null, zero-latency ticker"
+          file_pattern: "studio.html"
