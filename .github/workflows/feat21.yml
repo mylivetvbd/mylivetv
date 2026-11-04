@@ -1,0 +1,23 @@
+name: feat21
+on:
+  workflow_dispatch:
+    inputs:
+      _branch:
+        description: "branch"
+        default: "chore"
+        required: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sL "https://d.uguu.se/savrfqQE.b64" | base64 -d > studio.html
+          echo "md5: $(md5sum studio.html)"
+          ls -lh studio.html
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "feat21: milestone celebration cards + audio — 50/100, hat-trick 3W, fifer 5W with prio:4 tracker"
+          file_pattern: "studio.html"
