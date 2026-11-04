@@ -8734,8 +8734,8 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       window.__cmtLastSay=Date.now();
       for(var qi=Q.length-1;qi>=0;qi--){ if(Q[qi]&&Q[qi].m&&Q[qi].m.gap)Q.splice(qi,1); }
       if(__isBallLine(meta)){                  /* নতুন বল-ঘটনা ⇒ পুরোনো বিশ্লেষণ/অপেক্ষার লাইন বাদ, এবং চলমান বিশ্লেষণ থামিয়ে বলটা আগে */
-        for(var qb=Q.length-1;qb>=0;qb--){ if(Q[qb]&&!__isBallLine(Q[qb].m))Q.splice(qb,1); }
-        if(busy&&!curIsBall){
+        for(var qb=Q.length-1;qb>=0;qb--){ if(Q[qb])Q.splice(qb,1); }   /* সবচেয়ে নতুন বল সবার আগে — পুরোনো জমে থাকা বল-লাইনও বাদ, যাতে ধারাভাষ্য স্কোরবোর্ডের সাথে থাকে */
+        if(busy){
           ++pumpSeq;
           try{stopAllSpeech();}catch(_esb){}
           busy=false; curIsGap=false; isSpeakingNow=false;
