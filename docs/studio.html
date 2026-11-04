@@ -5856,7 +5856,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
                         : curBatHud;
       set('spotRole', L.isFinished ? `${en ? 'Match Ended' : 'খেলা শেষ'} • ${lgDisp}`
                     : L.isBreak ? `${en ? 'Innings Break' : 'ইনিংস বিরতি'} • ${lgDisp}` : lgDisp);
-      set('spotName', en ? `${L.batEng} vs ${L.bowlEng}` : `${L.batBn} বনাম ${L.bowlBn}`);
+      set('spotName', `${teamShort(L.batEng)} vs ${teamShort(L.bowlEng)}`);
       set('spotStat', L.isFinished ? (en ? (statusEn(L.svB || L.resStr) || 'Match Completed') : (statusBn(L.svB || L.resStr) || 'ম্যাচ সমাপ্ত'))
                     : L.isBreak ? (en ? 'Next Innings Shortly' : 'পরবর্তী ইনিংসের অপেক্ষায়')
                     : (strikerDisp ? (en ? `🏏 On Strike: ${strikerDisp}` : `🏏 স্ট্রাইকে: ${strikerDisp}`)
