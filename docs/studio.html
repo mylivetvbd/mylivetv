@@ -256,11 +256,6 @@ Cricket rig, animations, and equipment authored by BrowserCricket, CC0 1.0: http
       gap: 6px; font-size: 11px; color: #cbd5e1; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px;
     }
 
-    /* feat19: Skeleton loader for __dataReady false */
-    #dataReadySkeleton{position:fixed;inset:0;z-index:9999;background:#0a0f1e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .3s}
-    #dataReadySkeleton.hide{opacity:0;pointer-events:none}
-    #dataReadySkeleton .sk{width:280px;height:18px;background:linear-gradient(90deg,#1a2336 25%,#24304d 50%,#1a2336 75%);background-size:400% 100%;animation:skLoad 1.2s ease-in-out infinite;border-radius:8px}
-    @keyframes skLoad{0%{background-position:100% 0}100%{background-position:-100% 0}}
     /* CREX-Style Match Command Center Modal */
     .match-modal {
       position: fixed; inset: 0; z-index: 120;
@@ -427,7 +422,7 @@ html,body{background:#000!important}
 #mlvBoot .mb-ring{width:44px;height:44px;border-radius:50%;border:4px solid #1e293b;border-top-color:#fbbf24;animation:mlvspin 0.9s linear infinite}
 @keyframes mlvspin{to{transform:rotate(360deg)}}
 </style></head>
-<body><div id="dataReadySkeleton"><div class="sk" style="width:180px;height:22px"></div><div class="sk"></div><div class="sk" style="width:200px"></div><div style="color:#7a8aaa;font-size:12px;margin-top:4px">লাইভ ডেটা যাচাই হচ্ছে…</div></div><div id="mlvBoot"><div class="mb-ring"></div><div class="mb-t">🏟️ মাঠের হুল্লোড় 3D স্টুডিও</div><div class="mb-s">মাঠের হুল্লোড় LIVE স্টুডিওতে আপনাকে স্বাগতম 🙏</div></div><div id="studioRoot"><div id="modelStatus" style="position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:901;background:#7f1d1d;color:white;font:12px sans-serif">3D মডেল লোড হচ্ছে...</div>
+<body><div id="mlvBoot"><div class="mb-ring"></div><div class="mb-t">🏟️ মাঠের হুল্লোড় 3D স্টুডিও</div><div class="mb-s">মাঠের হুল্লোড় LIVE স্টুডিওতে আপনাকে স্বাগতম 🙏</div></div><div id="studioRoot"><div id="modelStatus" style="position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:901;background:#7f1d1d;color:white;font:12px sans-serif">3D মডেল লোড হচ্ছে...</div>
 
   <div id="broadcastGround" aria-hidden="true"></div>
   <div id="canvas3dWrap"></div>
@@ -8188,31 +8183,14 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       if(/innings break|end of innings|innings over|break.*innings/.test(B)) inningsDone=true;
       else if(maxOv && balls>=maxOv*6) inningsDone=true;
       else if(wkts>=10) inningsDone=true;
-      var isTest=/^(TEST|FIRST CLASS|MULTI DAY)$/.test(fo);
-      var isT20=/^(T10|T20|T20I|D20|T20S)$/.test(fo);
-      var isODI=/^(ODI|ODM|LIST A)$/.test(fo);
       var title='বিরতি চলছে', titleEn='Play Paused';
       if(/rain|wet|weather|drizzle/.test(B)){ title='বৃষ্টিতে বিরতি'; titleEn='Rain Delay'; }
-      else if(isTest){
-        if(/lunch/.test(B)){ title='লঞ্চ বিরতি'; titleEn='Lunch Break'; }
-        else if(/tea/.test(B)){ title='চা-পানের বিরতি'; titleEn='Tea Break'; }
-        else if(/stumps|end of day/.test(B)){ title='দিনের খেলার সমাপ্তি'; titleEn='Stumps'; }
-        else if(inningsDone){ title='দিনের খেলার সমাপ্তি'; titleEn='Stumps'; }
-      } else if(isT20){
-        if(/time out|strategic/.test(B)){ title='কৌশলগত বিরতি'; titleEn='Strategic Time-out'; }
-        else if(inningsDone){ title='প্রথম ইনিংসের সমাপ্তি - বিরতি চলছে'; titleEn='Innings Break'; }
-      } else if(isODI){
-        if(/drink|water/.test(B)){ title='পানির বিরতি'; titleEn='Drinks Break'; }
-        else if(/lunch|dinner/.test(B)){ title='লাঞ্চ বিরতি'; titleEn='Lunch Break'; }
-        else if(inningsDone){ title='প্রথম ইনিংসের সমাপ্তি - বিরতি চলছে'; titleEn='Innings Break'; }
-      } else {
-        if(/drink|water/.test(B)){ title='পানি পানের বিরতি'; titleEn='Drinks Break'; }
-        else if(/lunch/.test(B)){ title='লাঞ্চ বিরতি'; titleEn='Lunch Break'; }
-        else if(/tea/.test(B)){ title='চা বিরতি'; titleEn='Tea Break'; }
-        else if(/stumps|end of day/.test(B)){ title='দিনের খেলা শেষ'; titleEn='Stumps'; }
-        else if(/time out|strategic/.test(B)){ title='কৌশলগত বিরতি'; titleEn='Strategic Timeout'; }
-        else if(inningsDone){ title=(Number(o.innings||0)===0?'প্রথম ইনিংস শেষ':'ইনিংস শেষ'); titleEn=(Number(o.innings||0)===0?'1st Innings Complete':'Innings Break'); }
-      }
+      else if(/drink|water/.test(B)){ title='পানি পানের বিরতি'; titleEn='Drinks Break'; }
+      else if(/lunch/.test(B)){ title='লাঞ্চ বিরতি'; titleEn='Lunch Break'; }
+      else if(/tea/.test(B)){ title='চা বিরতি'; titleEn='Tea Break'; }
+      else if(/stumps|end of day/.test(B)){ title='দিনের খেলা শেষ'; titleEn='Stumps'; }
+      else if(/time out|strategic/.test(B)){ title='কৌশলগত বিরতি'; titleEn='Strategic Timeout'; }
+      else if(inningsDone){ title=(Number(o.innings||0)===0?'প্রথম ইনিংস শেষ':'ইনিংস শেষ'); titleEn=(Number(o.innings||0)===0?'1st Innings Complete':'Innings Break'); }
       var sub=[], subEn=[];
       sub.push(fo?fo:''); subEn.push(fo?fo:'');
       sub.push(bn(ov)+' ওভার শেষে'); subEn.push('After '+ov+' Ov');
@@ -8948,14 +8926,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
           var ms2=String(HUD.s2||'').match(/^(\d+)\s*\(\s*(\d+)/); if(ms2&&(d2r||d2b))HUD.s2Live=(+ms2[1]+d2r)+' ('+(+ms2[2]+d2b)+')';
         }
       }
-      /* feat19: 5. Score validation before commit */
-      try{
-        if(HUD.s){
-          var vm=String(HUD.s).match(/^\s*(\d+)\s*\/\s*(\d+)/);
-          if(vm){ var vr=parseInt(vm[1],10), vw=parseInt(vm[2],10); var vo=String(HUD.overs||'0.0'); if(window.__cacheHUD&&!window.__cacheHUD.validate(vr,vw,vo)){ HUD.s=window.__crexHud?s.__crexHud.s||HUD.s:HUD.s; /* keep previous valid */ } }
-        }
-      }catch(_val){}
-      if(HUD.s||HUD.tokens.length){HUD.ts=Date.now(); window.__bnCom.ok=true; window.__bnCom.lastData=Date.now(); try{ window.__cacheHUD&&window.__cacheHUD.save(); }catch(e){} }
+      if(HUD.s||HUD.tokens.length){HUD.ts=Date.now(); window.__bnCom.ok=true; window.__bnCom.lastData=Date.now();}
       /* feat18: detect new batter & bowler change after absorb */
       try{
         var curPf1=String(HUD.pf1||''), curPf2=String(HUD.pf2||''), curBow=String(HUD.bowler||HUD.bdKey||HUD.curBf||''), curOv=String(HUD.tokOv||HUD.overs||'');
@@ -8972,33 +8943,6 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     }catch(e){}
   }
   window.__crexHudFresh=function(){return !!(window.__crexHud&&(Date.now()-(window.__crexHud.ts||0))<90000);};
-  /* feat19: 2. Debounce 800ms + 3. Cache Hydration + 5. Score Validation */
-  window.__dataReadyDebounce=null;
-  window.__showFallbackIfNeeded=function(){
-    clearTimeout(window.__dataReadyDebounce);
-    var ready=(window.__dataReady&&window.__dataReady());
-    if(ready){
-      var sk=document.getElementById('dataReadySkeleton');
-      if(sk) sk.classList.add('hide');
-    } else {
-      window.__dataReadyDebounce=setTimeout(function(){
-        var r2=(window.__dataReady&&window.__dataReady());
-        if(!r2){ var sk2=document.getElementById('dataReadySkeleton'); if(sk2) sk2.classList.remove('hide'); }
-      },800);
-    }
-  };
-  window.__cacheHUD={
-    save:function(){ try{ var h=window.__crexHud, m=(window.__MS&&window.__MS.info?window.__MS.info():null); if(h&&h.ts) localStorage.setItem('mlv_hud_cache', JSON.stringify(h)); if(m&&m.ts) localStorage.setItem('mlv_ms_cache', JSON.stringify(m)); }catch(e){} },
-    load:function(){ try{ var hc=localStorage.getItem('mlv_hud_cache'); if(hc){ var o=JSON.parse(hc); if(o&&o.ts&&(Date.now()-o.ts<600000)) { window.__crexHud=Object.assign(window.__crexHud||{}, o); window.__crexHud.ts=Date.now(); } } var mc=localStorage.getItem('mlv_ms_cache'); if(mc){ var mo=JSON.parse(mc); if(mo&&mo.ts) { /* hydrate via __MS if available */ } } var ready=(window.__dataReady&&window.__dataReady()); var sk=document.getElementById('dataReadySkeleton'); if(ready&&sk) sk.classList.add('hide'); }catch(e){} },
-    validate:function(runs,wkts,oversStr){ try{ var ov=String(oversStr||'0.0'); var p=ov.split('.'), overN=parseInt(p[0]||'0',10), ballN=parseInt(p[1]||'0',10); if(ballN<0||ballN>5) return false; if(wkts<0||wkts>10) return false; if(runs<0) return false; var H=window.__crexHud; if(H&&H.s){ var prev=H.s.match(/^(\d+)\/(\d+)/); if(prev){ var pr=parseInt(prev[1],10), pw=parseInt(prev[2],10); if(runs<pr) return false; if(wkts<pw-1) return false; if(wkts>pw+2) return false; } var prevO=H.overs||'0.0'; var pp=prevO.split('.'), pvO=parseInt(pp[0]||'0',10)*6+parseInt(pp[1]||'0',10); var curO=overN*6+ballN; if(curO<pvO) return false; if(curO===pvO && wkts>pw+1) return false; } return true; }catch(e){ return true; } }
-  };
-  /* auto-hydrate on load + save on beforeunload */
-  try{ window.__cacheHUD.load(); }catch(e){}
-  window.addEventListener('beforeunload', function(){ try{ window.__cacheHUD.save(); }catch(e){} });
-  setInterval(function(){ try{ if(window.__crexHud&&window.__crexHud.ts) window.__cacheHUD.save(); }catch(e){} },5000);
-  /* hook __dataReady to show/hide skeleton on each poll */
-  setInterval(function(){ try{ window.__showFallbackIfNeeded(); }catch(e){} },800);
-
   window.__crexHudApply=function(ctx){
     try{
       if(ctx)window.__crexCtx=ctx;
@@ -9196,8 +9140,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       var go=function(){ var l=lineOf(x); if(l){window.__bnCom.spoke=true;speak(l,{oc:x.b,sc:x.s,ov:x.o,mf:mf});} };
       if(x.b==='W'&&!x._wd){                       /* উইকেট ⇒ ধরন আনতে ওই ওভারটা একবার দেখি */
         var ov=Math.floor(parseFloat(x.rawO||x.o));
-        /* feat19: 4. Async sync — Promise style, but keep callback compat */
-        (async function(){ try{ await new Promise(function(res){ fetchWicketTypes(mf,x.inn,ov,function(){ x._wd=wdFor(x.rawO)||wdFor(x.o); res(); }); }); go(); }catch(e){ go(); } try{window.__crexHudApply();}catch(_ew){} })();
+        fetchWicketTypes(mf,x.inn,ov,function(){ x._wd=wdFor(x.rawO)||wdFor(x.o); go(); try{window.__crexHudApply();}catch(_ew){} });
       } else go();
       try{ if(window.__cktOverPlan)window.__cktOverPlan({o:x.rawO||x.o,s:x.s}); }catch(_e){}
     });
@@ -9300,7 +9243,6 @@ window.__MS=(function(){
     if(r.type==='abandoned') return 'ম্যাচ পরিত্যক্ত';
     return '';
   }
-  function ok(){ try{ return !!(S.mf&&S.ts&&(Date.now()-S.ts<90000)); }catch(e){ return false; } }
   function computePhase(n,res,isBreak){
     if(res)return 'finished';
     if(n>=2)return 'inn2';
@@ -9344,7 +9286,7 @@ window.__MS=(function(){
       S.result=res; S.resultBn=resultBn(res);
       if(o.lastBall)S.lastBall=String(o.lastBall);
       if(ph!==_prevPh&&_prevPh!=='pre'){ try{ if(window.__bnComFlush)window.__bnComFlush(); }catch(_ef){} }   /* ফেজ বদল ⇒ পুরোনো অপেক্ষমাণ লাইন বাতিল */
-      S.ts=Date.now(); S.src=String(o.src||'poll'); try{ window.__cacheHUD&&window.__cacheHUD.save(); window.__showFallbackIfNeeded&&window.__showFallbackIfNeeded(); }catch(e){}
+      S.ts=Date.now(); S.src=String(o.src||'poll');
       /* আত্মবিশ্বাস: ফলের সঙ্গে স্কোর মিলছে কি না */
       S.confidence='high';
       if(res&&res.type==='runs'&&i1&&i2){ if(Math.abs(i1.runs-i2.runs)!==res.n)S.confidence='low'; }
@@ -9398,9 +9340,8 @@ window.__MS=(function(){
     }catch(e){ return true; }
   }
   return {update:update,info:info2,sayGate:sayGate,factCheck:factCheck,get:function(){return S;},ord:ORD,
-          phase:function(){return S.phase;},limitOf:limitOf,parseInn:parseInn,parseResult:parseResult,resultBn:resultBn,bd:bd,ok:ok};
+          phase:function(){return S.phase;},limitOf:limitOf,parseInn:parseInn,parseResult:parseResult,resultBn:resultBn,bd:bd};
 })();
-window.__dataReady=function(){ try{ var crexOk=!!(window.__crexHudFresh&&window.__crexHudFresh()); var bnOk=!!(window.__bnCom&&window.__bnCom.ok); var msOk=!!(window.__MS&&window.__MS.ok&&window.__MS.ok()); return !!(crexOk || (bnOk && msOk)); }catch(e){ return false; } };
 /* ===== bncom22: ওভার শেষে নিজস্ব পরিস্থিতি-কমেন্টারি (দল + স্কোর + ওভার + রান রেট + উইকেট/ওভার বাকি) ===== */
 window.__cktTeamName=function(fk,fb){
   try{
@@ -11750,7 +11691,6 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
   ].map(function(p){ return [new RegExp('\\b'+p[0].replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi'), p[1]]; });
   window.__bnFix = function(t){
     if(!t || !/[A-Za-z]/.test(t)) return t;
-    t=t.replace(/Aucklad/gi,'Auckland');
     var D=window.__bnDict;
     for(var i=0;i<D.length;i++) t=t.replace(D[i][0],D[i][1]);
     return t;
@@ -11909,7 +11849,6 @@ window.__spellFix=function(t){
     t=t.replace(/ডিআরএস/g,'ডি আর এস');
     t=t.replace(/ফুলিশ|ফুলিস/g,'ফুল লেংথ');
     t=t.replace(/আরাউন্ড দ্য উইকেট/g,'রাউন্ড দ্য উইকেট');
-    t=t.replace(/Aucklad/gi,'Auckland');
     t=t.replace(/অফ স্পিন/g,'অফ-স্পিন').replace(/লেগ স্পিন/g,'লেগ-স্পিন').replace(/পাওয়ার প্লে/g,'পাওয়ার-প্লে');
     t=t.replace(/পজেশন/g,'পজেশন').replace(/প্রেসিং/g,'প্রেসিং');
     t=t.replace(/\s*\/\s*/g,' ');            /* বাকি স্ল্যাশ মুখে পড়া যায় না */
