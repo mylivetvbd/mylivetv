@@ -1,0 +1,108 @@
+name: fix-startio
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write app-ads.txt
+        run: |
+          echo 'start.io, 209804683, DIRECT' > app-ads.txt
+      - name: Fix Ads.kt
+        run: |
+          cat > android-app/app/src/main/java/com/mylivetv/app/Ads.kt << 'EOF'
+          package com.mylivetv.app
+
+          import android.app.Activity
+          import android.content.Context
+          import android.widget.LinearLayout
+          import com.startapp.sdk.adsbase.Ad
+          import com.startapp.sdk.adsbase.StartAppAd
+          import com.startapp.sdk.adsbase.StartAppSDK
+          import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener
+          import com.startapp.sdk.adsbase.adlisteners.AdEventListener
+          import com.startapp.sdk.ads.banner.Banner
+
+          object Ads {
+              const val STARTAPP_APP_ID = "209804683"
+              const val INTERSTITIAL_EVERY = 4
+
+              private var interstitial: StartAppAd? = null
+              private var interstitialReady = false
+              private var clickCount = 0
+              private var appOpenShown = false
+              @JvmField var sdkReady = false
+
+              fun init(ctx: Context) {
+                  loadInterstitial(ctx)
+              }
+
+              fun attachBanner(act: Activity, container: LinearLayout) {
+                  val banner = Banner(act)
+                  container.removeAllViews()
+                  container.addView(banner)
+                  banner.loadAd()
+              }
+
+              private fun loadInterstitial(ctx: Context) {
+                  val ad = StartAppAd(ctx)
+                  interstitialReady = false
+                  ad.loadAd(object : AdEventListener {
+                      override fun onReceiveAd(a: Ad) {
+                          interstitial = ad
+                          interstitialReady = true
+                      }
+                      override fun onFailedToReceiveAd(a: Ad?) {
+                          interstitial = null
+                          interstitialReady = false
+                      }
+                  })
+              }
+
+              fun maybeShowInterstitial(act: Activity, after: () -> Unit) {
+                  clickCount++
+                  val ad = interstitial
+                  if (clickCount % INTERSTITIAL_EVERY == 0 && ad != null && interstitialReady) {
+                      var done = false
+                      fun finish() {
+                          if (!done) {
+                              done = true
+                              interstitial = null
+                              interstitialReady = false
+                              loadInterstitial(act)
+                              after()
+                          }
+                      }
+                      val shown = ad.showAd(object : AdDisplayListener {
+                          override fun adHidden(a: Ad?) { finish() }
+                          override fun adDisplayed(a: Ad?) {}
+                          override fun adClicked(a: Ad?) {}
+                          override fun adNotDisplayed(a: Ad?) { finish() }
+                      })
+                      if (!shown) finish()
+                  } else {
+                      if (ad == null) loadInterstitial(act)
+                      after()
+                  }
+              }
+
+              fun showAppOpen(act: Activity) {
+                  if (appOpenShown) return
+                  appOpenShown = true
+                  val ad = StartAppAd(act)
+                  ad.loadAd(object : AdEventListener {
+                      override fun onReceiveAd(a: Ad) { ad.showAd() }
+                      override fun onFailedToReceiveAd(a: Ad?) {}
+                  })
+              }
+          }
+          EOF
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "fix: Start.io mismatch — app-ads.txt + Ads.kt single init"
+          file_pattern: "app-ads.txt android-app/app/src/main/java/com/mylivetv/app/Ads.kt"
