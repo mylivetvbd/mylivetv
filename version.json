@@ -1,6 +1,6 @@
 {
-  "versionCode": 30,
-  "versionName": "2.9.11",
-  "apk": "https://github.com/mylivetvbd/mylivetv/releases/download/v2.9.11/MyLiveTV-v2.9.11.apk",
-  "notes": "Start.io বিজ্ঞাপন সেটআপ ঠিক করা হয়েছে (একটাই SDK init)। আপডেট করুন।"
+  "versionCode": 31,
+  "versionName": "2.9.12",
+  "apk": "https://github.com/mylivetvbd/mylivetv/releases/download/v2.9.12/MyLiveTV-v2.9.12.apk",
+  "notes": "স্টুডিও এখন ছোট উইন্ডোতে (PiP) ভেসে থাকবে। আপডেট করুন।"
 }
