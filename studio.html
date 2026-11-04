@@ -8675,6 +8675,8 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   var pumpT=0;
   var busySince=0;
   var curIsGap=false;
+  var curIsBall=false;                         /* বল-ঘটনার লাইন চলছে কিনা (অগ্রাধিকার) */
+  function __isBallLine(m){ return !!(m&&m.oc!=null&&String(m.oc)!==''); }
   var pumpSeq=0;
   function pump(){
     if(window.__speakMute){Q.length=0;busy=false;curIsGap=false;isSpeakingNow=false;return;}   /* bncom15 */
@@ -8688,6 +8690,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     if(pumpT){clearTimeout(pumpT);pumpT=0;}
     var it=Q.shift(); var mySeq=++pumpSeq; busy=true; busySince=Date.now();
     curIsGap=!!(it&&it.m&&it.m.gap);
+    curIsBall=__isBallLine(it&&it.m);
     var line=(it&&it.l!=null)?it.l:String(it);
     try{ if(window.__CMT&&window.__CMT.norm)line=window.__CMT.norm(line); }catch(_en){}   /* bncom28: বাংলা অঙ্ক, ইমোজি বাদ */
     var qRealCnt=Q.filter(function(q){return !(q&&q.m&&q.m.gap);}).length;
@@ -8730,6 +8733,14 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     } else {
       window.__cmtLastSay=Date.now();
       for(var qi=Q.length-1;qi>=0;qi--){ if(Q[qi]&&Q[qi].m&&Q[qi].m.gap)Q.splice(qi,1); }
+      if(__isBallLine(meta)){                  /* নতুন বল-ঘটনা ⇒ পুরোনো বিশ্লেষণ/অপেক্ষার লাইন বাদ, এবং চলমান বিশ্লেষণ থামিয়ে বলটা আগে */
+        for(var qb=Q.length-1;qb>=0;qb--){ if(Q[qb]&&!__isBallLine(Q[qb].m))Q.splice(qb,1); }
+        if(busy&&!curIsBall){
+          ++pumpSeq;
+          try{stopAllSpeech();}catch(_esb){}
+          busy=false; curIsGap=false; isSpeakingNow=false;
+        }
+      }
       if(busy&&curIsGap){
         ++pumpSeq;
         try{stopAllSpeech();}catch(_es){}
