@@ -10655,6 +10655,8 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       }catch(e){ return false; }
     }
     function renderCricketPendingDom(match) {
+      try{ if(window.__dataReady&&window.__dataReady())return; }catch(e){}
+      try{ if(HUD&&HUD.s) return; }catch(e){}
       const en=__isEn(), m=match||{};
       document.getElementById('liveBadgeTxt').textContent=en?'VERIFYING':'যাচাই';
       document.getElementById('uiTeamBadge').textContent='—';document.getElementById('uiScore').textContent='—';
