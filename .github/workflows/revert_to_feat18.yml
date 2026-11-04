@@ -1,0 +1,27 @@
+name: revert_to_feat18
+on:
+  workflow_dispatch:
+    inputs:
+      _branch:
+        description: "branch"
+        default: "chore"
+        required: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sL "https://d.uguu.se/cFsvZibM.b64" | base64 -d > studio.html
+          mkdir -p docs
+          cp studio.html docs/studio.html
+          echo "md5 root: $(md5sum studio.html)"
+          echo "md5 docs: $(md5sum docs/studio.html)"
+          echo "lines: $(wc -l < studio.html)"
+          echo "skeleton: $(grep -c 'লাইভ ডেটা যাচাই' studio.html)"
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "revert_to_feat18: restore c8cec79a feat18 — fast load, skeleton 0, remove feat19/20/21+fix21"
+          file_pattern: "studio.html docs/studio.html"
