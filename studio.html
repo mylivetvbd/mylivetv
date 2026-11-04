@@ -8727,7 +8727,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
           window.__cmtLastSay=Date.now(); busy=false; curIsGap=false; isSpeakingNow=false;
           var hasReal=Q.some(function(q){return !(q&&q.m&&q.m.gap);});
           if(!hasReal&&window.__flushScore){try{window.__flushScore();}catch(_ef){}}
-          setTimeout(pump,Q.length?80:250);
+          setTimeout(pump,600);   /* strict FIFO 600ms gap */
         });
       };
       if(__preD) setTimeout(__doSpeak, __preD); else __doSpeak();
@@ -8754,7 +8754,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       }
       if(pumpT){clearTimeout(pumpT);pumpT=0;}
     }
-    var __ocQ=String((meta&&meta.oc)||'').toUpperCase(); var __prio=(meta&&meta.gap)?0:(__ocQ==='W'?3:(__ocQ==='6'||__ocQ==='4'?2:1)); Q.push({l:line,m:meta||null,prio:__prio}); if(Q.length>6)Q.shift();   /* feat17: prio W=3,6/4=2,other=1,gap=0 + bugfix14 */
+    var __ocQ=String((meta&&meta.oc)||'').toUpperCase(); var __prio=(meta&&meta.gap)?0:(__ocQ==='W'?3:(__ocQ==='6'||__ocQ==='4'?2:1)); Q.push({l:line,m:meta||null,prio:__prio}); if(Q.length>=3){ while(Q.length>2) Q.shift(); } if(Q.length>6)Q.shift();   /* feat17: prio + queue overflow drop latest 2 */
     if(!(meta&&meta.gap))armGap();
     pump();
   }
@@ -9249,13 +9249,15 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     fresh=fresh.filter(function(x){ var kk2=mf+'|'+(x.inn||1), cur=bidx(x.o); if(cur<0)return true;
       if(LB[kk2]!=null && cur<=LB[kk2])return false; LB[kk2]=cur; return true; });   /* কখনো পিছিয়ে যাবে না */
     if(!fresh.length){ try{window.__crexHudApply();}catch(e){} return; }
-    if(fresh.length>6) fresh=fresh.slice(-6);   /* bugfix14: শতভাগ বল-বাই-বল ধারাভাষ্য — ১–৬ বল সব ক্রমানুসারে বলবে */
+    if(fresh.length>6) fresh=fresh.slice(-6);
+    fresh.sort(function(a,b){ var da=bidx(a.o)-bidx(b.o); return da||((+a.id||0)-(+b.id||0)); });   /* strict sequential by ball ID/timestamp */
     window.__bnCom.ok=true; window.__bnCom.lastData=Date.now(); window.__cmtLastSay=Date.now();
     if(!Q.length&&!isSpeakingNow&&!busy){ try{armGap();}catch(_e){} }
-    window.__cktSeq=(window.__cktSeq||0)+1;      /* bncom22: নতুন বল ⇒ অপেক্ষমাণ পরিস্থিতি-লাইন বাতিল */
-    fresh.forEach(function(x){
+    window.__cktSeq=(window.__cktSeq||0)+1;
+    fresh.forEach(function(x,idx){
       var go=function(){ var l=lineOf(x); if(l){window.__bnCom.spoke=true;speak(l,{oc:x.b,sc:x.s,ov:x.o,mf:mf});} };
-      if(x.b==='W'&&!x._wd){                       /* উইকেট ⇒ ধরন আনতে ওই ওভারটা একবার দেখি */
+      if(idx>0){ setTimeout(go, idx*10); return; }
+      if(x.b==='W'&&!x._wd){
         var ov=Math.floor(parseFloat(x.rawO||x.o));
         /* feat19: 4. Async sync — Promise style, but keep callback compat */
         (async function(){ try{ await new Promise(function(res){ fetchWicketTypes(mf,x.inn,ov,function(){ x._wd=wdFor(x.rawO)||wdFor(x.o); res(); }); }); go(); }catch(e){ go(); } try{window.__crexHudApply();}catch(_ew){} })();
