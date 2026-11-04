@@ -9036,6 +9036,8 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   window.__showFallbackIfNeeded=function(){
     clearTimeout(window.__dataReadyDebounce);
     var ready=(window.__dataReady&&window.__dataReady());
+    try{ if(HUD&&HUD.s) ready=true; }catch(e){}
+    try{ if(HUD&&HUD.tokens&&HUD.tokens.length) ready=true; }catch(e){}
     if(ready){
       var sk=document.getElementById('dataReadySkeleton');
       if(sk) sk.classList.add('hide');
@@ -10664,7 +10666,10 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       document.getElementById('spotStat').textContent=en?'Awaiting verified feed':'দল ও স্কোর যাচাইয়ের অপেক্ষা';
     }
     function showEntityValidationPending(match) {
-      try{ if(window.__crexHudFresh&&window.__crexHudFresh())return; }catch(_e){}  /* CREX-HUD সজীব ⇒ স্কোর "—" নয় */
+      try{ if(window.__dataReady&&window.__dataReady())return; }catch(_e){}
+      try{ if(window.__crexHudFresh&&window.__crexHudFresh())return; }catch(_e){}
+      try{ if(HUD&&HUD.s) return; }catch(_e){}
+      try{ if(HUD&&HUD.tokens&&HUD.tokens.length) return; }catch(_e){}  /* CREX/HUD/MS সচল ⇒ pending নিষ্ক্রিয় */
       window.__lastUiMode = { kind: 'cric_pending', match: match };
       resetBroadcastQueue();cricketActionSerial++;animPhase='idle';ball3D.visible=false;previousCrexSnapshot=null;lastCrexBallSig='';
       clearCricketVisuals();
@@ -10772,7 +10777,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const hasPlay=crexHasPlay(sv);
         let identity=null;
         if(!hasPlay && (polledMatch.confirmedPlay || ['finished','stumps'].includes(polledMatch.state))) {
-          showEntityValidationPending(polledMatch);pollTimer=setTimeout(pollCrexCricket,1000);return;
+          showEntityValidationPending(polledMatch);pollTimer=setTimeout(pollCrexCricket,800);return;
         }
         if(hasPlay) {
           let roster=null;
@@ -10790,7 +10795,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
             if(polledMatch.__idFail>=3) identity=validateCricketScoreOnly(sv,[polledMatch.t1f,polledMatch.t2f]);
             if(!identity){
               showEntityValidationPending(polledMatch);
-              pollTimer=setTimeout(pollCrexCricket,1000);return;
+              pollTimer=setTimeout(pollCrexCricket,800);return;
             }
           } else { polledMatch.__idFail=0; }
           /* bncom13e: দলের পুরো স্কোয়াডের নাম এক ডাকে আগেই — নতুন ব্যাটার এলে কার্ড সাথে সাথে */
@@ -10839,7 +10844,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const previousHud=captureBroadcastHud();
 
         if(hasPlay && (!crexTeamCache[batFk] || !crexTeamCache[bowlFk])) {
-          showEntityValidationPending(polledMatch);pollTimer=setTimeout(pollCrexCricket,1000);return;
+          showEntityValidationPending(polledMatch);pollTimer=setTimeout(pollCrexCricket,800);return;
         }
         const batObj = crexTeamCache[batFk] || { n: selectedMatch.t1 || 'Team 1', sn: batFk || 'T1', uc: '' };
         const bowlObj = crexTeamCache[bowlFk] || { n: selectedMatch.t2 || 'Team 2', sn: bowlFk || 'T2', uc: '' };
@@ -10867,7 +10872,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
               `${safeHome} বনাম ${safeAway} ম্যাচের অপেক্ষায় আছি আমরা। ${count.spoken}`;
             document.getElementById('commText').textContent=line; await speakBangla(line); isSpeakingNow=false;
           }
-          if (selectedMatch && selectedMatch.sport==='cricket') pollTimer=setTimeout(pollCrexCricket,liveFailures ? 500 : 1500);
+          if (selectedMatch && selectedMatch.sport==='cricket') pollTimer=setTimeout(pollCrexCricket,liveFailures ? 500 : 800);
           return;
         }
         if (hasPlay) {
@@ -10876,7 +10881,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           try{ if(window.__brkStop&&window.__brkActive==='upcoming')window.__brkStop(); }catch(_eb){}   /* bncom30 */
         } else if (!sv.j && !sv.k) {
           document.getElementById('commText').textContent='স্কোর তথ্যের অপেক্ষায় আছি।';
-          if (selectedMatch && selectedMatch.sport==='cricket') pollTimer=setTimeout(pollCrexCricket,liveFailures ? 500 : 1500);
+          if (selectedMatch && selectedMatch.sport==='cricket') pollTimer=setTimeout(pollCrexCricket,liveFailures ? 500 : 800);
           return;
         }
         document.getElementById('uiOvers').parentElement.style.display='';
@@ -11138,7 +11143,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           }
         }
       } catch (e) { isSpeakingNow = false; liveFeedFailed('cricket'); }
-      if (selectedMatch && selectedMatch.sport === 'cricket') pollTimer = setTimeout(pollCrexCricket, liveFailures ? 500 : 1500);
+      if (selectedMatch && selectedMatch.sport === 'cricket') pollTimer = setTimeout(pollCrexCricket, liveFailures ? 500 : 800);
     }
 
     function validateSoccerTeams(comps, match) {
