@@ -8973,7 +8973,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   window.__cacheHUD={
     save:function(){ try{ var h=window.__crexHud, m=(window.__MS&&window.__MS.info?window.__MS.info():null); if(h&&h.ts) localStorage.setItem('mlv_hud_cache', JSON.stringify(h)); if(m&&m.ts) localStorage.setItem('mlv_ms_cache', JSON.stringify(m)); }catch(e){} },
     load:function(){ try{ var hc=localStorage.getItem('mlv_hud_cache'); if(hc){ var o=JSON.parse(hc); if(o&&o.ts&&(Date.now()-o.ts<600000)) { window.__crexHud=Object.assign(window.__crexHud||{}, o); window.__crexHud.ts=Date.now(); } } var mc=localStorage.getItem('mlv_ms_cache'); if(mc){ var mo=JSON.parse(mc); if(mo&&mo.ts) { /* hydrate via __MS if available */ } } var ready=(window.__dataReady&&window.__dataReady()); var sk=document.getElementById('dataReadySkeleton'); if(ready&&sk) sk.classList.add('hide'); }catch(e){} },
-    validate:function(runs,wkts,oversStr){ try{ var ov=String(oversStr||'0.0'); var p=ov.split('.'), overN=parseInt(p[0]||'0',10), ballN=parseInt(p[1]||'0',10); if(ballN<0||ballN>5) return false; if(wkts<0||wkts>10) return false; if(runs<0) return false; var H=window.__crexHud; if(H&&H.s){ var prev=H.s.match(/^(\d+)\/(\d+)/); if(prev){ var pr=parseInt(prev[1],10), pw=parseInt(prev[2],10); if(runs<pr) return false; if(wkts<pw-1) return false; } var prevO=H.overs||'0.0'; var pp=prevO.split('.'), pvO=parseInt(pp[0]||'0',10)*6+parseInt(pp[1]||'0',10); var curO=overN*6+ballN; if(curO<pvO) return false; } return true; }catch(e){ return true; } }
+    validate:function(runs,wkts,oversStr){ try{ var ov=String(oversStr||'0.0'); var p=ov.split('.'), overN=parseInt(p[0]||'0',10), ballN=parseInt(p[1]||'0',10); if(ballN<0||ballN>5) return false; if(wkts<0||wkts>10) return false; if(runs<0) return false; var H=window.__crexHud; if(H&&H.s){ var prev=H.s.match(/^(\d+)\/(\d+)/); if(prev){ var pr=parseInt(prev[1],10), pw=parseInt(prev[2],10); if(runs<pr) return false; if(wkts<pw-1) return false; if(wkts>pw+2) return false; } var prevO=H.overs||'0.0'; var pp=prevO.split('.'), pvO=parseInt(pp[0]||'0',10)*6+parseInt(pp[1]||'0',10); var curO=overN*6+ballN; if(curO<pvO) return false; if(curO===pvO && wkts>pw+1) return false; } return true; }catch(e){ return true; } }
   };
   /* auto-hydrate on load + save on beforeunload */
   try{ window.__cacheHUD.load(); }catch(e){}
@@ -9383,7 +9383,7 @@ window.__MS=(function(){
   return {update:update,info:info2,sayGate:sayGate,factCheck:factCheck,get:function(){return S;},ord:ORD,
           phase:function(){return S.phase;},limitOf:limitOf,parseInn:parseInn,parseResult:parseResult,resultBn:resultBn,bd:bd,ok:ok};
 })();
-window.__dataReady=function(){ try{ return !!(window.__bnCom&&window.__bnCom.ok&&window.__crexHudFresh&&window.__crexHudFresh()&&window.__MS&&window.__MS.ok&&window.__MS.ok()); }catch(e){ return false; } };
+window.__dataReady=function(){ try{ var crexOk=!!(window.__crexHudFresh&&window.__crexHudFresh()); var bnOk=!!(window.__bnCom&&window.__bnCom.ok); var msOk=!!(window.__MS&&window.__MS.ok&&window.__MS.ok()); return !!(crexOk || (bnOk && msOk)); }catch(e){ return false; } };
 /* ===== bncom22: ওভার শেষে নিজস্ব পরিস্থিতি-কমেন্টারি (দল + স্কোর + ওভার + রান রেট + উইকেট/ওভার বাকি) ===== */
 window.__cktTeamName=function(fk,fb){
   try{
@@ -11733,6 +11733,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
   ].map(function(p){ return [new RegExp('\\b'+p[0].replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi'), p[1]]; });
   window.__bnFix = function(t){
     if(!t || !/[A-Za-z]/.test(t)) return t;
+    t=t.replace(/Aucklad/gi,'Auckland');
     var D=window.__bnDict;
     for(var i=0;i<D.length;i++) t=t.replace(D[i][0],D[i][1]);
     return t;
@@ -11891,6 +11892,7 @@ window.__spellFix=function(t){
     t=t.replace(/ডিআরএস/g,'ডি আর এস');
     t=t.replace(/ফুলিশ|ফুলিস/g,'ফুল লেংথ');
     t=t.replace(/আরাউন্ড দ্য উইকেট/g,'রাউন্ড দ্য উইকেট');
+    t=t.replace(/Aucklad/gi,'Auckland');
     t=t.replace(/অফ স্পিন/g,'অফ-স্পিন').replace(/লেগ স্পিন/g,'লেগ-স্পিন').replace(/পাওয়ার প্লে/g,'পাওয়ার-প্লে');
     t=t.replace(/পজেশন/g,'পজেশন').replace(/প্রেসিং/g,'প্রেসিং');
     t=t.replace(/\s*\/\s*/g,' ');            /* বাকি স্ল্যাশ মুখে পড়া যায় না */
