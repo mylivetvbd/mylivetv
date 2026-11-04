@@ -10780,7 +10780,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const teamPair = String(sv.a || '').split('.');
         const hasPlay=crexHasPlay(sv);
         let identity=null;
-        if(!hasPlay && (polledMatch.confirmedPlay || ['finished','stumps'].includes(polledMatch.state))) {
+        if(!hasPlay && !HUD.s && (polledMatch.confirmedPlay || ['finished','stumps'].includes(polledMatch.state))) {
           showEntityValidationPending(polledMatch);pollTimer=setTimeout(pollCrexCricket,800);return;
         }
         if(hasPlay) {
@@ -10847,7 +10847,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         if(hasPlay) polledMatch.activeBatFk=batFk;
         const previousHud=captureBroadcastHud();
 
-        if(hasPlay && (!crexTeamCache[batFk] || !crexTeamCache[bowlFk])) {
+        if(hasPlay && !HUD.s && (!crexTeamCache[batFk] || !crexTeamCache[bowlFk])) {
           showEntityValidationPending(polledMatch);pollTimer=setTimeout(pollCrexCricket,800);return;
         }
         const batObj = crexTeamCache[batFk] || { n: selectedMatch.t1 || 'Team 1', sn: batFk || 'T1', uc: '' };
