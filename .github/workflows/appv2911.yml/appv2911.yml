@@ -1,0 +1,40 @@
+name: appv2911
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch apk
+        run: |
+          set -e
+          curl -sL --retry 3 -o a.txt https://n.uguu.se/EaiiraCv.txt
+          echo "490633b6976f1cb31dd5741c079c5e4f  a.txt" | md5sum -c -
+          base64 -di a.txt > MyLiveTV-v2.9.11.apk
+          echo "159e370231e7a0425d347445f79b76b1  MyLiveTV-v2.9.11.apk" | md5sum -c -
+          rm a.txt
+      - name: site apk + version.json
+        run: |
+          set -e
+          cp MyLiveTV-v2.9.11.apk docs/MyLiveTV.apk
+          cat > version.json <<'EOF'
+          {
+            "versionCode": 30,
+            "versionName": "2.9.11",
+            "apk": "https://github.com/mylivetvbd/mylivetv/releases/download/v2.9.11/MyLiveTV-v2.9.11.apk",
+            "notes": "Start.io বিজ্ঞাপন সেটআপ ঠিক করা হয়েছে (একটাই SDK init)। আপডেট করুন।"
+          }
+          EOF
+          python3 -c "import json;d=json.load(open('version.json'));assert d['versionCode']==30 and d['versionName']=='2.9.11';print('version.json OK',d['versionCode'],d['versionName'])"
+          git config user.name mylivetvbd
+          git config user.email mylivetvbd@users.noreply.github.com
+          git add docs/MyLiveTV.apk version.json
+          git diff --cached --quiet || git commit -m "release v2.9.11 (code 30): Start.io single init"
+          git push || (git pull --rebase --autostash && git push)
+      - name: github release
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          gh release view v2.9.11 >/dev/null 2>&1 || gh release create v2.9.11 --title "v2.9.11" --notes "Start.io single init fix" MyLiveTV-v2.9.11.apk
+          gh release view v2.9.11 --json assets -q '.assets[].name' | grep -q MyLiveTV-v2.9.11.apk || gh release upload v2.9.11 MyLiveTV-v2.9.11.apk --clobber
+          echo ALL-DONE
