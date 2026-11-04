@@ -10793,7 +10793,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         };
         const inn1 = parseInning(sv.j);
         const inn2 = parseInning(sv.k);
-        const activeIndex = identity ? identity.inningsIndex : (inn2 ? 1 : 0);
+        const activeIndex = inn2 ? 1 : 0;   /* ইনিংস লাইভ feed থেকে (sv.k এলে ২য়) — ক্যাশ identity থেকে নয়, যাতে ইনিংস বদলালে আটকে না থাকে */
         const curInn = parseInning(crexInningValue(sv, activeIndex)) || { runs:0, wkts:0, ovRaw:'0.0', dispScore:'0/0' };
         // In Tests a follow-on can change innings order; do not guess an opponent's score.
         const prevInn = activeIndex === 1 ? inn1 : null;
