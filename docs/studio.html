@@ -10647,6 +10647,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         if(selectedMatch!==polledMatch)return;
         if(!sv || typeof sv!=='object' || !sv.a) throw new Error('CREX data unavailable');
         liveFeedRestored();
+        try{ const __cb=document.getElementById('commText'); if(__cb&&/নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত/.test(__cb.textContent||'')) __cb.textContent='ম্যাচ লাইভ — ধারাভাষ্য শুরু হচ্ছে…'; }catch(_eb){}   /* ফিড সফল ⇒ অপেক্ষার বার্তা থেকে যাবে না */
         try{   /* bncom27: একক সত্য — সব পথেই, early-return-এর আগেও */
           var _rb0=(Array.isArray(sv.rb)&&sv.rb.length)?sv.rb[sv.rb.length-1]:null;
           var _ai=(_rb0&&Number.isInteger(_rb0.i))?_rb0.i:(sv.k?1:0);
