@@ -8968,6 +8968,65 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
           window.__evtBowlerChange(curBow, curOv);
         }
         window.__evtPrev={pf1:curPf1, pf2:curPf2, bowler:curBow, ov:curOv, ts:Date.now()};
+        /* feat21: Milestone tracker — 50/100, Hat-trick, Fifer with prio:4 */
+        try{
+          window.__milestonePrev=window.__milestonePrev||{batters:{},bowlers:{},hatIds:{},fiferIds:{}};
+          var MP=window.__milestonePrev;
+          function _parseBatRuns(str){ var m=String(str||'').match(/^\s*(\d+)/); return m?parseInt(m[1],10):null; }
+          function _parseBowlWkts(bd){ var m=String(bd||'').match(/^\s*(\d+)/); return m?parseInt(m[1],10):null; }
+          var _bn=function(n){ try{ return window.bnPlayerName?window.bnPlayerName(n):n; }catch(e){ return n; } };
+          var _cardHide=function(){ try{ setTimeout(function(){ window.__mscHide&&window.__mscHide(); },4000); }catch(e){} };
+          // Batters 50/100
+          [[HUD.pf1, HUD.s1Live||HUD.s1],[HUD.pf2, HUD.s2Live||HUD.s2]].forEach(function(pr){
+            var nm=String(pr[0]||'').trim(), sc=pr[1], runs=_parseBatRuns(sc);
+            if(!nm||runs===null) return;
+            var prev=MP.batters[nm]||0;
+            if(prev<50 && runs>=50){
+              var bn=_bn(nm);
+              window.__mscShow&&window.__mscShow({tag:'MILESTONE',title:'Congratulations! Half Century - '+nm,sub:bn+' 50 রান',tagEn:'MILESTONE',titleEn:'Congratulations! Half Century - '+nm,subEn:bn+' 50 Runs'});
+              window.speak&&window.speak('চমৎকার ইনিংস, '+bn+'-এর অসাধারণ হাফ সেঞ্চুরি পূর্ণ হলো!',{oc:'50',prio:4});
+              _cardHide();
+            }
+            if(prev<100 && runs>=100){
+              var bn2=_bn(nm);
+              window.__mscShow&&window.__mscShow({tag:'MILESTONE',title:'Century! - '+nm,sub:bn2+' 100 রান',tagEn:'MILESTONE',titleEn:'Century! - '+nm,subEn:bn2+' 100 Runs'});
+              window.speak&&window.speak('অসাধারণ ব্যাটিং! '+bn2+' তুলে নিলেন দুর্দান্ত এক সেঞ্চুরি!',{oc:'100',prio:4});
+              _cardHide();
+            }
+            MP.batters[nm]=runs;
+          });
+          // Bowlers Fifer 5W
+          Object.keys(HUD.bdMap||{}).forEach(function(bf){
+            var rec=HUD.bdMap[bf], wkts=_parseBowlWkts(rec&&rec.bd);
+            if(wkts===null) return;
+            var prev=MP.bowlers[bf]||0;
+            if(prev<5 && wkts>=5){
+              var bn3=_bn(HUD.bowler||bf);
+              window.__mscShow&&window.__mscShow({tag:'MILESTONE',title:'Fifer! 5 Wickets - '+(HUD.bowler||bf),sub:bn3+' ৫ উইকেট',tagEn:'MILESTONE',titleEn:'Fifer! 5 Wickets - '+(HUD.bowler||bf),subEn:bn3+' 5 Wickets'});
+              window.speak&&window.speak('অসাধারণ বোলিং পারফরম্যান্স! ইনিংসে ৫ উইকেট পূর্ণ করলেন '+bn3+'!',{oc:'5W',prio:4});
+              _cardHide();
+            }
+            MP.bowlers[bf]=wkts;
+          });
+          // Bowlers Hat-trick: last 3 W consecutive
+          try{
+            var bks=Object.keys(HUD.ballMap||{}).map(function(k){ return HUD.ballMap[k]; }).filter(Boolean);
+            bks.sort(function(a,b){ return (a.id||0)-(b.id||0); });
+            if(bks.length>=3){
+              var last3=bks.slice(-3);
+              var allW=last3.every(function(e){ return String(e.b||'').toUpperCase()==='W'; });
+              var ids=last3.map(function(e){ return String(e.id); }).join('-');
+              if(allW && MP.hatIds[ids]!==1){
+                MP.hatIds[ids]=1;
+                var bowW=String((last3[2]&&last3[2].bf)||HUD.bowler||'');
+                var bn4=_bn(bowW||HUD.bowler||'বোলার');
+                window.__mscShow&&window.__mscShow({tag:'MILESTONE',title:'Hat-trick! - '+(HUD.bowler||bowW),sub:bn4+' হ্যাটট্রিক',tagEn:'MILESTONE',titleEn:'Hat-trick! - '+(HUD.bowler||bowW),subEn:bn4+' Hat-trick'});
+                window.speak&&window.speak('বিস্ময়কর সাফল্য! '+bn4+'-এর দুর্দান্ত হ্যাটট্রিক!',{oc:'W',prio:4});
+                _cardHide();
+              }
+            }
+          }catch(_hat){}
+        }catch(_ms){}
       }catch(_evt){}
     }catch(e){}
   }
