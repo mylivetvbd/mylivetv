@@ -7969,6 +7969,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     function liveFeedFailed(sport) {
       if(!selectedMatch || selectedMatch.sport!==sport)return;
       liveFailures++;
+      if(liveFailures<3) return;   /* ক্ষণস্থায়ী ব্যর্থতায় স্কোর/ধারাভাষ্য বন্ধ নয় — পরপর ৩ বার ব্যর্থ হলেই সংযোগ-বার্তা */
       if(sport==='cricket') showEntityValidationPending(selectedMatch);
       else showSoccerValidationPending(selectedMatch);
       document.getElementById('liveBadgeTxt').textContent='সংযোগ';
@@ -10648,7 +10649,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       if (!selectedMatch || selectedMatch.sport !== 'cricket') return;
       const polledMatch=selectedMatch;
       try {
-        const res = await fetchT(`https://api.goscorer.com/api/v3/getSV3?key=${polledMatch.mf}`, {}, 1200);
+        const res = await fetchT(`https://api.goscorer.com/api/v3/getSV3?key=${polledMatch.mf}`, {}, 4000);
         if(!res.ok) throw new Error('CREX HTTP');
         const sv = await res.json();
         if(selectedMatch!==polledMatch)return;
