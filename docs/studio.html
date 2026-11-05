@@ -5853,7 +5853,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
                     : L.isBreak ? (en ? 'Next Innings Shortly' : 'পরবর্তী ইনিংসের অপেক্ষায়')
                     : (strikerDisp ? (en ? `🏏 On Strike: ${strikerDisp}` : `🏏 স্ট্রাইকে: ${strikerDisp}`)
                                    : (en ? 'Live Broadcast' : (L.countdown || L.bdTime || 'সরাসরি খেলা চলছে'))));
-      if (L.hasC) {
+      if (L.hasC && !(window.__crexHudFresh && window.__crexHudFresh())) { /* ফিক্স ৪৯: তাজা CREX ফিড থাকলে বোলার কার্ড CREX bd থেকে (sv.c নয়) */
         const bwW = L.bwWkts != null ? L.bwWkts : 0;
         if (en) set('uiBowler', `⚾ ${L.bwEn} (${bwW}/${L.bwRuns} • ${L.bwOvDisp} Ov)`);
         else set('uiBowler', `⚾ ${bnPlayerName(L.bwBn)} (${bn(bwW)}/${bn(L.bwRuns)} • ${bn(L.bwOvDisp)} ওভার)`);
@@ -12737,7 +12737,7 @@ window.__hd2Toggle=function(){window.__hd2=!window.__hd2;localStorage.setItem('h
     });
     /* মাইলস্টোন: বোলার ৫ উইকেট */
     var bw=nameOf(txt('uiBowler')), wm=fromBn(txt('uiBowler')).match(/\((\d+)\/(\d+)/);
-    if(!bad(bw) && wm && +wm[1]>=5 && !A[bw+'|5w']){ A[bw+'|5w']=1;
+    if(!bad(bw) && wm && +wm[1]>=5 && +wm[1]<=10 && !A[bw+'|5w']){ /* ফিক্স ৪৯: ১০ উইকেটের বেশি অসম্ভব */ A[bw+'|5w']=1;
       say(bw+' পাঁচ উইকেট নিলেন, '+toBn(wm[1])+' উইকেটে '+toBn(wm[2])+' রান দিয়ে।', bw+' — পাঁচ উইকেট', toBn(wm[1])+'/'+toBn(wm[2])); }
     /* ওভার শেষে সারসংক্ষেপ: ov '১০.০' = ১০ ওভার শেষ। সব সংখ্যা স্ক্রিন/স্কোর থেকে; CRR/RRR/SR/ইকোনমি হিসাব করা */
     var ov=String(s.ov||''), ovd=ov.split('.');
