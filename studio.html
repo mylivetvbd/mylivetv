@@ -9271,7 +9271,9 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       try{
         if(!window.__cmtLastSay)window.__cmtLastSay=Date.now();
         if(!window.__speakMute&&window.__bnCom.end!==1&&!hostMicActive&&!isSpeakingNow&&!busy&&!Q.length&&Date.now()-window.__cmtLastSay>30000){
-          var _g=window.__CMT&&window.__CMT.gap?window.__CMT.gap():null;
+          var _g=null;
+          if(window.__FILLER_ON!==false){ _g=window.__CMT&&window.__CMT.gap?window.__CMT.gap():null; }
+          if(!_g && typeof window.__infoGap==='function'){ try{ _g=window.__infoGap(); }catch(_ei){ _g=null; } }   /* ফিলার বন্ধ: ইনফো/পরিস্থিতি-ভিত্তিক লাইন */
           if(_g&&window.__MS&&(!window.__MS.sayGate||window.__MS.sayGate(_g))&&(!window.__MS.factCheck||window.__MS.factCheck(_g))){
             window.__cmtLastSay=Date.now(); speak(_g,{gap:true});
           }
