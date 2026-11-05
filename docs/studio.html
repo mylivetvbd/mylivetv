@@ -5855,12 +5855,13 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
                                    : (en ? 'Live Broadcast' : (L.countdown || L.bdTime || 'সরাসরি খেলা চলছে'))));
       if (L.hasC) {
         /* ফিক্স ৪৯: তাজা CREX ফিড থাকলে বোলারের উইকেট/রান/ওভার CREX bd থেকে (sv.c নয়) */
-        var __bdm=(window.__crexHud&&window.__crexHudFresh&&window.__crexHudFresh()&&window.__crexHud.bd)?String(window.__crexHud.bd).match(/^\s*(\d+)\s*-\s*(\d+)\s*\((\d+)(?:\.(\d+))?\)/):null;
-        const bwW = __bdm ? +__bdm[1] : (L.bwWkts != null ? L.bwWkts : 0);
-        const bwR = __bdm ? +__bdm[2] : L.bwRuns;
-        const bwO = __bdm ? (__bdm[3]+'.'+(__bdm[4]||'0')) : L.bwOvDisp;
+        var __fg=(window.__crexHud&&window.__crexHudFresh&&window.__crexHudFresh()&&window.__crexBowlFig)?window.__crexBowlFig(window.__crexHud.curBf||window.__crexHud.bdKey):null;
+        const bwW = __fg ? __fg.w : (L.bwWkts != null ? L.bwWkts : 0);
+        const bwR = __fg ? __fg.r : L.bwRuns;
+        const bwO = __fg ? __fg.ov : L.bwOvDisp;
+        const bwNm = (__fg && __fg.name) ? __fg.name : L.bwBn;
         if (en) set('uiBowler', `⚾ ${L.bwEn} (${bwW}/${bwR} • ${bwO} Ov)`);
-        else set('uiBowler', `⚾ ${bnPlayerName(L.bwBn)} (${bn(bwW)}/${bn(bwR)} • ${bn(bwO)} ওভার)`);
+        else set('uiBowler', `⚾ ${bnPlayerName(bwNm)} (${bn(bwW)}/${bn(bwR)} • ${bn(bwO)} ওভার)`);
       }
       const dots = document.getElementById('uiOverDots');
       if (dots && Array.isArray(L.ovBalls)) {
@@ -8900,6 +8901,13 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   }
   function bowlBallOf(tk){ var u=String(tk||'').trim().toUpperCase(); return /^(?:\d+)?(?:WD|WIDE|NB|NOBALL|NO ?BALL)(?:\d+)?$/.test(u)?0:1; }
   function bowlWktOf(e){ var u=String((e&&e.b)||'').trim().toUpperCase(); return (u==='W'&&!/run\s*out/i.test(wdFor(e.o)))?1:0; }
+  /* ফিক্স ৪৯: বোলারের পুরো ফিগার = bd বেসলাইন + ঐ বোলারের পরের বলগুলো (HUD কার্ডের একই নিয়ম) */
+  window.__crexBowlFig=function(bf){ try{ var H=HUD; if(!bf)return null;
+    var rec=(H.bdMap&&H.bdMap[bf])?H.bdMap[bf]:((H.bd&&H.bdKey===bf)?{bd:H.bd,balls:H.bdBalls,id:H.bdId}:null);
+    if(!rec||!rec.bd)return null; var m=String(rec.bd).match(/^\s*(\d+)\s*-\s*(\d+)\s*\((\d+)(?:\.(\d+))?\)/); if(!m)return null;
+    var w=+m[1], r=+m[2], b=(+m[3])*6+(+(m[4]||0));
+    Object.keys(H.ballMap||{}).forEach(function(k){ var e=H.ballMap[k]; if(!e||e.bf!==bf)return; var aft=rec.id?(e.id>rec.id&&e.bi>rec.balls):(e.bi>rec.balls); if(aft){ w+=bowlWktOf(e); r+=bowlRunOf(e.b); b+=bowlBallOf(e.b); } });
+    return {w:w,r:r,ov:Math.floor(b/6)+'.'+(b%6),name:H.bowler||''}; }catch(_e){ return null; } };
   function normOv(v){var m=String(v||'').match(/^(\d+)\.(\d+)$/);if(!m)return '';var o=+m[1],b=+m[2];return (b>=6)?(o+1)+'.0':o+'.'+b;}   /* bugfix14: ৬.৬ ⇒ ৭.০ */
   function hudAbsorb(arr,mf){
     /* bncom13: ম্যাচ/ইনিংস বদলালে আগের ম্যাচের ঘর মুছে দাও */
