@@ -9121,14 +9121,30 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       if(!hostMicActive){ lastSpeakTime=Date.now(); isSpeakingNow=true; speakBangla(line).catch(function(){}).finally(function(){if(!syncBusy)isSpeakingNow=false;}); }
     }catch(e){}
   }
+  /* ধাপ ২: খেলোয়াড়ের নাম (ওভার/উইকেট আইটেম থেকে) + নতুন ব্যাটার/বোলারের ঘোষণা */
+  var NAMES={}, BAT_SEEN={}, LAST_BF={};
+  function __noteNames(arr){
+    arr.forEach(function(z){ if(!z) return;
+      if(z.type==='o'){ if(z.pf1&&z.p1)NAMES[z.pf1]=z.p1; if(z.pf2&&z.p2)NAMES[z.pf2]=z.p2; if(z.bf&&z.bowler)NAMES[z.bf]=z.bowler; }
+      if(z.type==='w'&&z.pf&&(z.player_fullname||z.player))NAMES[z.pf]=z.player_fullname||z.player;
+    });
+  }
+  function __nm(k){ var n=k?NAMES[k]:''; if(!n) return ''; try{ return window.bnPlayerName?window.bnPlayerName(n):n; }catch(e){ return n; } }
+  function __annOf(x,mf){
+    var out=[], key=mf+'|'+(x.inn||1);
+    if(x.bf){ if(LAST_BF[key]&&LAST_BF[key]!==x.bf){ var bn=__nm(x.bf); if(bn) out.push(bn+' বোলিংয়ে এলেন।'); } LAST_BF[key]=x.bf; }
+    if(x.pf){ BAT_SEEN[key]=BAT_SEEN[key]||{}; if(!BAT_SEEN[key][x.pf]){ BAT_SEEN[key][x.pf]=1; var cnt=Object.keys(BAT_SEEN[key]).length; if(cnt>2){ var nn=__nm(x.pf); if(nn) out.push(nn+' ব্যাটিং করতে নামলেন।'); } } }
+    return out;
+  }
   function handle(arr,mf){
     if(!Array.isArray(arr)||!arr.length)return;
+    try{ __noteNames(arr); }catch(_eN){}
     noteWickets(arr);
     try{ var wcs=arr.filter(function(x){return x&&x.type==='wc';}); if(wcs.length)resultSay(wcs[wcs.length-1],mf); }catch(e){}
     hudAbsorb(arr,mf);
     var balls=arr.filter(function(x){return x&&x.type==='b'&&x.b!=null;}).map(function(x){
       var rawO=String(x.o), o=normOv(rawO)||rawO;
-      return {o:o,rawO:rawO,b:String(x.b),s:String(x.s||''),c1:x.c1,c2:x.c2,inn:x.inning,_wd:wdFor(rawO)||wdFor(o),k:keyOf(x)};
+      return {o:o,rawO:rawO,b:String(x.b),s:String(x.s||''),c1:x.c1,c2:x.c2,inn:x.inning,bf:x.bf,pf:x.pf,_wd:wdFor(rawO)||wdFor(o),k:keyOf(x)};
     });
     try{ var _bf=arr.filter(function(z){return z&&z.type==='b'&&z.bat_team_fkey;})[0]; if(_bf)window.__cktBatFk=_bf.bat_team_fkey; }catch(_e){}
     if(!balls.length){ try{window.__crexHudApply();}catch(e){} return; }
@@ -9151,12 +9167,13 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     fresh=fresh.filter(function(x){ var kk2=mf+'|'+(x.inn||1), cur=bidx(x.o); if(cur<0)return true;
       if(LB[kk2]!=null && cur<=LB[kk2])return false; LB[kk2]=cur; return true; });   /* কখনো পিছিয়ে যাবে না */
     if(!fresh.length){ try{window.__crexHudApply();}catch(e){} return; }
-    if(fresh.length>6) fresh=fresh.slice(-6);   /* bugfix14: শতভাগ বল-বাই-বল ধারাভাষ্য — ১–৬ বল সব ক্রমানুসারে বলবে */
+    /* ধাপ ২: আর কোনো সংখ্যা-সীমা নেই — প্রতিটি নতুন বল ক্রমানুসারে বলা হবে */
     window.__bnCom.ok=true; window.__bnCom.lastData=Date.now(); window.__cmtLastSay=Date.now();
     if(!Q.length&&!isSpeakingNow&&!busy){ try{armGap();}catch(_e){} }
     window.__cktSeq=(window.__cktSeq||0)+1;      /* bncom22: নতুন বল ⇒ অপেক্ষমাণ পরিস্থিতি-লাইন বাতিল */
     fresh.forEach(function(x){
-      var go=function(){ var l=lineOf(x); if(l){window.__bnCom.spoke=true;speak(l,{oc:x.b,sc:x.s,ov:x.o,mf:mf});} };
+      var anns=[]; try{ anns=__annOf(x,mf); }catch(_eA){ anns=[]; }
+      var go=function(){ anns.forEach(function(t){ speak(t,{mf:mf}); }); var l=lineOf(x); if(l){window.__bnCom.spoke=true;speak(l,{oc:x.b,sc:x.s,ov:x.o,mf:mf});} };
       if(x.b==='W'&&!x._wd){                       /* উইকেট ⇒ ধরন আনতে ওই ওভারটা একবার দেখি */
         var ov=Math.floor(parseFloat(x.rawO||x.o));
         fetchWicketTypes(mf,x.inn,ov,function(){ x._wd=wdFor(x.rawO)||wdFor(x.o); go(); try{window.__crexHudApply();}catch(_ew){} });
