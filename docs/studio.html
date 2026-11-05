@@ -8675,10 +8675,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       if(sc)body+=' স্কোর '+bd(sc[1])+'/'+bd(sc[2])+'।';   /* bncom22: বাংলা অঙ্ক */
     }
     /* bncom32 ধাপ-২: চার/ছয়/উইকেটে সংখ্যা (স্কোর) আলাদা করে বলা — ঘটনা→সংখ্যা */
-    if(body && !/স্কোর/.test(body) && /^(4|6|W)$/i.test(String(x.b||''))){
-      var sc3=String(x.s||'').match(/^(\d+)\/(\d+)$/);
-      if(sc3) body+=' স্কোর '+bd(sc3[1])+'/'+bd(sc3[2])+'।';
-    }
+    /* হুবহু নিয়ম: CREX-এর কমেন্ট্রির বাইরে কোনো স্কোর-বাক্য জোড়া হবে না (আগে এখানে যোগ হতো) */
     var head = who ? (how ? who+' — '+how+'।' : who+'।') : (how?how+'।':'');
     return ((head?head+' ':'')+body).trim();
   }
