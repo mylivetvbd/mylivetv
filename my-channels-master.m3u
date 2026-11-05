@@ -17862,3 +17862,12 @@ https://online.godstands.tv:5443/WebRTCApp/streams/HindiStreaming.m3u8
 http://185.228.163.146:8000/play/a00g/index.m3u8
 #EXTINF:-1 tvg-logo="https://i.imgur.com/bTf7A9J.png" group-title="🎬 মুভি (গ্লোবাল) 2",CineStar Action Bulgaria
 http://213.91.179.28:8000/play/a06b
+
+#EXTINF:-1 tvg-logo="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Discovery_Kids_2021_2D_sin_wordmark.svg/960px-Discovery_Kids_2021_2D_sin_wordmark.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Discovery Kids Latin America Mexico (1080p)
+http://38.65.175.84:8000/play/a0an/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/cZWoJWD.png" group-title="🎬 মুভি (গ্লোবাল) 2",Cinemax Latin America HD (1080p)
+http://38.65.175.84:8000/play/a093/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.ibb.co/3m9LrLj/k7gIibH.png" group-title="🎬 মুভি (গ্লোবাল) 2",312 Kino (406p)
+http://176.126.166.43:1935/live/312kino/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/InvestigationDiscoveryLogo2020.svg/960px-InvestigationDiscoveryLogo2020.svg.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Investigation Discovery Latin America South (1080p)
+http://38.65.175.84:8000/play/a0ch/index.m3u8
