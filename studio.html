@@ -5860,7 +5860,8 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         const bwR = __fg ? __fg.r : L.bwRuns;
         const bwO = __fg ? __fg.ov : L.bwOvDisp;
         const bwNm = (__fg && __fg.name) ? __fg.name : L.bwBn;
-        if (__fg && __fg.pending) set('uiBowler', en ? `⚾ ${L.bwEn}` : `⚾ ${bnPlayerName(__fg.name || L.bwBn)}`);
+        const __hudB = (window.__crexHud && window.__crexHud.curBf) ? (window.__crexHud.bowler || '') : null;
+        if ((__fg && __fg.pending) || (!__fg && __hudB !== null)) set('uiBowler', en ? `⚾ ${L.bwEn}` : `⚾ ${bnPlayerName((__fg && __fg.name) || __hudB || L.bwBn)}`);
         else if (en) set('uiBowler', `⚾ ${L.bwEn} (${bwW}/${bwR} • ${bwO} Ov)`);
         else set('uiBowler', `⚾ ${bnPlayerName(bwNm)} (${bn(bwW)}/${bn(bwR)} • ${bn(bwO)} ওভার)`);
       }
