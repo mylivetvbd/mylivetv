@@ -7220,6 +7220,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
     const bnPlayerName = n => {
       const raw=String(n||'').trim(); if(!raw) return '';
       if(/[\u0980-\u09FF]/.test(raw) && !/[A-Za-z]/.test(raw)) return raw;
+      try{ if(typeof SPEECH_PHONETIC_PHRASES!=='undefined' && SPEECH_PHONETIC_PHRASES[raw]) return SPEECH_PHONETIC_PHRASES[raw]; }catch(_ef){} /* ফিক্স: পূর্ণ নামের অভিধান আগে (শব্দ-ধরে অনুবাদে ভুল বানান আসে) */
       const out=raw.split(/\s+/).map(function(w){
         const k=String(w||'').toLowerCase().replace(/[^a-z]/g,'');
         if(BN_PLAYER_WORDS[k]) return BN_PLAYER_WORDS[k];
@@ -8661,7 +8662,8 @@ window.__infoGap=function(){
       }
       for(var i=0;i<lines.length;i++){ if(!said[lines[i].key]){ said[lines[i].key]=true; return lines[i].t; } }
     }
-    return window.__situLine(m);
+    /* ফিক্স: সাধারণ পরিস্থিতির লাইন ("ডেথ ওভারে প্রতিটি বল গুরুত্বপূর্ণ" ইত্যাদি) আর বলা হবে না — শুধু তথ্য-ভিত্তিক লাইন (ফরম্যাট, মুখোমুখি, ভেন্যু) */
+    return null;
   }catch(e){ return null; }
 };
 window.__bnOn=function(){return window.__bnCom.on===true&&window.__bnCom.ok===true;};
