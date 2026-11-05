@@ -8805,7 +8805,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     }catch(e){busy=false; curIsGap=false; isSpeakingNow=false;}
   }
   /* বানান সংশোধন: CREX-এর বাংলা লাইনে ভুল বানান থাকলে বলার আগে ঠিক করা হয় */
-  var __BN_FIX=[[/নায়ীম/g,'নাঈম'],[/নেঈম/g,'নাঈম'],[/তাসকিন আহমদ/g,'তাসকিন আহমেদ']];
+  var __BN_FIX=[[/নায়ীম/g,'নাঈম'],[/নেঈম/g,'নাঈম'],[/মেহিদী/g,'মেহেদী'],[/মেহিদি/g,'মেহেদী'],[/উইকহাম/g,'উইকহ্যাম'],[/তাসকিন আহমদ/g,'তাসকিন আহমেদ']];
   function speak(line,meta){
     if(line){ __BN_FIX.forEach(function(p){ line=String(line).replace(p[0],p[1]); }); }
     if(meta&&!meta.gap&&window.__curPollId)meta.__pid=window.__curPollId;   /* কার্ড-স্ন্যাপশট এই বলের সাথে বাঁধা */
@@ -8882,8 +8882,8 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   window.__crexHud=HUD;
   /* feat18: Critical Event state — new batter / bowler change */
   window.__evtPrev={pf1:'',pf2:'',bowler:'',ov:'',ts:0};
-  window.__evtNewBatter=function(name){ try{ var n=String(name||'').trim(); if(!n) return; var line='ক্রিজে নতুন ব্যাটার হিসেবে এলেন '+ (window.bnPlayerName?window.bnPlayerName(n):n) +' — এখন দায়িত্ব সামলাতে হবে।'; if(window.__CMT&&window.__CMT.norm) line=window.__CMT.norm(line); window.speak&&window.speak(line,{oc:'W',prio:3}); }catch(e){} };
-  window.__evtBowlerChange=function(name,ov){ try{ var n=String(name||'').trim(); if(!n) return; var line='ওভারের সমাপ্তি, নতুন ওভারে বোলিং আক্রমণে আসছেন '+ (window.bnPlayerName?window.bnPlayerName(n):n) +'।'; if(window.__CMT&&window.__CMT.norm) line=window.__CMT.norm(line); window.speak&&window.speak(line,{oc:'0',prio:2}); }catch(e){} };
+  window.__evtNewBatter=function(name){ try{ var n=String(name||'').trim(); try{ if(typeof bnPlayerName==='function') n=bnPlayerName(n)||n; }catch(_en){} if(!n) return; var line='ক্রিজে নতুন ব্যাটার হিসেবে এলেন '+ (window.bnPlayerName?window.bnPlayerName(n):n) +' — এখন দায়িত্ব সামলাতে হবে।'; if(window.__CMT&&window.__CMT.norm) line=window.__CMT.norm(line); window.speak&&window.speak(line,{oc:'W',prio:3}); }catch(e){} };
+  window.__evtBowlerChange=function(name,ov){ try{ var n=String(name||'').trim(); try{ if(typeof bnPlayerName==='function') n=bnPlayerName(n)||n; }catch(_en){} if(!n) return; var line='ওভারের সমাপ্তি, নতুন ওভারে বোলিং আক্রমণে আসছেন '+ (window.bnPlayerName?window.bnPlayerName(n):n) +'।'; if(window.__CMT&&window.__CMT.norm) line=window.__CMT.norm(line); window.speak&&window.speak(line,{oc:'0',prio:2}); }catch(e){} };
   window.__evtSub=function(oldP,newP){ try{ var a=String(oldP||'').trim(), b=String(newP||'').trim(); if(!a||!b) return; var line='খেলোয়াড় পরিবর্তন! মাঠ ছাড়ছেন '+(window.bnPlayerName?window.bnPlayerName(a):a)+', তার স্থলাভিষিক্ত হচ্ছেন '+(window.bnPlayerName?window.bnPlayerName(b):b)+'।'; if(window.__CMT&&window.__CMT.norm) line=window.__CMT.norm(line); window.speak&&window.speak(line,{oc:'SUB',prio:3}); }catch(e){} };
 
   function batRunOf(tk){ var u=String(tk||'').trim().toUpperCase(); return /^[0-6]$/.test(u)?(+u):0; }
