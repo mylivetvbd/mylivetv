@@ -9207,11 +9207,8 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
             }
           }
         }
-        if(!hasFig&&actBf&&bList.length){
-          var seenAny=false;
-          bList.forEach(function(e){ if(e&&e.bf===actBf){ seenAny=true; bwW+=bowlWktOf(e); bwR+=bowlRunOf(e.b); bwB+=bowlBallOf(e.b); } });
-          if(seenAny)hasFig=true;
-        }
+        /* ফিক্স ৫৫: বেসলাইন (CREX bd) ছাড়া শুধু বল-রেকর্ড থেকে ফিগার দেখাই না — আংশিক হয়ে যায়; CREX ওভার-ফিড থেকে বেসলাইন আনি */
+        if(!hasFig&&actBf&&window.__crexSpellFetch){ var __pk2=(H.inn||1)+'|'+actBf, __ps2=H.__spell||(H.__spell={}); if(!__ps2[__pk2]||Date.now()-__ps2[__pk2]>30000){ __ps2[__pk2]=Date.now(); window.__crexSpellFetch(actBf); } }
         var bwOvStr=Math.floor(bwB/6)+'.'+(bwB%6);
         var fig=hasFig?(D(bwW)+'/'+D(bwR)+' • '+D(bwOvStr)+(en?' Ov':' ওভার')):'';
         set('uiBowler','⚾ '+bwDisp+(fig?' ('+fig+')':''));
