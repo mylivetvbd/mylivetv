@@ -5854,9 +5854,13 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
                     : (strikerDisp ? (en ? `🏏 On Strike: ${strikerDisp}` : `🏏 স্ট্রাইকে: ${strikerDisp}`)
                                    : (en ? 'Live Broadcast' : (L.countdown || L.bdTime || 'সরাসরি খেলা চলছে'))));
       if (L.hasC) {
-        const bwW = L.bwWkts != null ? L.bwWkts : 0;
-        if (en) set('uiBowler', `⚾ ${L.bwEn} (${bwW}/${L.bwRuns} • ${L.bwOvDisp} Ov)`);
-        else set('uiBowler', `⚾ ${bnPlayerName(L.bwBn)} (${bn(bwW)}/${bn(L.bwRuns)} • ${bn(L.bwOvDisp)} ওভার)`);
+        /* ফিক্স ৪৯: তাজা CREX ফিড থাকলে বোলারের উইকেট/রান/ওভার CREX bd থেকে (sv.c নয়) */
+        var __bdm=(window.__crexHud&&window.__crexHudFresh&&window.__crexHudFresh()&&window.__crexHud.bd)?String(window.__crexHud.bd).match(/^\s*(\d+)\s*-\s*(\d+)\s*\((\d+)(?:\.(\d+))?\)/):null;
+        const bwW = __bdm ? +__bdm[1] : (L.bwWkts != null ? L.bwWkts : 0);
+        const bwR = __bdm ? +__bdm[2] : L.bwRuns;
+        const bwO = __bdm ? (__bdm[3]+'.'+(__bdm[4]||'0')) : L.bwOvDisp;
+        if (en) set('uiBowler', `⚾ ${L.bwEn} (${bwW}/${bwR} • ${bwO} Ov)`);
+        else set('uiBowler', `⚾ ${bnPlayerName(L.bwBn)} (${bn(bwW)}/${bn(bwR)} • ${bn(bwO)} ওভার)`);
       }
       const dots = document.getElementById('uiOverDots');
       if (dots && Array.isArray(L.ovBalls)) {
