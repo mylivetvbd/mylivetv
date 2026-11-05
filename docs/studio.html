@@ -8904,7 +8904,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   /* ফিক্স ৪৯: বোলারের পুরো ফিগার = bd বেসলাইন + ঐ বোলারের পরের বলগুলো (HUD কার্ডের একই নিয়ম) */
   window.__crexBowlFig=function(bf){ try{ var H=HUD; if(!bf)return null;
     var rec=(H.bdMap&&H.bdMap[bf])?H.bdMap[bf]:((H.bd&&H.bdKey===bf)?{bd:H.bd,balls:H.bdBalls,id:H.bdId}:null);
-    if(!rec||!rec.bd)return null; var m=String(rec.bd).match(/^\s*(\d+)\s*-\s*(\d+)\s*\((\d+)(?:\.(\d+))?\)/); if(!m)return null;
+    if(!rec||!rec.bd)rec={bd:'0-0(0.0)',balls:-1,id:0}; /* ফিক্স ৫৫: বেসলাইন না থাকলে বোলারের সব বল থেকে */ var m=String(rec.bd).match(/^\s*(\d+)\s*-\s*(\d+)\s*\((\d+)(?:\.(\d+))?\)/); if(!m)return null;
     var w=+m[1], r=+m[2], b=(+m[3])*6+(+(m[4]||0));
     Object.keys(H.ballMap||{}).forEach(function(k){ var e=H.ballMap[k]; if(!e||e.bf!==bf)return; var aft=rec.id?(e.id>rec.id&&e.bi>rec.balls):(e.bi>rec.balls); if(aft){ w+=bowlWktOf(e); r+=bowlRunOf(e.b); b+=bowlBallOf(e.b); } });
     return {w:w,r:r,ov:Math.floor(b/6)+'.'+(b%6),name:H.bowler||''}; }catch(_e){ return null; } };
@@ -8945,7 +8945,10 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
             var xoM=(x.tsl?String(x.tsl).match(/\(([0-9]+\.[0-9])\)/):null), xoS=xoM?xoM[1]:String(x.o||'');
             var xoP=xoS.match(/^(\d+)(?:\.(\d+))?$/), xoB=xoP?((+xoP[1])*6+(+(xoP[2]||0))):-1, xoid=+x.id||0;
             var prevBd=HUD.bdMap[String(x.bf)];
-            if(!prevBd||xoid>=prevBd.id)HUD.bdMap[String(x.bf)]={bd:String(x.bd),balls:xoB,id:xoid};
+            /* ফিক্স ৫৫: কখনো কখনো feed bd-তে বোলারের বদলে টিমের লাইন (tsl) থাকে — বোলারের রান টিমের রানের সমান/বেশি হতে পারে না, তাই বাতিল */
+            var __tm=x.tsl?String(x.tsl).match(/(\d+)\s*-\s*(\d+)\s*\(/):null, __bm=String(x.bd).match(/^\s*(\d+)\s*-\s*(\d+)/);
+            var __bad=!!(__tm&&__bm&&(+__bm[2])>=(+__tm[1]));
+            if(!__bad && (!prevBd||xoid>=prevBd.id))HUD.bdMap[String(x.bf)]={bd:String(x.bd),balls:xoB,id:xoid};
           }
         }
       });
