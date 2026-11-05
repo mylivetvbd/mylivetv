@@ -7463,7 +7463,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       'Mushfiqur Rahim':'মুশফিকুর রহিম', 'Mahmudullah Riyad':'মাহমুদউল্লাহ রিয়াদ',
       'Tamim Iqbal':'তামিম ইকবাল', 'Litton Das':'লিটন দাস', 'Liton Das':'লিটন দাস',
       'Najmul Hossain Shanto':'নাজমুল হোসেন শান্ত', 'Najmul Hossain':'নাজমুল হোসেন',
-      'Taskin Ahmed':'তাসকিন আহমেদ', 'Mehidy Hasan Miraz':'মেহেদী হাসান মিরাজ',
+      'Taskin Ahmed':'তাসকিন আহমেদ', 'Nayeem Hasan':'নাঈম হাসান', 'Taijul Islam':'তাইজুল ইসলাম', 'Amir Jangoo':'আমির জাঙ্গু', 'Kevin Wickham':'কেভিন উইকহ্যাম', 'Mehidy Hasan Miraz':'মেহেদী হাসান মিরাজ',
       'Mehidy Hasan':'মেহেদী হাসান', 'Tanzim Hasan Sakib':'তানজিম হাসান সাকিব',
       'Kraigg Brathwaite':'ক্রেইগ ব্র্যাথওয়েট', 'Roston Chase':'রস্টন চেজ',
       'Shai Hope':'শাই হোপ', 'Nicholas Pooran':'নিকোলাস পুরান', 'Shimron Hetmyer':'শিমরন হেটমায়ার',
@@ -8652,7 +8652,7 @@ window.__infoGap=function(){
       var bnN=function(x){ try{ return (typeof bnTeamName==='function'&&bnTeamName(x))||x; }catch(e){ return x; } };
       var t1=bnN(m.t1)||'প্রথম দল', t2=bnN(m.t2)||'দ্বিতীয় দল';
       var lines=[];
-      if(fmt && !said.fmt){ lines.push({key:'fmt',t:'এটি একটি '+fmt+' ম্যাচ।'}); }
+      if(fmt && !said.fmt){ lines.push({key:'fmt',t:(fmt==='টেস্ট' ? (t1+' বনাম '+t2+' মধ্যকার টেস্ট ম্যাচ চলছে।') : ('এটি একটি '+fmt+' ম্যাচ।'))}); }
       var hm=String(d.hth||'').match(/([A-Za-z0-9]+):(\d+)/g);
       if(hm && hm.length && !said.hth && m.t1f && m.t2f){
         var wins={}, total=0;
@@ -8802,7 +8802,10 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       if(__preD) setTimeout(__doSpeak, __preD); else __doSpeak();
     }catch(e){busy=false; curIsGap=false; isSpeakingNow=false;}
   }
+  /* বানান সংশোধন: CREX-এর বাংলা লাইনে ভুল বানান থাকলে বলার আগে ঠিক করা হয় */
+  var __BN_FIX=[[/নায়ীম/g,'নাঈম'],[/নেঈম/g,'নাঈম'],[/তাসকিন আহমদ/g,'তাসকিন আহমেদ']];
   function speak(line,meta){
+    if(line){ __BN_FIX.forEach(function(p){ line=String(line).replace(p[0],p[1]); }); }
     if(meta&&!meta.gap&&window.__curPollId)meta.__pid=window.__curPollId;   /* কার্ড-স্ন্যাপশট এই বলের সাথে বাঁধা */
     if(!line||window.__bnCom.on!==true)return;
     try{ if((window.__cricInnIdx===1||(window.__MS&&window.__MS.info&&window.__MS.info().innings===2))&&window.__cricPrev&&/বড় স্কোরের হাতছানি|লড়াইয়ের মতো সংগ্রহ দাঁড়াবে|বড় সংগ্রহ আসতে পারে/i.test(line))return; }catch(_ech){}
@@ -12715,14 +12718,14 @@ window.__hd2Toggle=function(){window.__hd2=!window.__hd2;localStorage.setItem('h
       var nm=p[0], m=p[1]; if(bad(nm)||!m) return;
       var r=+m[1], b=+m[2];
       if(r>=100 && !A[nm+'|100']){ A[nm+'|100']=1; A[nm+'|50']=1;
-        say(nm+' সেঞ্চুরি করলেন! '+toBn(r)+' রানে '+toBn(b)+' বল। দারুণ ইনিংস!', nm+' — সেঞ্চুরি', toBn(r)+' (' +toBn(b)+')'); }
+        say(nm+' সেঞ্চুরি করলেন, তার ব্যক্তিগত সংগ্রহ '+toBn(b)+' বলে '+toBn(r)+' রান।', nm+' — সেঞ্চুরি', toBn(r)+' (' +toBn(b)+')'); }
       else if(r>=50 && r<100 && !A[nm+'|50']){ A[nm+'|50']=1;
-        say(nm+' ফিফটি করলেন! '+toBn(r)+' রানে '+toBn(b)+' বল। চমৎকার!', nm+' — ফিফটি', toBn(r)+' (' +toBn(b)+')'); }
+        say(nm+' ৫০ করলেন, তার ব্যক্তিগত সংগ্রহ '+toBn(b)+' বলে '+toBn(r)+' রান।', nm+' — ৫০ রান', toBn(r)+' (' +toBn(b)+')'); }
     });
     /* মাইলস্টোন: বোলার ৫ উইকেট */
     var bw=nameOf(txt('uiBowler')), wm=fromBn(txt('uiBowler')).match(/\((\d+)\/(\d+)/);
     if(!bad(bw) && wm && +wm[1]>=5 && !A[bw+'|5w']){ A[bw+'|5w']=1;
-      say(bw+' পাঁচ উইকেট নিলেন! '+toBn(wm[1])+' উইকেটে '+toBn(wm[2])+' রান দিয়ে। অসাধারণ বোলিং!', bw+' — পাঁচ উইকেট', toBn(wm[1])+'/'+toBn(wm[2])); }
+      say(bw+' পাঁচ উইকেট নিলেন, '+toBn(wm[1])+' উইকেটে '+toBn(wm[2])+' রান দিয়ে।', bw+' — পাঁচ উইকেট', toBn(wm[1])+'/'+toBn(wm[2])); }
     /* ওভার শেষে সারসংক্ষেপ: ov '১০.০' = ১০ ওভার শেষ। সব সংখ্যা স্ক্রিন/স্কোর থেকে; CRR/RRR/SR/ইকোনমি হিসাব করা */
     var ov=String(s.ov||''), ovd=ov.split('.');
     if(ovd.length===2 && ovd[1]==='0' && +ovd[0]>0 && ov!==ST.lastOv){
