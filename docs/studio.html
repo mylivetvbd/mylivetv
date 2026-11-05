@@ -5860,7 +5860,8 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         const bwR = __fg ? __fg.r : L.bwRuns;
         const bwO = __fg ? __fg.ov : L.bwOvDisp;
         const bwNm = (__fg && __fg.name) ? __fg.name : L.bwBn;
-        if (en) set('uiBowler', `⚾ ${L.bwEn} (${bwW}/${bwR} • ${bwO} Ov)`);
+        if (__fg && __fg.pending) set('uiBowler', en ? `⚾ ${L.bwEn}` : `⚾ ${bnPlayerName(__fg.name || L.bwBn)}`);
+        else if (en) set('uiBowler', `⚾ ${L.bwEn} (${bwW}/${bwR} • ${bwO} Ov)`);
         else set('uiBowler', `⚾ ${bnPlayerName(bwNm)} (${bn(bwW)}/${bn(bwR)} • ${bn(bwO)} ওভার)`);
       }
       const dots = document.getElementById('uiOverDots');
@@ -8904,10 +8905,31 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   /* ফিক্স ৪৯: বোলারের পুরো ফিগার = bd বেসলাইন + ঐ বোলারের পরের বলগুলো (HUD কার্ডের একই নিয়ম) */
   window.__crexBowlFig=function(bf){ try{ var H=HUD; if(!bf)return null;
     var rec=(H.bdMap&&H.bdMap[bf])?H.bdMap[bf]:((H.bd&&H.bdKey===bf)?{bd:H.bd,balls:H.bdBalls,id:H.bdId}:null);
-    if(!rec||!rec.bd)rec={bd:'0-0(0.0)',balls:-1,id:0}; /* ফিক্স ৫৫: বেসলাইন না থাকলে বোলারের সব বল থেকে */ var m=String(rec.bd).match(/^\s*(\d+)\s*-\s*(\d+)\s*\((\d+)(?:\.(\d+))?\)/); if(!m)return null;
+    if(!rec||!rec.bd){ var __pk=(H.inn||1)+'|'+bf, __ps=H.__spell||(H.__spell={}); if(!__ps[__pk]||Date.now()-__ps[__pk]>30000){ __ps[__pk]=Date.now(); window.__crexSpellFetch(bf); } return {pending:true,name:H.bowler||''}; } /* ফিক্স ৫৫: বেসলাইন না থাকলে বোলারের সব বল থেকে */ var m=String(rec.bd).match(/^\s*(\d+)\s*-\s*(\d+)\s*\((\d+)(?:\.(\d+))?\)/); if(!m)return null;
     var w=+m[1], r=+m[2], b=(+m[3])*6+(+(m[4]||0));
     Object.keys(H.ballMap||{}).forEach(function(k){ var e=H.ballMap[k]; if(!e||e.bf!==bf)return; var aft=rec.id?(e.id>rec.id&&e.bi>rec.balls):(e.bi>rec.balls); if(aft){ w+=bowlWktOf(e); r+=bowlRunOf(e.b); b+=bowlBallOf(e.b); } });
     return {w:w,r:r,ov:Math.floor(b/6)+'.'+(b%6),name:H.bowler||''}; }catch(_e){ return null; } };
+  window.__crexSpellFetch=function(bf){ try{
+    var H=HUD, mf=H.mf||'', inn=H.inn||1, mx=0;
+    Object.keys(H.ballMap||{}).forEach(function(k){ var e=H.ballMap[k]; var n=parseInt(String(e&&e.o),10); if(n>mx)mx=n; });
+    var cur=Math.max(mx,1), reqs=[];
+    for(var ov=1; ov<=cur; ov++){
+      reqs.push(fetch('https://content.crickapi.com/commentary/v2/getBallFeeds',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({matchKey:mf,lastDocId:'',lang:'bn',filters:{inning:+inn,overNumber:ov}})}).then(function(r){return r.ok?r.json():[];}).catch(function(){return [];}));
+    }
+    Promise.all(reqs).then(function(arrs){
+      var best=null;
+      arrs.forEach(function(a){ if(!Array.isArray(a))return; a.forEach(function(x){
+        if(!x||x.type!=='o'||!x.bd||String(x.bf)!==bf)return;
+        var tm=x.tsl?String(x.tsl).match(/(\d+)\s*-\s*(\d+)\s*\(/):null, bm=String(x.bd).match(/^\s*(\d+)\s*-\s*(\d+)/);
+        if(tm&&bm&&(+bm[2])>=(+tm[1]))return;
+        var xoM=x.tsl?String(x.tsl).match(/\(([0-9]+\.[0-9])\)/):null, xoS=xoM?xoM[1]:String(x.o||''), p=xoS.match(/^(\d+)(?:\.(\d+))?$/), xb=p?((+p[1])*6+(+(p[2]||0))):-1, xid=+x.id||0;
+        if(!best||xid>best.id) best={bd:String(x.bd),balls:xb,id:xid};
+      }); });
+      if(!best) best={bd:'0-0(0.0)',balls:0,id:0};
+      if(!H.bdMap)H.bdMap={};
+      if(!H.bdMap[bf]||(H.bdMap[bf].id||0)<=best.id) H.bdMap[bf]=best;
+    });
+  }catch(_e){} };
   function normOv(v){var m=String(v||'').match(/^(\d+)\.(\d+)$/);if(!m)return '';var o=+m[1],b=+m[2];return (b>=6)?(o+1)+'.0':o+'.'+b;}   /* bugfix14: ৬.৬ ⇒ ৭.০ */
   function hudAbsorb(arr,mf){
     /* bncom13: ম্যাচ/ইনিংস বদলালে আগের ম্যাচের ঘর মুছে দাও */
