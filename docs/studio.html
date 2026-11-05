@@ -11086,6 +11086,16 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const newCnt = (playersSafe && !isInactive && pre && pre.match === selectedMatch.mf && pre.overKey === overKey &&
           ballsFull.length > pre.balls.length && pre.balls.every((x,i)=>x === ballsFull[i])) ? (ballsFull.length - pre.balls.length) : 0;
         const bigTok = playersSafe && !isInactive && /^(4|6|W)$/i.test(String(latestTok)) && !(pre && pre.match === selectedMatch.mf && pre.overKey === overKey);
+        /* ball-skip fix: প্রতিটি বল নিজের চিহ্ন (over+index+বল) দিয়ে একবার বলা হয়; ওভার বদল বা নতুন বল কখনো বাদ যাবে না */
+        const __spkAll = (window.__spkBalls = window.__spkBalls || {});
+        const __mk = String(selectedMatch.mf || '');
+        const __firstSeen = !__spkAll[__mk];
+        const __seen = __spkAll[__mk] = __spkAll[__mk] || new Set();
+        const __keys = ballsFull.map((k, i) => String(overKey) + '#' + i + '#' + k);
+        const __unseenIdx = [];
+        __keys.forEach((k, i) => { if (!__seen.has(k)) __unseenIdx.push(i); });
+        if (__firstSeen) { __keys.forEach(k => __seen.add(k)); __unseenIdx.length = 0; } /* প্রথম দেখায় পুরনো বল বলা হবে না */
+        const unseenCnt = __unseenIdx.length;
         let batterInfo = null;
         if (exactlyOne && pre.strikerKey && /^[0-6]$/.test(latestTok)) {
           const nowStat = pre.strikerKey === p1Fk ? bs1 : pre.strikerKey === p2Fk ? bs2 : null;
@@ -11102,9 +11112,10 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const strikerNow = (bs2.star && p2Name) ? p2Name : (p1Name || 'ব্যাটার');
         const eqClean = eqText;
 
-        if (!isFinished && !CXHUD && crexInningValue(sv, activeIndex) && lastBall && ballSig !== lastCrexBallSig && (newCnt>=1 || bigTok)) {
+        if (!isFinished && !CXHUD && crexInningValue(sv, activeIndex) && lastBall && ballSig !== lastCrexBallSig && (newCnt>=1 || unseenCnt>=1 || bigTok)) {
           lastCrexBallSig=ballSig;
-          const newObjs = newCnt>=1 ? curRb.b.slice(curRb.b.length-newCnt) : [lastBall];
+          const newObjs = unseenCnt>=1 ? __unseenIdx.map(i => curRb.b[i]) : (newCnt>=1 ? curRb.b.slice(curRb.b.length-newCnt) : [lastBall]);
+          __unseenIdx.forEach(i => __seen.add(__keys[i]));
           const startI = 0; /* সব নতুন বল ক্রমানুসারে — শেষ ৩টি সীমা নেই */
           const oneClock=(typeof window.__bnOn==='function')&&window.__bnOn()&&!(window.__bnStale&&window.__bnStale());
           const isSilent=!!(window.__bnOn&&window.__bnOn())||!!(window.__bnCom&&window.__bnCom.on&&!window.__bnCom.fail);
