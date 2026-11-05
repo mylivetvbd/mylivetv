@@ -9146,7 +9146,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         var __bdRec0=(actBf&&H.bdMap&&H.bdMap[actBf])?H.bdMap[actBf]:((H.bd&&H.bdKey&&actBf===H.bdKey)?{bd:H.bd,balls:H.bdBalls,id:H.bdId}:null);
         var __bdOk=!!(__bdRec0&&__bdRec0.bd&&/^\s*\d+\s*-\s*\d+\s*\(\d+/.test(String(__bdRec0.bd)));
         if(C.svBwHas&&C.svBwFk&&actBf===C.svBwFk&&!__bdOk){
-          bwW=C.svBwWkts||0; bwR=C.svBwRuns||0; bwB=C.svBwBalls||0; hasFig=true;
+          bwW=0; bwR=C.svBwRuns||0; bwB=C.svBwBalls||0; hasFig=true; /* ফিক্স: sv.c-এর ৪র্থ অংশ উইকেট নয় (বল গোনে), তাই উইকেট ০ থেকে শুরু; উইকেট পরে bd/ফিড থেকে */
           if(hudAhead&&svBalls>=0){
             bList.forEach(function(e){ if(e&&e.bi>svBalls&&e.bf===actBf){ bwW+=bowlWktOf(e); bwR+=bowlRunOf(e.b); bwB+=bowlBallOf(e.b); } });
           }
