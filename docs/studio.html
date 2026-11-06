@@ -11007,7 +11007,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
           const _csObj=(!isInactive&&(crexFresh||CXHUD)&&window.__crexScore&&String(window.__crexScore.mf||'')===String(polledMatch.mf||'')&&window.__crexScore.inn===activeIndex)?window.__crexScore:null;
           const _csBalls=_csObj?((function(v){var m=String(v||'').match(/^(\d+)\.(\d+)$/);return m?(+m[1]*6 + +m[2]):0;})(_csObj.ov)):0;
           const _csCur=_csObj?_csObj:null;   /* ফিড-স্ন্যাপশট একক সত্য: sv কখনো ফিডের আগে স্কোর দেখাবে না */
-          if(_csCur||isInactive||!(window.__crexHudFresh&&window.__crexHudFresh()))window.__setScore(_csCur?_csCur.r:rNum,_csCur?_csCur.w:wNum,_csCur?_csCur.ov:ov.disp,{mf:polledMatch.mf,inn:activeIndex,batBn:batBn,bowlBn:bowlBn,batEn:batEng,bowlEn:bowlEng,prevInn:prevInn,
+          if(_csCur||isInactive)window.__setScore(_csCur?_csCur.r:rNum,_csCur?_csCur.w:wNum,_csCur?_csCur.ov:ov.disp,{mf:polledMatch.mf,inn:activeIndex,batBn:batBn,bowlBn:bowlBn,batEn:batEng,bowlEn:bowlEng,prevInn:prevInn,
             status:sv.B,statusRuns:rNum,statusBalls:_svBalls,active:!isInactive,
             inactiveEq:isInactive?eqFull:null,inactiveEqEn:isInactive?eqFullEn:null,fallbackEq:!isInactive?eqFull:null,fallbackEqEn:!isInactive?eqFullEn:null,force:!!isInactive});
         }
