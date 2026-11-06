@@ -5855,6 +5855,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
                                    : (en ? 'Live Broadcast' : (L.countdown || L.bdTime || 'সরাসরি খেলা চলছে'))));
       if (L.hasC) {
         /* ফিক্স ৪৯: তাজা CREX ফিড থাকলে বোলারের উইকেট/রান/ওভার CREX bd থেকে (sv.c নয়) */
+        if(window.__crexHud&&window.__crexHud.curBf&&window.__crexSpellFetch&&Date.now()-(window.__crexHud.__spTs||0)>15000){ window.__crexHud.__spTs=Date.now(); window.__crexSpellFetch(window.__crexHud.curBf); }
         var __fg=(window.__crexHud&&window.__crexHudFresh&&window.__crexHudFresh()&&window.__crexBowlFig)?window.__crexBowlFig(window.__crexHud.curBf||window.__crexHud.bdKey):null;
         const bwW = __fg ? __fg.w : (L.bwWkts != null ? L.bwWkts : 0);
         const bwR = __fg ? __fg.r : L.bwRuns;
@@ -8913,8 +8914,8 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   window.__crexSpellFetch=function(bf){ try{
     var H=HUD, mf=H.mf||'', inn=H.inn||1, mx=0;
     Object.keys(H.ballMap||{}).forEach(function(k){ var e=H.ballMap[k]; var n=parseInt(String(e&&e.o),10); if(n>mx)mx=n; });
-    var cur=Math.max(mx,1), reqs=[];
-    for(var ov=1; ov<=cur; ov++){
+    var cur=Math.max(mx,1), reqs=[], full=!(H.bdMap&&H.bdMap[bf]), lo=full?1:Math.max(1,cur-2);
+    for(var ov=lo; ov<=cur; ov++){
       reqs.push(fetch('https://content.crickapi.com/commentary/v2/getBallFeeds',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({matchKey:mf,lastDocId:'',lang:'bn',filters:{inning:+inn,overNumber:ov}})}).then(function(r){return r.ok?r.json():[];}).catch(function(){return [];}));
     }
     Promise.all(reqs).then(function(arrs){
@@ -8926,7 +8927,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         var xoM=x.tsl?String(x.tsl).match(/\(([0-9]+\.[0-9])\)/):null, xoS=xoM?xoM[1]:String(x.o||''), p=xoS.match(/^(\d+)(?:\.(\d+))?$/), xb=p?((+p[1])*6+(+(p[2]||0))):-1, xid=+x.id||0;
         if(!best||xid>best.id) best={bd:String(x.bd),balls:xb,id:xid};
       }); });
-      if(!best) best={bd:'0-0(0.0)',balls:0,id:0};
+      if(!best){ if(!full) return; best={bd:'0-0(0.0)',balls:0,id:0}; }
       if(!H.bdMap)H.bdMap={};
       if(!H.bdMap[bf]||(H.bdMap[bf].id||0)<=best.id) H.bdMap[bf]=best;
     });
