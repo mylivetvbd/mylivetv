@@ -8750,8 +8750,15 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     if(/^[1-5]$/.test(t))return bd(t)+' রান।';
     return '';
   }
+  function __shortBn(t){
+    t=String(t||'').replace(/\s+/g,' ').trim();
+    var s=t.split(/(?<=[।!?])\s+/)[0];
+    if(s.length>110){ s=s.slice(0,110).replace(/\s+\S*$/,''); if(!/[।!?]$/.test(s)) s+='।'; }
+    return s;
+  }
   function lineOf(x){
     var who=bd(clean(x.c1)), body=bd(clean(x.c2)), how=wdBn(x._wd);
+    var __c2=!!body;
     if(!body){
       var oc=outcomeBn(x.b);
       if(!who&&!oc)return '';
@@ -8761,6 +8768,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     }
     /* bncom32 ধাপ-২: চার/ছয়/উইকেটে সংখ্যা (স্কোর) আলাদা করে বলা — ঘটনা→সংখ্যা */
     /* হুবহু নিয়ম: CREX-এর কমেন্ট্রির বাইরে কোনো স্কোর-বাক্য জোড়া হবে না (আগে এখানে যোগ হতো) */
+    if(__c2) body=__shortBn(body);   /* ধারাভাষ্য ছোট: CREX বর্ণনার প্রথম বাক্য, ≤১১০ অক্ষর */
     var head = who ? (how ? who+' — '+how+'।' : who+'।') : (how?how+'।':'');
     return ((head?head+' ':'')+body).trim();
   }
