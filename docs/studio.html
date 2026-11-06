@@ -5866,7 +5866,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
         else if (en) set('uiBowler', `⚾ ${L.bwEn} (${bwW}/${bwR} • ${bwO} Ov)`);
         else set('uiBowler', `⚾ ${bnPlayerName(bwNm)} (${bn(bwW)}/${bn(bwR)} • ${bn(bwO)} ওভার)`);
       }
-      const dots = document.getElementById('uiOverDots');
+      const dots = (window.__crexHudFresh && window.__crexHudFresh()) ? document.createElement('div') : document.getElementById('uiOverDots');
       if (dots && Array.isArray(L.ovBalls)) {
         dots.innerHTML = `<span style="font-size:20px;color:#cbd5e1;font-weight:800;">${en ? 'THIS OVER:' : 'এই ওভার:'}</span>`;
         L.ovBalls.slice(-6).forEach(bTok => {
@@ -9104,7 +9104,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       var hudAhead=(svBalls<0)||(hudBalls>svBalls)||(hudBalls===svBalls&&runs!=null&&C.svRuns!=null&&runs>C.svRuns);
       var bList=H.ballMap?Object.keys(H.ballMap).map(function(k){return H.ballMap[k];}):[];
       var dots=document.getElementById('uiOverDots');
-      if(dots&&H.tokens&&H.tokens.length&&hudBalls>=svBalls){
+      if(dots&&H.tokens&&H.tokens.length&&(hudBalls>=svBalls||(window.__crexHudFresh&&window.__crexHudFresh()))&&!(window.__oneHold&&window.__oneHold())){
         dots.innerHTML='<span style="font-size:20px;color:#cbd5e1;font-weight:800;">'+(en?'THIS OVER:':'এই ওভার:')+'</span>';
         H.tokens.slice(-6).forEach(function(t){
           var sp=document.createElement('span'), up=String(t).toUpperCase();
@@ -9349,7 +9349,9 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
   window.__bnComInfo=function(){return {on:window.__bnCom.on,ok:window.__bnCom.ok,q:Q.length,busy:busy,seen:Object.keys(SEEN).length};};
   window.__oneHold=function(){
     var realPending=Q.some(function(it){return !(it&&it.m&&it.m.gap);})||(busy&&!curIsGap);
-    return realPending && (Date.now()-(lastSpeakTime||0)<8000);
+    if(!realPending){window.__holdSince=0;return false;}
+    if(!window.__holdSince)window.__holdSince=Date.now();
+    return (Date.now()-window.__holdSince)<40000;
   }; /* শুধু আসল বল বাকি থাকলেই স্কোর আটকায় (সর্বোচ্চ ৮ সে) — গ্যাপ-লাইনে কখনো আটকায় না */
 })();
 /* ===== bncom27: __MS ম্যাচ-স্টেট ইঞ্জিন — স্তর ১ (একক সত্য + ফেজ-মেশিন) =====
@@ -10976,6 +10978,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const eqFull = `${batBn} বনাম ${bowlBn}${oppScore} • ${eqText}`;
         const eqFullEn = `${batEng} vs ${bowlEng}${oppScoreEn} • ${eqTextEn}`;
         if(!(window.__oneHold&&window.__oneHold())&&window.__flushScore){try{window.__flushScore();}catch(_ef0){}}
+        try{ if(window.__crexHudFresh&&window.__crexHudFresh()&&window.__crexHudApply&&!(window.__oneHold&&window.__oneHold())) window.__crexHudApply(); }catch(_ef1){}
         {
           const _ovP=String(ov.disp||'0.0').split('.'), _svBalls=(parseInt(_ovP[0],10)||0)*6+(parseInt(_ovP[1]||'0',10)||0);
           const _csObj=(!isInactive&&(crexFresh||CXHUD)&&window.__crexScore&&String(window.__crexScore.mf||'')===String(polledMatch.mf||'')&&window.__crexScore.inn===activeIndex)?window.__crexScore:null;
@@ -11064,7 +11067,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
         const __visC = function(){
         window.__crexCtx=_hudCtx;
         // Current Over Dots — SV-র rb (ব্যাকআপ); CREX-HUD থাকলে সেটাই চূড়ান্ত
-        const dots = document.getElementById('uiOverDots');
+        const dots = (window.__crexHudFresh && window.__crexHudFresh()) ? document.createElement('div') : document.getElementById('uiOverDots');
         dots.innerHTML = `<span style="font-size:20px;color:#cbd5e1;font-weight:800;">${__isEn()?'THIS OVER:':'এই ওভার:'}</span>`;
         ovBalls.slice(-6).forEach(bTok => {
           const sp = document.createElement('span');
