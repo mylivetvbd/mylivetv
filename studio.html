@@ -9352,7 +9352,30 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     if(!realPending){window.__holdSince=0;return false;}
     if(!window.__holdSince)window.__holdSince=Date.now();
     return (Date.now()-window.__holdSince)<40000;
-  }; /* শুধু আসল বল বাকি থাকলেই স্কোর আটকায় (সর্বোচ্চ ৮ সে) — গ্যাপ-লাইনে কখনো আটকায় না */
+  };
+  /* ওভার-স্ট্রিপ: CREX HUD-এর টোকেন অনুযায়ী প্রতি ৫০০ ms-এ মেলাও; কথা বাকি থাকলে (hold) নীরব */
+  setInterval(function(){
+    try{
+      if(!(window.__crexHudFresh&&window.__crexHudFresh()))return;
+      if(window.__oneHold&&window.__oneHold())return;
+      var H=window.__crexHud||{}; if(!H.tokens||!H.tokens.length)return;
+      var d=document.getElementById('uiOverDots'); if(!d)return;
+      var en=window.__uiLang==='en';
+      var bnD=function(x){return en?String(x):String(x).replace(/[0-9]/g,function(c){return '০১২৩৪৫৬৭৮৯'[+c];});};
+      var label=en?'THIS OVER:':'এই ওভার:';
+      var toks=H.tokens.slice(-6);
+      var want=label+toks.map(function(t){var up=String(t).toUpperCase();return (up==='W')?'W':(/^(WD|NB)$/.test(up)?up.charAt(0):bnD(t));}).join('');
+      if(d.textContent.replace(/\s+/g,'')===want.replace(/\s+/g,''))return;
+      d.innerHTML='<span style="font-size:20px;color:#cbd5e1;font-weight:800;">'+label+'</span>';
+      toks.forEach(function(t){
+        var sp=document.createElement('span'), up=String(t).toUpperCase();
+        var isW=(up==='W'), isX=/^(WD|NB)$/.test(up);
+        sp.className='odot'+(up==='4'?' d4':up==='6'?' d6':isW?' dW':'');
+        sp.textContent=isW?'W':(isX?up.charAt(0):bnD(t));
+        d.appendChild(sp);
+      });
+    }catch(_eStrip){}
+  },500); /* শুধু আসল বল বাকি থাকলেই স্কোর আটকায় (সর্বোচ্চ ৮ সে) — গ্যাপ-লাইনে কখনো আটকায় না */
 })();
 /* ===== bncom27: __MS ম্যাচ-স্টেট ইঞ্জিন — স্তর ১ (একক সত্য + ফেজ-মেশিন) =====
    নিয়ম: ইনিংস কখনো কমবে না, ফেজ কখনো পিছাবে না, ফল এলে সেটাই চূড়ান্ত।
