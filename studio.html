@@ -9178,7 +9178,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       /* ফিক্স বোলার-বিলম্ব: CREX HUD তাজা হলে বর্তমান বোলার HUD থেকেই (sv-এর পুরোনো বোলার নয়) */
       var actBf=(H.curBf&&window.__crexHudFresh&&window.__crexHudFresh())?H.curBf:((svBalls>hudBalls&&C.svBwFk)?C.svBwFk:(H.curBf||C.svBwFk||H.bdKey||''));
       var bwDisp='';
-      if(actBf&&C.svBwFk&&actBf===C.svBwFk&&(en?C.bwEn:C.bwBn)){
+      if(actBf&&C.svBwFk&&actBf===C.svBwFk&&!(H.curBf&&window.__crexHudFresh&&window.__crexHudFresh())&&(en?C.bwEn:C.bwBn)){ /* ফিক্স: তাজা CREX HUD থাকলে বানান একই রাখতে HUD-এর নাম */
         bwDisp=en?C.bwEn:bnPlayerName(C.bwBn);
       } else if(actBf&&crexPlayerCache[actBf]){
         bwDisp=en?crexPlayerCache[actBf]:bnPlayerName(crexPlayerCache[actBf]);
