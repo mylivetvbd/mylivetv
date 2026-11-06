@@ -9026,8 +9026,8 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
         if(tkeys.length){
           tkeys.sort(function(a,b){var pa=parseFloat(a)||0,pb=parseFloat(b)||0;if(pa!==pb)return pa-pb;return HUD.tokMap[a].id-HUD.tokMap[b].id;});
           HUD.tokens=tkeys.map(function(k){return HUD.tokMap[k].t;});
-        } else if(HUD.rbowl){
-          HUD.tokens=String(HUD.rbowl).split('.').filter(Boolean).slice(-6);
+        } else {
+          HUD.tokens=[];   /* নতুন ওভারে বল না আসা পর্যন্ত আগের ওভারের rb দেখাবে না */
         }
         HUD.ovRaw=String(newestB.o||HUD.ovRaw||'');
         if(HUD.lastBallOv!==HUD.ovRaw){HUD.lastBallOv=HUD.ovRaw;HUD.lastBallTs=Date.now();}
