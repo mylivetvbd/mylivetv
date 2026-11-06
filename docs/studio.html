@@ -9180,7 +9180,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
       var bwDisp='';
       if(actBf&&C.svBwFk&&actBf===C.svBwFk&&!(H.curBf&&window.__crexHudFresh&&window.__crexHudFresh())&&(en?C.bwEn:C.bwBn)){ /* ফিক্স: তাজা CREX HUD থাকলে বানান একই রাখতে HUD-এর নাম */
         bwDisp=en?C.bwEn:bnPlayerName(C.bwBn);
-      } else if(actBf&&crexPlayerCache[actBf]){
+      } else if(actBf&&crexPlayerCache[actBf]&&!(H.curBf&&actBf===H.curBf&&window.__crexHudFresh&&window.__crexHudFresh())){ /* ফিক্স: তাজা HUD-এর বর্তমান বোলারের নাম HUD থেকে */
         bwDisp=en?crexPlayerCache[actBf]:bnPlayerName(crexPlayerCache[actBf]);
       } else if(H.bowler){
         bwDisp=en?H.bowler:bnPlayerName(H.bowler);
