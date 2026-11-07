@@ -5848,7 +5848,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
                         : curBatHud;
       set('spotRole', L.isFinished ? `${en ? 'Match Ended' : 'খেলা শেষ'} • ${lgDisp}`
                     : L.isBreak ? `${en ? 'Innings Break' : 'ইনিংস বিরতি'} • ${lgDisp}` : lgDisp);
-      set('spotName', `${teamShort(L.batEng)} vs ${teamShort(L.bowlEng)}`);
+      set('spotName', (window.__vsOrd||(window.__vsOrd=function(uid,a,b){var o=window.__vsO=window.__vsO||{};if(!o[uid])o[uid]=[a,b];var f=o[uid];var p=(f[0]===a)?[a,b]:[b,a];return teamShort(p[0])+' vs '+teamShort(p[1]);}))(((typeof selectedMatch!=='undefined'&&selectedMatch)?selectedMatch.uid:'x'),L.batEng,L.bowlEng));
       set('spotStat', L.isFinished ? (en ? (statusEn(L.svB || L.resStr) || 'Match Completed') : (statusBn(L.svB || L.resStr) || 'ম্যাচ সমাপ্ত'))
                     : L.isBreak ? (en ? 'Next Innings Shortly' : 'পরবর্তী ইনিংসের অপেক্ষায়')
                     : (strikerDisp ? (en ? `🏏 On Strike: ${strikerDisp}` : `🏏 স্ট্রাইকে: ${strikerDisp}`)
@@ -10747,7 +10747,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       document.getElementById('uiBat0Runs').textContent='';document.getElementById('uiBat1Runs').textContent='';
       document.getElementById('uiBowler').textContent=en?'Validating Bowler':'';document.getElementById('uiOverDots').textContent='';
       document.getElementById('spotRole').textContent=en?(m.leagueName||'Cricket'):(bnLeagueName(m.leagueName)||m.leagueName||'ক্রিকেট');
-      document.getElementById('spotName').textContent=en?(m.title||'Cricket Match'):(m.t1&&m.t2?`${teamShort(m.t1)} vs ${teamShort(m.t2)}`:(m.title||'ম্যাচ'));
+      document.getElementById('spotName').textContent=en?(m.title||'Cricket Match'):(m.t1&&m.t2?(window.__vsOrd||(window.__vsOrd=function(uid,a,b){var o=window.__vsO=window.__vsO||{};if(!o[uid])o[uid]=[a,b];var f=o[uid];var p=(f[0]===a)?[a,b]:[b,a];return teamShort(p[0])+' vs '+teamShort(p[1]);}))(m.uid,m.t1,m.t2):(m.title||'ম্যাচ'));
       document.getElementById('spotStat').textContent='';
     }
     function showEntityValidationPending(match) {
