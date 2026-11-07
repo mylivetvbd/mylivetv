@@ -8415,7 +8415,7 @@ window.__decodeEmbedded=function(s){const raw=atob(s),a=new Uint8Array(raw.lengt
       if (pollTimer) clearTimeout(pollTimer);
       setSportArena(selectedMatch.sport);
       document.getElementById('liveMatchModal').classList.remove('open');
-      document.getElementById('commText').textContent = `সংযুক্ত হচ্ছে: ${selectedMatch.title} (${selectedMatch.leagueName})...`;
+      document.getElementById('commText').textContent = '';
       setTimeout(() => document.body.classList.add('broadcast-clean'), 3000);
 
       if (selectedMatch.sport === 'cricket') {
@@ -10739,16 +10739,16 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
     }
     function renderCricketPendingDom(match) {
       const en=__isEn(), m=match||{};
-      document.getElementById('liveBadgeTxt').textContent=en?'VERIFYING':'যাচাই';
+      document.getElementById('liveBadgeTxt').textContent=en?'LIVE':'LIVE';
       document.getElementById('uiTeamBadge').textContent='—';document.getElementById('uiScore').textContent='—';
       document.getElementById('uiOvers').parentElement.style.display='none';
-      document.getElementById('uiEquation').textContent=en?'Validating teams & playing XI':'দল ও খেলোয়াড়ের তথ্য যাচাই চলছে';
-      document.getElementById('uiBat0Name').textContent=en?'Validating Players':'তথ্য যাচাই চলছে';document.getElementById('uiBat1Name').textContent='';
+      document.getElementById('uiEquation').textContent='';
+      document.getElementById('uiBat0Name').textContent=en?'Validating Players':'';document.getElementById('uiBat1Name').textContent='';
       document.getElementById('uiBat0Runs').textContent='';document.getElementById('uiBat1Runs').textContent='';
-      document.getElementById('uiBowler').textContent=en?'Validating Bowler':'বোলারের তথ্য যাচাই চলছে';document.getElementById('uiOverDots').textContent='';
+      document.getElementById('uiBowler').textContent=en?'Validating Bowler':'';document.getElementById('uiOverDots').textContent='';
       document.getElementById('spotRole').textContent=en?(m.leagueName||'Cricket'):(bnLeagueName(m.leagueName)||m.leagueName||'ক্রিকেট');
       document.getElementById('spotName').textContent=en?(m.title||'Cricket Match'):(m.t1&&m.t2?`${teamShort(m.t1)} vs ${teamShort(m.t2)}`:(m.title||'ম্যাচ'));
-      document.getElementById('spotStat').textContent=en?'Awaiting verified feed':'দল ও স্কোর যাচাইয়ের অপেক্ষা';
+      document.getElementById('spotStat').textContent='';
     }
     function showEntityValidationPending(match) {
       try{ if(window.__crexHudFresh&&window.__crexHudFresh())return; }catch(_e){}  /* CREX-HUD সজীব ⇒ স্কোর "—" নয় */
@@ -10758,7 +10758,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       setCricketPlayersVisible(false);
       renderCricketPendingDom(match);
       const __pn=Date.now(); if(!window.__pendSince)window.__pendSince=__pn;   /* যাচাই-বার্তা ৩ সেকেন্ড পরে; ফিড সফল হলে সরে যায় */
-      if(__pn-window.__pendSince>=3000) document.getElementById('commText').textContent='দল ও খেলোয়াড়ের তথ্য নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত।';
+      if(__pn-window.__pendSince>=3000) document.getElementById('commText').textContent='';
       try{ __nmRestore(match&&match.uid); }catch(_enm){}   /* bncom26: নাম উধাও হবে না */
     }
 
@@ -11278,7 +11278,7 @@ const faceVerdict=(function(){try{return JSON.parse(localStorage.getItem('mlv_fa
       resetBroadcastQueue();socLiveRunning=false;
       [...socHomePlayers,...socAwayPlayers].forEach(p=>p.visible=false);
       renderSoccerPendingDom(match);
-      document.getElementById('commText').textContent='দলের পরিচয় নিশ্চিত না হওয়া পর্যন্ত আপডেট স্থগিত।';
+      document.getElementById('commText').textContent='';
     }
 
     // Real-time Worldwide Football Poller & Tactical Analyst
