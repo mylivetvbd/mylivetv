@@ -8755,7 +8755,7 @@ window.__bnStale=function(){return (Date.now()-(window.__bnCom.lastData||0))>120
     t=t.replace(/[০-৯.]+\s*(?:কিমি|মাইল)\s*\/\s*ঘণ্টা(?:র)?(?:\s*(?:গতিতে|বেগে))?\s*[,।]?\s*/g,'');   /* গতির তথ্য বাদ */
     t=t.replace(/(^|\s)।\s*/g,'$1').replace(/\s+([।,])/g,'$1').replace(/\s+/g,' ').trim();
     var s=t.split(/(?<=[।!?])\s+/)[0];
-    if(s.length>110){ s=s.slice(0,110).replace(/\s+\S*$/,''); if(!/[।!?]$/.test(s)) s+='।'; }
+    if(s.length>80){ s=s.slice(0,80).replace(/\s+\S*$/,''); if(!/[।!?]$/.test(s)) s+='।'; }
     return s;
   }
   function lineOf(x){
