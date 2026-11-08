@@ -17977,3 +17977,34 @@ https://live20.bozztv.com/akamaissh101/ssh101/fsradiotv/playlist.m3u8
 https://fonbet.mediacdn.ru/live/muzhskoi/playlist.m3u8
 #EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/0/02/SuperToons.png" group-title="🧒 কিডস (গ্লোবাল)",Super Toons (1080p)
 https://d3bxvshzgfq6in.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-8a0c583l9gryw/feed/samsung/streams/SUPERTOONS_EN/master.m3u8?token=737aa2c3f17862a448f403cd2ac2b5ef1a0c413e1cf080a13a19cea99119221f
+
+#EXTINF:-1 tvg-logo="https://i.imgur.com/6GuHXnr.png" group-title="🎬 মুভি (গ্লোবাল) 2",Telecine Cult
+http://45.185.15.154:9080/stream/64/index.m3u8
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_POGO/images/LOGO_HD/image.png" group-title="🧒 কিডস (গ্লোবাল)",Pogo (720p)
+https://drk6xq0vhn.gpcdn.net/live/pogo_sd_abr/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nick_Jr._logo_2023_(outline).svg/960px-Nick_Jr._logo_2023_(outline).svg.png" group-title="🧒 কিডস (গ্লোবাল)",Nick Jr. (Germany)
+http://94.130.48.67:8042/stream/111/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/uVFgIr8.png" group-title="🎬 মুভি (গ্লোবাল) 2",Telecine Premium
+http://45.185.15.154:9080/stream/28/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/Peo1QiZ.png" group-title="🎬 মুভি (গ্লোবাল) 2",AXN Black (Germany)
+http://46.244.99.71:8181/stream/35/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/B5YiUIP.png" group-title="🧒 কিডস (গ্লোবাল)",Kids TV
+http://origin5.mediacdn.ru/live/kidstv/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/Nky0hRo.png" group-title="🎬 মুভি (গ্লোবাল) 2",Telecine Touch
+http://45.185.15.154:9080/stream/29/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/2RxQNm6.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",MISA TV English (576i)
+https://vidh.youniverse.name:5050/MSTV/english/chunklist_w1133422319.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nick_Jr._logo_2023_(outline).svg/960px-Nick_Jr._logo_2023_(outline).svg.png" group-title="🧒 কিডস (গ্লোবাল)",Nick Jr. Asia
+http://103.253.74.210:7070/stream/116/index.m3u8
+#EXTINF:-1 tvg-logo="https://img-evg3.tv360.bitel.com.pe/peru-image/2024/12/31/22/1735657792230/b870c45f862d_480_270.png" group-title="🧒 কিডস (গ্লোবাল)",FMH Kids (720p)
+http://38.87.224.19:2220/play/a03u/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/xXGeZms.png" group-title="🧒 কিডস (গ্লোবাল)",123TV (480p)
+http://200.59.191.177:8000/play/a0lb/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/MO2Ynki.png" group-title="🎬 মুভি (গ্লোবাল) 2",Telecine Fun
+http://45.185.15.154:9080/stream/63/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/InvestigationDiscoveryLogo2020.svg/960px-InvestigationDiscoveryLogo2020.svg.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Investigation Discovery (France)
+http://192.99.186.30/stream/81/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/960px-Cartoon_Network_2010_logo.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Cartoon Network CEE Germany
+http://94.130.48.67:8042/stream/109/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/AXN_logo_%282015%29.svg/960px-AXN_logo_%282015%29.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",AXN Adria (576p)
+http://87.238.211.217:2209/stream/104/index.m3u8
