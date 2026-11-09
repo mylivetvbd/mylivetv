@@ -18008,3 +18008,22 @@ http://192.99.186.30/stream/81/index.m3u8
 http://94.130.48.67:8042/stream/109/index.m3u8
 #EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/AXN_logo_%282015%29.svg/960px-AXN_logo_%282015%29.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",AXN Adria (576p)
 http://87.238.211.217:2209/stream/104/index.m3u8
+
+#EXTINF:-1 tvg-logo="https://i.imgur.com/E84jnP8.png" group-title="🧒 কিডস (গ্লোবাল)",Nickelodeon Asia
+http://103.253.74.210:7070/stream/117/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/960px-Cartoon_Network_2010_logo.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Cartoon Network (Italy)
+http://185.227.34.104/stream/122/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/2RxQNm6.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",MISA TV Hungarian (576i)
+https://vidl.youniverse.name:5050/MSTV/hungarian_360p/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/960px-Cartoon_Network_2010_logo.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Cartoon Network Asia Thailand
+http://103.253.74.210:7070/stream/118/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/auW6Ve1.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Mi Musica Popular (1080p)
+http://45.226.205.96:48000/play/a0f8/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/Ki3ySUE.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",CNA (Algeria) (360p) [Not 24/7]
+https://live.creacast.com/cna/stream/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/HVdbXku.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Corazon TV (720p)
+http://181.79.86.130:8000/play/a05d/index.m3u8
+#EXTINF:-1 tvg-logo="https://images.pluto.tv/channels/64805525536e0c0008a19ca8/colorLogoPNG.png" group-title="🧒 কিডস (গ্লোবাল)",NickToons 90s [Geo-blocked]
+https://i.mjh.nz/.r/10-nicktoons-90s.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/2RxQNm6.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",MISA TV Czech (576i) [Not 24/7]
+https://vidl.youniverse.name:5050/MSTV/czech_360p/playlist.m3u8
