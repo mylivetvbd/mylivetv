@@ -18027,3 +18027,8 @@ http://181.79.86.130:8000/play/a05d/index.m3u8
 https://i.mjh.nz/.r/10-nicktoons-90s.m3u8
 #EXTINF:-1 tvg-logo="https://i.imgur.com/2RxQNm6.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",MISA TV Czech (576i) [Not 24/7]
 https://vidl.youniverse.name:5050/MSTV/czech_360p/playlist.m3u8
+
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/VH1_logonew.svg/960px-VH1_logonew.svg.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",VH1 (1080p)
+http://23.237.104.106:8080/USA_VH1/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/d/d8/Nicktoons_UK_Logo_2014.png" group-title="🧒 কিডস (গ্লোবাল)",Nicktoons (Germany)
+http://94.130.48.67:8042/stream/112/index.m3u8
