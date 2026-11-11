@@ -18032,3 +18032,36 @@ https://vidl.youniverse.name:5050/MSTV/czech_360p/playlist.m3u8
 http://23.237.104.106:8080/USA_VH1/index.m3u8
 #EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/d/d8/Nicktoons_UK_Logo_2014.png" group-title="🧒 কিডস (গ্লোবাল)",Nicktoons (Germany)
 http://94.130.48.67:8042/stream/112/index.m3u8
+
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/InvestigationDiscoveryLogo2020.svg/960px-InvestigationDiscoveryLogo2020.svg.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Investigation Discovery Latin America South
+http://45.184.109.10/live/69393EAE6ADBC65A68F942022362A202/41.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Sky_Cinema_Due_-_Logo_2021.svg/960px-Sky_Cinema_Due_-_Logo_2021.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",Sky Cinema Due
+http://109.169.87.42:8080/stream/10/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Sky_Cinema_Uno_-_Logo_2021.svg/960px-Sky_Cinema_Uno_-_Logo_2021.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",Sky Cinema Uno
+http://109.169.87.42:8080/stream/2/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Sky_Cinema_Collection_-_Logo_2021.svg/960px-Sky_Cinema_Collection_-_Logo_2021.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",Sky Cinema Collection
+http://109.169.87.42:8080/stream/18/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Sky_Cinema_Family_-_Logo_2021.svg/960px-Sky_Cinema_Family_-_Logo_2021.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",Sky Cinema Family
+http://109.169.87.42:8080/stream/22/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.ibb.co/tLhcNTD/amigos-tv-chiquimula.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Amigos TV Chiquimula (1080p)
+http://45.166.93.156:9999/play/a0j2/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/960px-Cartoon_Network_2010_logo.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Cartoon Network Latin America Brazil (720p) [Geo-blocked]
+http://15.204.246.24:8080/CartoonNetworkHD/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Sky_Cinema_Suspense_-_Logo_2021.svg/960px-Sky_Cinema_Suspense_-_Logo_2021.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",Sky Cinema Suspense
+http://109.169.87.42:8080/stream/30/index.m3u8
+#EXTINF:-1 tvg-logo="https://videocdn.bamboo-cloud.com/p/11389/sp/1138900/thumbnail/entry_id/0_osv1x0bp/version/100002/width/1920" group-title="🧒 কিডস (গ্লোবাল)",Tom Sings TV (1080p)
+https://vodcdn.bamboo-cloud.com/livehls/6af043956f49ecefd30d7fd4/master.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/9gCxiDy.png" group-title="🧒 কিডস (গ্লোবাল)",Rai Yoyo
+http://95.141.36.9:8080/stream/156/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/960px-Cartoon_Network_2010_logo.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Cartoon Network Latin America North Atlantic (1080p)
+http://45.173.12.70:8000/play/a0fj
+#EXTINF:-1 tvg-logo="https://i.imgur.com/CDPCF2X.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Music Box Brazil (720p)
+http://170.83.49.66:8083/MUSICBOXBRASILHD/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Sony_Movies_Logo.svg/500px-Sony_Movies_Logo.svg.png" group-title="🎬 হিন্দি মুভি",Sony Movies Latin America (720p)
+http://15.204.246.24:8080/SonyMoviesHD/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/bwAuFgx.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",ESNE TV (720p)
+http://168.196.127.137:6001/play/a071/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/nUYuCAP.png" group-title="🧒 কিডস (গ্লোবাল)",Boing (Spain)
+http://digisat.ddns.net:4022/udp/239.0.5.177:8208
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Sky_Cinema_Action_-_Logo_2021.svg/960px-Sky_Cinema_Action_-_Logo_2021.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",Sky Cinema Action
+http://109.169.87.42:8080/stream/26/index.m3u8
