@@ -18113,3 +18113,10 @@ https://183.giatvcdn.com/giatvplayout7/giatv-208314/playlist.m3u8
 https://183.giatvcdn.com/giatvplayout7/giatv-208429/playlist.m3u8
 #EXTINF:-1 tvg-logo="https://montonestv.com/wp-content/uploads/2025/11/montones-logo.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Montones TV (720p) [Not 24/7]
 https://183.giatvcdn.com/ssh101/ssh101/montonestv1/playlist.m3u8
+
+#EXTINF:-1 tvg-logo="https://i.imgur.com/Hnwsh5d.png" group-title="🎬 মুভি (গ্লোবাল) 2",FilmUADrama
+https://dash2.antik.sk/live/test_film_drama_atktv/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Nickelodeon_2009_logo.svg/960px-Nickelodeon_2009_logo.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Nickelodeon (Croatia) (720p)
+http://5.175.174.49:1234/stream/maxtvhr/nickelodeonhr/master.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nick_Jr._logo_2023_(outline).svg/960px-Nick_Jr._logo_2023_(outline).svg.png" group-title="🧒 কিডস (গ্লোবাল)",Nick Jr. (Croatia) (576p)
+http://5.175.174.49:1234/stream/maxtvhr/nickjrhr/master.m3u8
