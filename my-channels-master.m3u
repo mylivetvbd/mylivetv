@@ -18120,3 +18120,20 @@ https://dash2.antik.sk/live/test_film_drama_atktv/playlist.m3u8
 http://5.175.174.49:1234/stream/maxtvhr/nickelodeonhr/master.m3u8
 #EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nick_Jr._logo_2023_(outline).svg/960px-Nick_Jr._logo_2023_(outline).svg.png" group-title="🧒 কিডস (গ্লোবাল)",Nick Jr. (Croatia) (576p)
 http://5.175.174.49:1234/stream/maxtvhr/nickjrhr/master.m3u8
+
+#EXTINF:-1 tvg-logo="https://i.imgur.com/E84jnP8.png" group-title="🧒 কিডস (গ্লোবাল)",Nickelodeon Arabia (1080i)
+http://85.237.89.159:3342/ar-s/Nickelodeon/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/France_4_2018.svg/960px-France_4_2018.svg.png" group-title="🧒 কিডস (গ্লোবাল)",France 4 (1080p)
+https://r.eu.cdn-redge.media/livehls/oeu/mt/live/france_4/live.livx/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/E84jnP8.png" group-title="🧒 কিডস (গ্লোবাল)",Nickelodeon (France) (720p)
+https://r.eu.cdn-redge.media/livehls/oeu/mt/live/nickelodeon/live.livx/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/OWRUPA4.png" group-title="🧒 কিডস (গ্লোবাল)",Nicktoons (France) (720p)
+https://r.eu.cdn-redge.media/livehls/oeu/mt/live/nicktoons/live.livx/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/AXS_TV_logo.svg/960px-AXS_TV_logo.svg.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",AXS TV (576p)
+https://tvsen3.aynaott.com/P2fJzfsg/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/4CJIDKQ.png" group-title="🎬 মুভি (গ্লোবাল) 2",TF1 Series Films (1080p)
+https://r.eu.cdn-redge.media/livehls/oeu/mt/live/tf1_series_films/live.livx/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/XD1Tpet.png" group-title="🎬 মুভি (গ্লোবাল) 2",Star Action (720p)
+http://85.237.89.159:3342/ar-s/STAR-Action-HD/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Nickelodeon_Junior.png/960px-Nickelodeon_Junior.png" group-title="🧒 কিডস (গ্লোবাল)",Nickelodeon Junior (720p)
+https://r.eu.cdn-redge.media/livehls/oeu/mt/live/nickelodeon_junior/live.livx/playlist.m3u8
