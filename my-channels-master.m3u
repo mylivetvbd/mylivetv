@@ -18185,3 +18185,10 @@ http://90.170.214.40:9700/stream/avatel/nickelodeonhd/master.m3u8
 https://fs.uplink.kz/istoriya/mono.m3u8?token=onlinetv
 #EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Logo-bom.svg/960px-Logo-bom.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",Bom Cine (576p)
 https://cdn78-at.azotosolutions.com/cdnedge39/Canale3/master.m3u8
+
+#EXTINF:-1 tvg-logo="https://i.imgur.com/czrTtNK.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Reelz Famous & Infamous (1080p)
+https://aegis-cloudfront-1.tubi.video/dfd312a3-99b3-45fe-89b2-d20579fee2e9/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/1Za9gNQ.jpg" group-title="🎵 মিউজিক (গ্লোবাল) 2",Punjabi Beats HD (576p)
+https://mumt01.tangotv.in/O5aw8Zn3STVHARYANANEWS/index.m3u8
+#EXTINF:-1 tvg-logo="https://dtil.tmsimg.com/assets/s159100_ld_h15_aa.png?lock=720x540" group-title="🧒 কিডস (গ্লোবাল)",Sony Yay! (1080p)
+https://r2.amml.in/sony-yay/live.m3u8
