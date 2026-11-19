@@ -18192,3 +18192,38 @@ https://aegis-cloudfront-1.tubi.video/dfd312a3-99b3-45fe-89b2-d20579fee2e9/playl
 https://mumt01.tangotv.in/O5aw8Zn3STVHARYANANEWS/index.m3u8
 #EXTINF:-1 tvg-logo="https://dtil.tmsimg.com/assets/s159100_ld_h15_aa.png?lock=720x540" group-title="🧒 কিডস (গ্লোবাল)",Sony Yay! (1080p)
 https://r2.amml.in/sony-yay/live.m3u8
+
+#EXTINF:-1 tvg-logo="https://dtil.tmsimg.com/assets/s143026_ld_h15_aa.png?lock=720x540" group-title="🎬 মুভি (গ্লোবাল) 2",ETV Cinema HD (1080p)
+https://d1z9okhs5q5o80.cloudfront.net/e8903f8e970841deb594cc7c7f11bc8a/etv6N316.m3u8
+#EXTINF:-1 tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/Hare_Krsna_Pravachan.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Hare Krsna Pravachan (1080p)
+https://dcn72a38509t.cloudfront.net/v1/master/071c0467fcd02420cdf0d8a1ca3524b96c27a151/hkpravachan/HKTV/HKPravachan/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/tTVOc31.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Music IL
+https://r.il.cdn-redge.media/livehls/oil/freetv/live/music_il/live.livx/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/nhg1uM9.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Tv Carigso (720p)
+https://183.giatvcdn.com/ssh101/ssh101/carigsotv2026/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://d229kpbsb5jevy.cloudfront.net/yupptvnew/content/common/channel/logos/ohxtzi.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Sivan Temple TV (720p)
+https://yuppnimresmum.akamaized.net/120723/smil:sivantempletv.smil/playlist.m3u8?hdnts=st=1735898689~exp=1835898688~acl=*~hmac=f5fe24724fe05481e3841f9eb5ab8efdee0a3dd83645ae9dcf45703f525bab7b
+#EXTINF:-1 tvg-logo="https://i.imgur.com/3IhYd7G.jpg" group-title="🎵 মিউজিক (গ্লোবাল) 2",Salsa Gorda Television (1080p)
+https://stmv1.voxtvhd.com.br/salsagorda/salsagorda/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/Lakshya_TV.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Lakshya TV (720p)
+https://yuppnimrestreammum.akamaized.net/181224/smil:lakshyatv.smil/playlist.m3u8?hdnts=st=1735898689~exp=1835898688~acl=*~hmac=f5fe24724fe05481e3841f9eb5ab8efdee0a3dd83645ae9dcf45703f525bab7b
+#EXTINF:-1 tvg-logo="https://redeimpactogospel.com/assets/logo-512.png" group-title="✝️ খ্রিস্টান (গ্লোবাল)",Rede Impacto Gospel TV (720p)
+https://radiosnet.site/hls/redeimpactogospeltv/redeimpactogospeltv.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/eCPzibM.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Nuevo Tiempo TV (1080p)
+http://190.181.61.93:8000/play/a00o/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/OFhQQCD.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",VIVA Russia (1080p)
+https://183.giatvcdn.com/ssh101/ssh101/vivarussia/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/ETVMusic12.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",ETV Music (1080p)
+https://d3q3jhzdhmsx48.cloudfront.net/78e9244a64104ef48987207cea0cf20b/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/n1KusFW.png" group-title="🧒 কিডস (গ্লোবাল)",Arutz HaYeladim
+https://r.il.cdn-redge.media/livehls/oil/freetv/live/kids_channel/live.livx/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/Hare_Krsna_music.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Hare Krsna Music (1080p)
+https://d1y1fq5zo7b6pt.cloudfront.net/v1/master/071c0467fcd02420cdf0d8a1ca3524b96c27a151/hkmusic/HKTV/HKMusic/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://radioclubdj.pro/studio/logo.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",RADIO CLUB DJ TV
+https://radioclubdj.pro/stream/tv.m3u8
+#EXTINF:-1 tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/Hare_Krsna_music.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Hare Krsna Music (1080p)
+https://d1y1fq5zo7b6pt.cloudfront.net/v1/master/071c0467fcd02420cdf0d8a1ca3524b96c27a151/hkmusic/HKTV/HKMusic/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/TUhFzql.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",VTV Canal 17 (720p)
+http://190.181.61.93:8000/play/a00f/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/w8fYTnw.png" group-title="🧒 কিডস (গ্লোবাল)",Junior
+https://r.il.cdn-redge.media/livehls/oil/freetv/live/junior/live.livx/playlist.m3u8
