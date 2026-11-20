@@ -18227,3 +18227,58 @@ https://d1y1fq5zo7b6pt.cloudfront.net/v1/master/071c0467fcd02420cdf0d8a1ca3524b9
 http://190.181.61.93:8000/play/a00f/index.m3u8
 #EXTINF:-1 tvg-logo="https://i.imgur.com/w8fYTnw.png" group-title="🧒 কিডস (গ্লোবাল)",Junior
 https://r.il.cdn-redge.media/livehls/oil/freetv/live/junior/live.livx/playlist.m3u8
+
+#EXTINF:-1 tvg-logo="https://i.imgur.com/EVD0aIt.png" group-title="🎬 মুভি (গ্লোবাল) 2",AMC Thrillers (1080p)
+https://amc-rushbyamc-1-us.vizio.wurl.tv/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/qZV3JW5.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",TV Duga+ (720p) [Not 24/7]
+http://135.125.238.20:8080/memfs/6c06b323-a7db-443a-a75f-b745da6ca308.m3u8
+#EXTINF:-1 tvg-logo="https://dtil.tmsimg.com/assets/s143133_ld_h15_aa.png?lock=720x540" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",History TV18 HD (1080p)
+http://116.90.120.149:8000/play/a12z/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/1hsNeTa.png" group-title="🧒 কিডস (গ্লোবাল)",Smotrim 100% Detskoe (1080p)
+https://stream.smotrim.ru/hls2/fasttv05/playlist_3.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/4aTk45R.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Danger TV (1080p)
+https://wurldangertv.global.transmit.live/hls/6862ae41cebca70ae8b8c068/v1/dangertv/vizio_us/latest/main/hls/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_MNX_HD/images/LOGO_HD/image.png" group-title="🎬 মুভি (গ্লোবাল) 2",MNX HD (1080p)
+http://116.90.120.149:8000/play/a11m/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/IjtaG1m.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Crime 360 (1080p)
+https://f82e592c.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/Vml6aW9fQ3JpbWUzNjBfSExT/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_MOVIES_NOW/images/LOGO_HD/image.png" group-title="🎬 মুভি (গ্লোবাল) 2",Movies Now HD (1080p)
+http://116.90.120.149:8000/play/a11f/index.m3u8
+#EXTINF:-1 tvg-logo="https://provider-static.plex.tv/epg/cms/production/3ed082aa-5659-4fd0-8775-22613a65f924/HerSphere_1500x1000_Logo_Dark.png" group-title="🎬 মুভি (গ্লোবাল) 2",HerSphere (1080p) [Geo-blocked]
+https://amg00353-lionsgatestudios-amg00353c3-vizio-us-802.playouts.now.amagi.tv/playlist/amg00353-lionsgatetvfast-hersphere-vizious/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_NAT_GEO_WILD/images/LOGO_HD/image.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",National Geographic Wild (India) HD (1080p)
+http://116.90.120.149:8000/play/a11h/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/HWb5Iat.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Jalwa TV (576p)
+http://116.90.120.149:8000/play/a0tv/index.m3u8
+#EXTINF:-1 tvg-logo="https://dtil.tmsimg.com/assets/s157590_ld_h15_aa.png?lock=720x540" group-title="🎬 হিন্দি মুভি",Sony Max HD (1080p)
+http://116.90.120.149:8000/play/a123/index.m3u8
+#EXTINF:-1 tvg-logo="https://www.tablotv.com/wp-content/uploads/2025/05/PureFlixTV_black.png" group-title="🎬 মুভি (গ্লোবাল) 2",Pure Flix TV (1080p) [Geo-blocked]
+https://amg01884-gac-amg01884c1-vizio-us-5495.playouts.now.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/3iWzQqw.png" group-title="🧒 কিডস (গ্লোবাল)",PBS Retro (1080p) [Geo-blocked]
+https://amg02333-pbs-amg02333c6-vizio-us-4416.playouts.now.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_INVESTIGATION_DISCOVERY/images/LOGO_HD/image.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Investigation Discovery (India) (576p)
+http://116.90.120.149:8000/play/a119/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/aASNpKq.png" group-title="🎬 মুভি (গ্লোবাল) 2",Smotrim 100% Klassika (1080p)
+https://stream.smotrim.ru/hls2/fasttv03/playlist_3.m3u8
+#EXTINF:-1 tvg-logo="https://i.postimg.cc/Z5G8j67L/PIX-HD-WHITE.png" group-title="🎬 হিন্দি মুভি",Sony Pix HD (1080p)
+http://116.90.120.149:8000/play/a138/index.m3u8
+#EXTINF:-1 tvg-logo="https://dtil.tmsimg.com/assets/s157590_ld_h15_aa.png?lock=720x540" group-title="🎬 হিন্দি মুভি",Sony Max (720p)
+https://drk6xq0vhn.gpcdn.net/hls/set_max_m4fb8dz2wp6kr9s_720/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/dB3cJzO.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Smotrim 100% Fakty (1080p)
+https://stream.smotrim.ru/hls2/fasttv06/playlist_3.m3u8
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_DISNEY_CHANNEL_HD/images/LOGO_HD/image.png" group-title="🧒 কিডস (গ্লোবাল)",Disney Channel (India) HD (1080p)
+http://116.90.120.149:8000/play/a11r/index.m3u8
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_SYMANDTV/images/LOGO_HD/LOGO_HD_image.png" group-title="🎬 হিন্দি মুভি",&TV HD (1080p)
+http://116.90.120.149:8000/play/a133/index.m3u8
+#EXTINF:-1 tvg-logo="https://cdn.smotrim.ru/photobank/prod/large/156/126/56.jpg" group-title="🎬 মুভি (গ্লোবাল) 2",Smotrim 100% Gorkogo (1080p)
+https://stream.smotrim.ru/hls2/fasttv07/playlist_3.m3u8
+#EXTINF:-1 tvg-logo="https://dtil.tmsimg.com/assets/s159121_ld_h15_aa.png?lock=720x540" group-title="🧒 কিডস (গ্লোবাল)",Nick HD+ (1080p)
+http://116.90.120.149:8000/play/a11j/index.m3u8
+#EXTINF:-1 tvg-logo="https://dtil.tmsimg.com/assets/s143800_ld_h15_aa.png?lock=720x540" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Sony BBC Earth HD (1080p)
+http://116.90.120.149:8000/play/a130/index.m3u8
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_DISNEY_CHANNEL/images/LOGO_HD/image.png" group-title="🧒 কিডস (গ্লোবাল)",Disney Channel (India) (576p)
+http://116.90.120.149:8000/play/a124/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/TLM592m.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Unife TV (720p)
+https://cdn.mycloudstream.io/hls/live/broadcast/pgv5kerk/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/HBO_Xtreme.svg/960px-HBO_Xtreme.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",HBO Xtreme Latin America
+http://181.78.61.202:8000/play/a02a
