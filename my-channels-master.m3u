@@ -18282,3 +18282,22 @@ http://116.90.120.149:8000/play/a124/index.m3u8
 https://cdn.mycloudstream.io/hls/live/broadcast/pgv5kerk/index.m3u8
 #EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/HBO_Xtreme.svg/960px-HBO_Xtreme.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",HBO Xtreme Latin America
 http://181.78.61.202:8000/play/a02a
+
+#EXTINF:-1 tvg-logo="https://i.imgur.com/3yXRbQy.png" group-title="🧒 কিডস (গ্লোবাল)",Tooncast Brazil (720p)
+http://170.83.16.50:80/TOONCAST/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/History2_logo_%282022%29.svg/500px-History2_logo_%282022%29.svg.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",History 2 (1080p)
+http://116.90.120.149:8000/play/a0l1/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/gSWv9U3.png" group-title="🎬 মুভি (গ্লোবাল) 2",Star Gold Romance (576p)
+http://116.90.120.149:8000/play/a12c/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/G0ZfzZr.png" group-title="🎬 মুভি (গ্লোবাল) 2",Star Gold 2 (576p)
+http://116.90.120.149:8000/play/a12b/index.m3u8
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_MNX/images/LOGO_HD/image.png" group-title="🎬 মুভি (গ্লোবাল) 2",MNX (576p)
+http://116.90.120.149:8000/play/a11e/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/xC460sj.png" group-title="🎬 মুভি (গ্লোবাল) 2",Star Gold HD (1080p)
+http://116.90.120.149:8000/play/a12a/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/KLrfKRn.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",8XM (576p)
+http://116.90.120.149:8000/play/a0tw/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/U7eiuqv.png" group-title="🎬 মুভি (গ্লোবাল) 2",Star Gold Select HD (1080p)
+http://116.90.120.149:8000/play/a131/index.m3u8
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_ZEE_TALKIES/images/LOGO_HD/LOGO_HD_image.png" group-title="🎬 হিন্দি মুভি",Zee Talkies HD (1080p)
+http://116.90.120.149:8000/play/a116/index.m3u8
