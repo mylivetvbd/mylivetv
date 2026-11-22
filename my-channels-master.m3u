@@ -18301,3 +18301,8 @@ http://116.90.120.149:8000/play/a0tw/index.m3u8
 http://116.90.120.149:8000/play/a131/index.m3u8
 #EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_ZEE_TALKIES/images/LOGO_HD/LOGO_HD_image.png" group-title="🎬 হিন্দি মুভি",Zee Talkies HD (1080p)
 http://116.90.120.149:8000/play/a116/index.m3u8
+
+#EXTINF:-1 tvg-logo="https://i.imgur.com/SJigdlY.jpeg" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Canal 63 TV Catolico Corinto (720p)
+http://167.249.23.102:8000/play/TvCatolico_CO/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/QB3tz0d.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",SanjuaneraTV (1080p)
+https://live.obslivestream.com/sanjuanera/index.m3u8
