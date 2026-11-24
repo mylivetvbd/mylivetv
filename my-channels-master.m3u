@@ -18353,3 +18353,40 @@ https://59825a54e4454.streamlock.net:8443/pastorairisn394/pastorairisn394/master
 http://45.186.254.75:8000/play/a07j/index.m3u8
 #EXTINF:-1 tvg-logo="https://i.imgur.com/nNjMyAq.png" group-title="🎬 মুভি (গ্লোবাল) 2",Kinopokaz (1080p)
 https://stream8.cinerama.uz/1057/tracks-v1a1/mono.m3u8
+
+#EXTINF:-1 tvg-logo="https://bridgemusic.ru/s/img/channels/vostok-white.svg" group-title="🎵 মিউজিক (গ্লোবাল) 2",BRIDGE Vostok (720p) [Geo-blocked]
+https://bridgemedia-hls.cdnvideo.ru/hls/live/6aff1b6881d78600017e02c5/720p.m3u8
+#EXTINF:-1 tvg-logo="https://mahimaitv.com/images/mahimaitamil.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Mahimai TV (1080p)
+https://ktismaservers.in:3161/live/mahimaitvlive.m3u8
+#EXTINF:-1 tvg-logo="https://bridgemusic.ru/s/img/channels/symphony-white.svg" group-title="🎵 মিউজিক (গ্লোবাল) 2",BRIDGE Symphony (720p) [Geo-blocked]
+https://bridgemedia-hls.cdnvideo.ru/hls/live/6aff0d2a81d78600017e02c2/720p.m3u8
+#EXTINF:-1 tvg-logo="https://bridgemusic.ru/s/img/channels/jazz-white.svg" group-title="🎵 মিউজিক (গ্লোবাল) 2",BRIDGE Jazz (720p) [Geo-blocked]
+https://bridgemedia-hls.cdnvideo.ru/hls/live/6aff0a0390affe00013a80aa/720p.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/t3i1HtE.jpg" group-title="🎵 মিউজিক (গ্লোবাল) 2",The Retro Channel (1080p) [Not 24/7]
+https://583ed2f226ac2.streamlock.net/theretrochannel/stream/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://bridgemusic.ru/s/img/channels/mini-disco-logo.png" group-title="🧒 কিডস (গ্লোবাল)",Mini Disco (720p) [Geo-blocked]
+https://bridgemedia-hls.cdnvideo.ru/hls/live/6aff1c3190affe00013a80ac/720p.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Warner_Channel_2026.svg/960px-Warner_Channel_2026.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",Warner Channel (720p)
+http://181.78.197.59:8000/play/a07s/index.m3u8
+#EXTINF:-1 tvg-logo="https://bridgemusic.ru/s/img/channels/verba-white.svg" group-title="🎵 মিউজিক (গ্লোবাল) 2",Verba (720p) [Geo-blocked]
+https://bridgemedia-hls.cdnvideo.ru/hls/live/6aff0d0f81d78600017e02c1/720p.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/pGgp38I.png" group-title="🎬 মুভি (গ্লোবাল) 2",Rotana Cinema KSA (540p)
+https://r.eu.cdn-redge.media/livehls/oeu/mt/live/rotana_cinema/live.livx/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/rS9i9RL.png" group-title="🧒 কিডস (গ্লোবাল)",TVG Cativos
+https://crtvg-xabarinr2-schlive.flumotion.cloud/crtvglive/smil:channel7PRG.smil/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/rS9i9RL.png" group-title="🧒 কিডস (গ্লোবাল)",TVG Mocinos
+https://crtvg-xabarinr3-schlive.flumotion.cloud/crtvglive/smil:channel8PRG.smil/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/0jj9Vx0.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Master Video (1080p)
+https://eco.streams.ovh:8081/mastervideotv/index.m3u8
+#EXTINF:-1 tvg-logo="https://github.com/user-attachments/assets/e7af691d-0d31-4576-a1eb-bcf85507c891" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",TV CAJUI WEB (720p)
+https://cdn.live.br1.jmvstream.com/webtv/tvcajui/playlist/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://github.com/user-attachments/assets/e7af691d-0d31-4576-a1eb-bcf85507c891" group-title="🎵 মিউজিক (গ্লোবাল) 2",TV CAJUI WEB (720p)
+https://cdn.live.br1.jmvstream.com/webtv/tvcajui/playlist/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/2zFQbQi.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Rotana Music
+https://r.eu.cdn-redge.media/livehls/oeu/mt/live/rotana_music/live.livx/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://bridgemusic.ru/s/img/channels/mini-disco-logo.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Mini Disco (720p) [Geo-blocked]
+https://bridgemedia-hls.cdnvideo.ru/hls/live/6aff1c3190affe00013a80ac/720p.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/rS9i9RL.png" group-title="🧒 কিডস (গ্লোবাল)",TVG Pequerrechos
+https://crtvg-xabarinr1-schlive.flumotion.cloud/crtvglive/smil:channel6PRG.smil/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://bridgemusic.ru/s/img/channels/dance-white.svg" group-title="🎵 মিউজিক (গ্লোবাল) 2",BRIDGE Dance (720p) [Geo-blocked]
+https://bridgemedia-hls.cdnvideo.ru/hls/live/6aff09f290affe00013a80a9/720p.m3u8
