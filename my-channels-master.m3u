@@ -18390,3 +18390,16 @@ https://bridgemedia-hls.cdnvideo.ru/hls/live/6aff1c3190affe00013a80ac/720p.m3u8
 https://crtvg-xabarinr1-schlive.flumotion.cloud/crtvglive/smil:channel6PRG.smil/playlist.m3u8
 #EXTINF:-1 tvg-logo="https://bridgemusic.ru/s/img/channels/dance-white.svg" group-title="🎵 মিউজিক (গ্লোবাল) 2",BRIDGE Dance (720p) [Geo-blocked]
 https://bridgemedia-hls.cdnvideo.ru/hls/live/6aff09f290affe00013a80a9/720p.m3u8
+
+#EXTINF:-1 tvg-logo="https://static.wikia.nocookie.net/logopedia/images/7/71/NickToons_US_2023_Splat_Variant.png/revision/latest?cb=20251214221939" group-title="🧒 কিডস (গ্লোবাল)",Nicktoons (Romania) (576p)
+http://91.235.165.117:8001/play/a061/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/nadVCxM.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",Music Channel SD (576i)
+http://91.235.165.117:8001/play/a01u/index.m3u8
+#EXTINF:-1 tvg-logo="https://static.wikia.nocookie.net/logopedia/images/6/60/Nickelodeon_Splat_2023.png/revision/latest?cb=20241009234318" group-title="🧒 কিডস (গ্লোবাল)",Nickelodeon (Romania) (576i)
+http://91.235.165.117:8001/play/a05z/index.m3u8
+#EXTINF:-1 tvg-logo="https://bhaktiplay.com/images/icons/logo.png" group-title="🕉️ হিন্দু (গ্লোবাল)",Bhakti Play (1080p)
+https://cc-pisq3rszc5kpz.akamaized.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-pisq3rszc5kpz/OTM/OTM_BhaktiFlix-SCTE_SAMSUNG/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://static.wikia.nocookie.net/logopedia/images/a/a4/Favorit_TV_2_2026.png/revision/latest/scale-to-width-down/1000?cb=20260611201305" group-title="🎵 মিউজিক (গ্লোবাল) 2",Favorit TV2 (1080i)
+http://91.235.165.117:8002/play/a00o/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/sqC2hqV.png" group-title="🎵 মিউজিক (গ্লোবাল) 2",H!t Music Channel (Romania) (576i)
+http://91.235.165.117:8001/play/a01e/index.m3u8
