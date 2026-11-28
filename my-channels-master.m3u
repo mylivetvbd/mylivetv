@@ -18420,3 +18420,66 @@ http://91.235.165.117:8001/play/a08t/index.m3u8
 http://91.235.165.117:8001/play/a038/index.m3u8
 #EXTINF:-1 tvg-logo="https://i.imgur.com/E84jnP8.png" group-title="🧒 কিডস (গ্লোবাল)",Nickelodeon Asia Indonesia (720p)
 http://103.165.207.108:8000/play/a00v/index.m3u8
+
+#EXTINF:-1 tvg-logo="https://i.imgur.com/fR3abSD.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Tayny Galaktiki (576p)
+http://s7.merlive.am/tainigalaktiki/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/ZxUjCpF.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",TERRA (1080p)
+http://s7.merlive.am/TerraHD/index.m3u8
+#EXTINF:-1 tvg-logo="https://xml-epgservice.cdnvideo.ru/EPGService/hs/xmldata/852f4b92-cae5-463e-aad6-cd8844c5a49/logo/51.png" group-title="🧒 কিডস (গ্লোবাল)",Detski mir (576p)
+http://s7.merlive.am/DetskiMir/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/en/thumb/1/16/CBeebies.svg/960px-CBeebies.svg.png" group-title="🧒 কিডস (গ্লোবাল)",CBeebies Asia Vietnam (720p)
+http://antm.dynu.net:14285/rtp/232.84.3.200:11122
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/AXN_logo_%282015%29.svg/960px-AXN_logo_%282015%29.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",AXN Asia Vietnam (720p)
+http://antm.dynu.net:14285/rtp/232.84.1.14:8058
+#EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_NICK/images/LOGO_HD/image.png" group-title="🧒 কিডস (গ্লোবাল)",Nickelodeon (India)
+http://103.148.210.190:8000/play/a0zu
+#EXTINF:-1 tvg-logo="https://i.imgur.com/QtCgtZq.jpg" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Audaz TV (432p) [Not 24/7]
+https://cloud2.streaminglivehd.com:1936/8264/8264/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/Otfvlmf.png" group-title="🎬 মুভি (গ্লোবাল) 2",Kineko HD (1080p)
+http://s7.merlive.am/kineko/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/960px-Cartoon_Network_2010_logo.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Cartoon Network Latin America Brazil
+https://cdn-1.netplaygo.com.br/CARTOON_NETWORK/tracks-v1a1/mono.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/kL9ubfw.png" group-title="🎬 মুভি (গ্লোবাল) 2",Box Hits (720p)
+http://antm.dynu.net:14285/rtp/232.84.1.10:8034
+#EXTINF:-1 tvg-logo="https://i.imgur.com/spffjYg.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Real Life Network (1080p)
+https://300abc84139140e9b7942f8bfa6edc1a.mediatailor.us-west-2.amazonaws.com/v1/master/ba62fe743df0fe93366eba3a257d792884136c7f/LINEAR-1170-REALLIFENETWORK-FREECAST/mt/freecast/1170/hls/master/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/4wmnx1W.png" group-title="🧒 কিডস (গ্লোবাল)",Carousel (1080p)
+http://s7.merlive.am/Karusel/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/960px-Cartoon_Network_2010_logo.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Cartoon Network Asia Vietnam (720p)
+http://antm.dynu.net:14285/rtp/232.84.1.16:8070
+#EXTINF:-1 tvg-logo="https://mena-img-cdn-lb.aws.playco.com/ev-livechannels-avod/AVODASIANETCINEMAY2025MML/AVODASIANETCINEMAY2025MML-title-logo-en.png" group-title="🎬 মুভি (গ্লোবাল) 2",Asianet Cinema (576p)
+https://b-tr1.planetcast.in/asianet/master.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/960px-Cartoon_Network_2010_logo.svg.png" group-title="🧒 কিডস (গ্লোবাল)",Cartoon Network CEE Russia (576p)
+http://s7.merlive.am/CartoonNetwork/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.ibb.co/cSHpm7qf/Music-Box.webp" group-title="🎵 মিউজিক (গ্লোবাল) 2",Music Box SD (720p)
+http://antm.dynu.net:14285/rtp/232.84.3.144:9588
+#EXTINF:-1 tvg-logo="https://i.imgur.com/5sis895.png" group-title="🎬 মুভি (গ্লোবাল) 2",Star Cinema (576p)
+http://s7.merlive.am/starsinema/index.m3u8
+#EXTINF:-1 tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/Om_Shanti.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",Om Shanti
+https://webcastcdnbkwsu.b-cdn.net/live/godlywood_1/index.m3u8
+#EXTINF:-1 tvg-logo="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/HBO_Asia.png/960px-HBO_Asia.png" group-title="🎬 মুভি (গ্লোবাল) 2",HBO Asia SD (576p)
+http://103.148.210.190:8000/play/a0s8/index.m3u8
+#EXTINF:-1 tvg-logo="https://cdn2.red-media.ru/wp-content/uploads/2016/08/TochkaRF-Logo.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Tochka.rf (1080p)
+http://s7.merlive.am/HDLife/index.m3u8
+#EXTINF:-1 tvg-logo="https://d229kpbsb5jevy.cloudfront.net/yupptvnew/content/common/channel/logos/cbjodg.png" group-title="🛐 ধর্মীয় (গ্লোবাল) 2",YuppTV Veda (720p)
+https://yuppnimresmum.akamaized.net/28072023/smil:yupptvveda1.smil/playlist.m3u8?hdnts=st=1735898689~exp=1835898688~acl=*~hmac=f5fe24724fe05481e3841f9eb5ab8efdee0a3dd83645ae9dcf45703f525bab7b
+#EXTINF:-1 tvg-logo="https://i.imgur.com/mAcAAQF.png" group-title="🎬 মুভি (গ্লোবাল) 2",Kinouzhas (1080p)
+http://s7.merlive.am/Kinoujas/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/c8crJfA.png" group-title="🎬 মুভি (গ্লোবাল) 2",Cinemax Asia Vietnam (720p)
+http://antm.dynu.net:14285/rtp/232.84.1.20:8094
+#EXTINF:-1 tvg-logo="https://i.imgur.com/iKPfM5K.png" group-title="🎬 মুভি (গ্লোবাল) 2",Nashe Lubimoe Kino (576p)
+http://s7.merlive.am/lubimoekino/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/KvpMbkd.png" group-title="✝️ খ্রিস্টান (গ্লোবাল)",EWTN Espana (1080p)
+https://1211313014.rsc.cdn77.org/1211313014/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/MLSG7tA.png" group-title="🎬 মুভি (গ্লোবাল) 2",Shot TV (576p)
+http://s7.merlive.am/SHOTTV/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/D2qNVZ7.png" group-title="🎬 মুভি (গ্লোবাল) 2",CinemaWorld Vietnam (720p)
+http://antm.dynu.net:14285/rtp/232.84.1.44:8244
+#EXTINF:-1 tvg-logo="https://i.imgur.com/D4q2XUT.png" group-title="🎬 মুভি (গ্লোবাল) 2",Kinomix HD (1080p)
+http://s7.merlive.am/Kinomix/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/xi351Fx.png" group-title="🧒 কিডস (গ্লোবাল)",Mult HD (576p)
+http://s7.merlive.am/Mult/index.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Reelz.svg/960px-Reelz.svg.png" group-title="🎥 ডকুমেন্টারি (গ্লোবাল)",Reelz (720p)
+https://a-cdn.klowdtv.com/live2/reelz_720p/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/AXN_logo_%282015%29.svg/960px-AXN_logo_%282015%29.svg.png" group-title="🎬 মুভি (গ্লোবাল) 2",AXN Asia Indonesia (720p)
+http://103.165.207.108:8000/play/a00n/index.m3u8
